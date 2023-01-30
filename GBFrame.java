@@ -8,6 +8,12 @@ public class GBFrame extends JFrame {
     public GBFrame() {
         GBScreen gbScreen = new GBScreen(width, height);
         add(gbScreen);
+        JMenuBar menubar = new JMenuBar();
+        JMenu file = new JMenu("file");
+        menubar.add(file);
+        JMenuItem load = new JMenuItem("Load ROM");
+        file.add(load);
+        setJMenuBar(menubar);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
         setVisible(true);
