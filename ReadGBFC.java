@@ -2,6 +2,7 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.nio.*;
 
 public class ReadGBFC{
     JFrame frame;
@@ -11,6 +12,9 @@ public class ReadGBFC{
     File romFile;
     JFileChooser fc;
     byte[] romData;
+	JLabel gameInfoHead = new JLabel("Game info that is read from the ROM will appear below after selecting file.");
+	JLabel gameInfo = new JLabel("Select ROM file");
+	
 
     public ReadGBFC(){
         frame = new JFrame("GameBoy");
@@ -23,6 +27,8 @@ public class ReadGBFC{
         m.add(m1);
         m1.addActionListener(fcl);
         mb.add(m);
+		frame.add(gameInfo);
+		frame.add(BorderLayout.NORTH, gameInfoHead);
         frame.setJMenuBar(mb);
         frame.setSize(500,500);
         frame.setVisible(true);
@@ -46,7 +52,8 @@ public class ReadGBFC{
                         ioe.printStackTrace();
                     }
                     // call function to print the rom data
-                    printROMData();
+                    pullCartHeader();
+					printROMData();
                 }
             }
         }
@@ -63,6 +70,20 @@ public class ReadGBFC{
             //System.out.print(romData[i]);
         }
     }
+	public void pullCartHeader() {
+		try {
+			byte[] titleBytes = new byte[9];
+			for(int i=0;i<9;i++) { titleBytes[i] = romData[308+i]; }
+			String title = new String(titleBytes, "ASCII");
+			title += "   $" + String.format("%02X",romData[328]& 0xFF); 
+			title+= "  ROM Checksum: "+ String.format("%02X",romData[0x014D]& 0xFF);
+			byte checksum = 0;
+			for(int b =0x0134;b<=0x014C;b++){ checksum-=(romData[b]+1); }
+			title+= "  Computed Checksum: " + String.format("%02X",checksum& 0xFF);
+			gameInfo.setText(title);
+		}
+		catch(UnsupportedEncodingException uee) {}
+	}
 
     public static void main(String[] args){
         new ReadGBFC();
