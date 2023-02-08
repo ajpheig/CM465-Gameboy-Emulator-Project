@@ -347,7 +347,7 @@ public class ReadGBFC{
         operations[0xfe] = "CP d8";
         operations[0xff] = "RST 38H";
         int i = 0;
-        System.out.println("print OPcodes");
+        // System.out.println("print OPcodes");
 
         while (i < romData.length) {
             // fetch opcode
