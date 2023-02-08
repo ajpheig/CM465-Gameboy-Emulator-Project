@@ -1,13 +1,18 @@
 
 /**
- * Write a description of class Registers here.
- *
- * @author (your name)
- * @version (a version number or a date)
+ Registers Class
+ af, bc, de, and hl are different registers, but different halves can be accesses separately
+ a is the accumulator, which stores data for logical functions
+ f stores flags
+ b,c,d,e,h, and l are all generic purpose registers
+ sp is the stack pointer, which points to the top of the stack, it may need to increment or decrement
+ pc i the program counter, which points to the address of the next instruction. only needs to be incremented
+ methods can set half-registers, get registers or half-registers, and perform sp/pc functions.
+ Made By Adam Crawford
  */
 public class Registers
 {
-    private int a; //accumulator
+    private int a; //accumulator, stores operands for logical functions
     private int f; //flags
     
     private int b; //mem
