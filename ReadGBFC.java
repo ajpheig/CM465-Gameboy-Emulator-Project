@@ -2,6 +2,7 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 
 public class ReadGBFC{
@@ -14,6 +15,7 @@ public class ReadGBFC{
     byte[] romData;
     JLabel gameInfoHead = new JLabel("Game info that is read from the ROM will appear below after selecting file.");
     JLabel gameInfo = new JLabel("Select ROM file");
+    Opcodes runOpcodes = new Opcodes();
 
 
     public ReadGBFC(){
@@ -53,8 +55,12 @@ public class ReadGBFC{
                     }
                     // call function to print the rom data
                     pullCartHeader();
-                    //printROMData();
+                    printROMData();
                     printOpcodes();
+                    // call the executeOpcodes method in the instance of the Opcode class that calls the funcitons for
+                    // the opcodes currently the whole array of rom data is passed. We might want to call this method
+                    // one opcode at a time
+                    runOpcodes.executeOpcodes(romData);
                 }
             }
         }
@@ -87,7 +93,7 @@ public class ReadGBFC{
     }
 
 
-    // new
+    // currently prints the opcodes we will need to make these so they call the correct function
     public void printOpcodes() {
         String[] operations = new String[256];
         operations[0x0] = "NOP";

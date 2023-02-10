@@ -1,6 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
 
+
 public class GBFrame extends JFrame {
     private int width = 500;
     private int height = 500;
