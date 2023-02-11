@@ -13,7 +13,7 @@
 public class Registers
 {
     private int a; //accumulator, stores operands for logical functions
-    private int f; //flags
+    private Flags fByte = new Flags();; //flags
     
     private int b; //mem
     private int c; //mem
@@ -29,7 +29,7 @@ public class Registers
     private int pc; // program counter, points to address of next instruction
     
     public int getAF() {
-        return a << 8 | f;
+        return a << 8 | fByte.getFByte();
     }
     public int getBC() {
         return b << 8 | c;
@@ -49,8 +49,8 @@ public class Registers
     public int getA() {
         return a;
     }
-    public int getF() {
-        return f;
+    public Flags getF() {
+        return fByte;
     }
     public int getB() {
         return b;
@@ -108,7 +108,7 @@ public class Registers
     }
     public void setAF(int af) {
         a = af >> 8;
-        f = af & 0xff;
+        fByte.setFByte(af & 0xff);
     }
     public void setBC(int bc) {
         b = bc >> 8;
