@@ -467,6 +467,7 @@ public class Opcodes {
     // set carry flag
     public void SFC() {
         System.out.println("");
+        regs.set
     }
 
     // jump if the carry flag is set
@@ -493,12 +494,15 @@ public class Opcodes {
     // it in the first register
     public void ADC(int intoRegister, int loadRegister) {
         System.out.println("");
+        
     }
 
     // subtracts contents of register passed in and puts result in A and sets the
     // carry, zero, and negative flags
-    public void SUB(int A, int register) {
+    public void SUB(String register, String register2) {
         System.out.println("");
+        
+        
     }
 
     // AND A with register passed in
@@ -580,14 +584,19 @@ public class Opcodes {
 
     /// call a subroutine if the carry flag is not set
     public void CALLNC() {
+        if(regs.fByte.checkC() == false)
+            
     }
 
     // call subroutine if carry flag is set
     public void CALLC() {
+        if(regs.fByte.checkC() == true)
+            
     }
 
     // subtract d8 from A
     public void SUBD8(int A, int D8) {
+        
     }
 
     // return from interrupt
