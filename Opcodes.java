@@ -382,19 +382,107 @@ public class Opcodes {
      * }
      */
 
-    public void nop() {
-        System.out.println("nop");
-        regs.setPC(regs.getPC() + 1);
+        // load value into intoRegister
+    public void LD(String register, int value){
+        switch(register){
+            case "a": regs.setA(value);
+                break;
+            case "b": regs.setB(value);
+                break;
+            case "c": regs.setC(value);
+                break;
+            case "d": regs.setD(value);
+                break;
+            case "e": regs.setE(value);
+                break;
+            case "h": regs.setH(value);
+                break;
+            case "l": regs.setL(value);
+                break;
+            case "sp": regs.setSP(value);
+                break;
+            case "pc": regs.setPC( value);
+                break;
+            //case "ad": regs.setAD(value);
+            //    break;
+            case "bc": regs.setBC(value);
+                break;
+            case "af": regs.setAF(value);
+                break;
+            case "de": regs.setDE(value);
+                break;
+            case "hl": regs.setHL( value);
+                break;
+        }
     }
 
-    // load value into intoRegister
-    public void LD(int intoRegister, int value) {
-        System.out.println("load value into intoRegister:");
+    // loag the value of valueRegister into register need to do something like a nested switch or better
+    public void LD(String register, String valueRegister){
+        switch(register){
+            case "a": regs.setA(0);
+                break;
+            case "b": regs.setB(0);
+                break;
+            case "c": regs.setC(0);
+                break;
+            case "d": regs.setD(0);
+                break;
+            case "e": regs.setE(0);
+                break;
+            case "h": regs.setH(0);
+                break;
+            case "l": regs.setL(0);
+                break;
+            case "sp": regs.setSP(0);
+                break;
+            case "pc": regs.setPC(0);
+                break;
+            //case "ad": regs.setAD(value);
+            //    break;
+            case "bc": regs.setBC(0);
+                break;
+            case "af": regs.setAF(0);
+                break;
+            case "de": regs.setDE(0);
+                break;
+            case "hl": regs.setHL(0);
+                break;
+        }
     }
 
     // increment the register
-    public void INC(int register) {
-        System.out.println("increment register");
+    public void INC(String register){
+        switch(register){
+            case "a": regs.setA(regs.getA() + 1);
+                break;
+            case "b": regs.setB(regs.getB() + 1);
+                break;
+            case "c": regs.setC(regs.getC() + 1);
+                break;
+            case "d": regs.setD(regs.getD() + 1);
+                break;
+            case "e": regs.setE(regs.getE() + 1);
+                break;
+            case "h": regs.setH(regs.getH() + 1);
+                break;
+            case "l": regs.setL(regs.getL() + 1);
+                break;
+            case "sp": regs.setSP(regs.getSP() + 1);
+                break;
+            case "pc": regs.setPC(regs.getPC() + 1);
+                break;
+            //case "ad": regs.setAD(value);
+            //    break;
+            case "bc": regs.setBC(regs.getBC() + 1);
+                break;
+            case "af": regs.setAF(regs.getAF() + 1);
+                break;
+            case "de": regs.setDE(regs.getDE() + 1);
+                break;
+            case "hl": regs.setHL(regs.getHL() + 1);
+                break;
+
+        }
     }
 
     // decrement register
