@@ -22,7 +22,7 @@ public class Opcodes {
     // which can be run with handler.run
     // one of two ways to call the method
     {
-        opcodeHandlers.put(0x0, this::nop);
+        //opcodeHandlers.put(0x0, this::nop);
         // opcodeHandlers.put(0x1, () -> ldBCd16);
         /*
          * opcodeHandlers.put(0x2, () -> LD_(BC),A);
@@ -367,8 +367,8 @@ public class Opcodes {
     /*
      * int i = 0;
      * // System.out.println("print OPcodes");
-     * 
-     * 
+     *
+     *
      * while (i < romData.length) {
      * // fetch opcode
      * int opcode = (romData[i] & 0xff) | ((romData[i + 1] & 0xff) << 8);
@@ -382,7 +382,7 @@ public class Opcodes {
      * }
      */
 
-        // load value into intoRegister
+    // load value into intoRegister
     public void LD(String register, int value){
         switch(register){
             case "a": regs.setA(value);
@@ -416,36 +416,131 @@ public class Opcodes {
         }
     }
 
-    // loag the value of valueRegister into register need to do something like a nested switch or better
+    // load the value of valueRegister into register by combining strings of the register names and swithing based
+    // off of that
     public void LD(String register, String valueRegister){
-        switch(register){
-            case "a": regs.setA(0);
+        String registerPair = register + valueRegister;
+
+        switch(registerPair){
+            case "ab": regs.setA(regs.getB());
                 break;
-            case "b": regs.setB(0);
+            case "ac": regs.setA(regs.getC());
                 break;
-            case "c": regs.setC(0);
+            case "ad": regs.setA(regs.getD());
                 break;
-            case "d": regs.setD(0);
+            case "ae": regs.setA(regs.getE());
                 break;
-            case "e": regs.setE(0);
+            case "ah": regs.setA(regs.getH());
                 break;
-            case "h": regs.setH(0);
+            case "al": regs.setA(regs.getL());
                 break;
-            case "l": regs.setL(0);
+            case "ba":
+                regs.setB(regs.getA());
                 break;
-            case "sp": regs.setSP(0);
+            case "bc":
+                regs.setB(regs.getC());
                 break;
-            case "pc": regs.setPC(0);
+            case "bd":
+                regs.setB(regs.getD());
                 break;
-            //case "ad": regs.setAD(value);
-            //    break;
-            case "bc": regs.setBC(0);
+            case "be":
+                regs.setB(regs.getE());
                 break;
-            case "af": regs.setAF(0);
+            case "bh":
+                regs.setB(regs.getH());
                 break;
-            case "de": regs.setDE(0);
+            case "bl":
+                regs.setB(regs.getL());
                 break;
-            case "hl": regs.setHL(0);
+            case "ca":
+                regs.setC(regs.getA());
+                break;
+            case "cb":
+                regs.setC(regs.getB());
+                break;
+            case "cd":
+                regs.setC(regs.getD());
+                break;
+            case "ce":
+                regs.setC(regs.getE());
+                break;
+            case "ch":
+                regs.setC(regs.getH());
+                break;
+            case "cl":
+                regs.setC(regs.getL());
+                break;
+            case "da":
+                regs.setD(regs.getA());
+                break;
+            case "db":
+                regs.setD(regs.getB());
+                break;
+            case "dc":
+                regs.setD(regs.getC());
+                break;
+            case "de":
+                regs.setD(regs.getE());
+                break;
+            case "dh":
+                regs.setD(regs.getH());
+                break;
+            case "dl":
+                regs.setD(regs.getL());
+                break;
+            case "ea":
+                regs.setE(regs.getA());
+                break;
+            case "eb":
+                regs.setE(regs.getB());
+                break;
+            case "ec":
+                regs.setE(regs.getC());
+                break;
+            case "ed":
+                regs.setE(regs.getD());
+                break;
+            case "eh":
+                regs.setE(regs.getH());
+                break;
+            case "el":
+                regs.setE(regs.getL());
+                break;
+            case "ha":
+                regs.setH(regs.getA());
+                break;
+            case "hb":
+                regs.setH(regs.getB());
+                break;
+            case "hc":
+                regs.setH(regs.getC());
+                break;
+            case "hd":
+                regs.setH(regs.getD());
+                break;
+            case "he":
+                regs.setH(regs.getE());
+                break;
+            case "hl":
+                regs.setH(regs.getL());
+                break;
+            case "la":
+                regs.setL(regs.getA());
+                break;
+            case "lb":
+                regs.setL(regs.getB());
+                break;
+            case "lc":
+                regs.setL(regs.getC());
+                break;
+            case "ld":
+                regs.setL(regs.getD());
+                break;
+            case "le":
+                regs.setL(regs.getE());
+                break;
+            case "lh":
+                regs.setL(regs.getH());
                 break;
         }
     }
@@ -486,13 +581,52 @@ public class Opcodes {
     }
 
     // decrement register
-    public void DEC(int register) {
-        System.out.println("decrement register");
+    public void DEC(String register) {
+        switch (register) {
+            case "a":
+                regs.setA(regs.getA() - 1);
+                break;
+            case "b":
+                regs.setB(regs.getB() - 1);
+                break;
+            case "c":
+                regs.setC(regs.getC() - 1);
+                break;
+            case "d":
+                regs.setD(regs.getD() - 1);
+                break;
+            case "e":
+                regs.setE(regs.getE() - 1);
+                break;
+            case "h":
+                regs.setH(regs.getH() - 1);
+                break;
+            case "l":
+                regs.setL(regs.getL() - 1);
+                break;
+            case "bc":
+                regs.setBC(regs.getBC() - 1);
+                break;
+            case "de":
+                regs.setDE(regs.getDE() - 1);
+            case "hl":
+                regs.setHL(regs.getHL() - 1);
+            default:
+                System.out.println("Invalid register specified.");
+        }
+
     }
 
     // right rotates bits in A
     public void RRCA() {
-        System.out.println("RRCS");
+        int a = regs.getA();
+        int carry = a & 0x01;  // Get the least significant bit of A
+        a = (a >> 1) | (carry << 7);  // Right shift A by 1 and insert carry into the most significant bit
+        regs.setA(a);
+
+        int msb = (a >> 7) & 0x01; // Get the most significant bit of A
+        // set the carry flag to true if most significant bit of result is 1 and false otherwise
+        regs.fByte.setC(msb == 1);
     }
 
     // stop cpu
@@ -512,8 +646,65 @@ public class Opcodes {
     }
 
     // add the value of addRegister into intoRegister and store it in intoRegister
-    public void ADD(int intoRegister, int addRegister) {
-        System.out.println("add");
+    // need to make it set the correct flags
+    public void ADD(String intoRegister, String addRegister) {
+        String registerPair = intoRegister + addRegister;
+
+        switch (intoRegister) {
+            case "a":
+                switch (addRegister) {
+                    case "a":
+                        regs.setA(regs.getA() + regs.getA());
+                        break;
+                    case "b":
+                        regs.setA(regs.getA() + regs.getB());
+                        break;
+                    case "c":
+                        regs.setA(regs.getA() + regs.getC());
+                        break;
+                    case "d":
+                        regs.setA(regs.getA() + regs.getD());
+                        break;
+                    case "e":
+                        regs.setA(regs.getA() + regs.getE());
+                        break;
+                    case "h":
+                        regs.setA(regs.getA() + regs.getH());
+                        break;
+                    case "l":
+                        regs.setA(regs.getA() + regs.getL());
+                        break;
+                    case "(hl)":
+                        regs.setA(regs.getA() + regs.getHL());
+                        break;
+                    // when you add an 8 bit int to a
+                    case "n":
+                        int d8Val = 0; // we will have to get the value from somewhere
+                        regs.setA(regs.getA() + d8Val);
+                        //regs.incPC();
+                        break;
+                }
+            case "hl":
+                switch (addRegister) {
+                    case "bc":
+                        regs.setHL(regs.getHL() + regs.getBC());
+                        break;
+                    case "de":
+                        regs.setHL(regs.getHL() + regs.getDE());
+                        break;
+                    case "hl":
+                        regs.setHL(regs.getHL() + regs.getHL());
+                        break;
+                    case "sp":
+                        regs.setHL(regs.getHL() + regs.getSP());
+                }
+                // add an 8 bit immediate value to sp
+            case "sp":
+                regs.setSP(regs.getSP() + 0);
+                break;
+
+
+        }
     }
 
     // right shift register
@@ -555,7 +746,7 @@ public class Opcodes {
     // set carry flag
     public void SFC() {
         System.out.println("");
-        regs.set
+        //regs.set
     }
 
     // jump if the carry flag is set
@@ -582,15 +773,15 @@ public class Opcodes {
     // it in the first register
     public void ADC(int intoRegister, int loadRegister) {
         System.out.println("");
-        
+
     }
 
     // subtracts contents of register passed in and puts result in A and sets the
     // carry, zero, and negative flags
     public void SUB(String register, String register2) {
         System.out.println("");
-        
-        
+
+
     }
 
     // AND A with register passed in
@@ -673,18 +864,18 @@ public class Opcodes {
     /// call a subroutine if the carry flag is not set
     public void CALLNC() {
         if(regs.fByte.checkC() == false)
-            
+            System.out.println("True");
     }
 
     // call subroutine if carry flag is set
     public void CALLC() {
         if(regs.fByte.checkC() == true)
-            
+          System.out.println("True");
     }
 
     // subtract d8 from A
     public void SUBD8(int A, int D8) {
-        
+
     }
 
     // return from interrupt

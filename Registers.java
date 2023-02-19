@@ -16,7 +16,7 @@
  */
 public class Registers {
     private int a; // accumulator, stores operands for logical functions
-    private Flags fByte = new Flags();; // flags
+    public Flags fByte = new Flags();; // flags
 
     private int b; // mem
     private int c; // mem
@@ -106,6 +106,8 @@ public class Registers {
     public void setE(int e) {
         this.e = e;
     }
+
+
 
     public void setH(int h) {
         this.h = h;
