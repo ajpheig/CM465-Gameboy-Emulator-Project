@@ -17,6 +17,7 @@ public class ReadGBFC {
     // Opcodes runOpcodes = new Opcodes();
     Registers regs = new Registers();
     CPU cpu;
+    InterruptManager interruptManager = new InterruptManager();
 
     public ReadGBFC() {
         frame = new JFrame("GameBoy");
@@ -56,7 +57,7 @@ public class ReadGBFC {
                     pullCartHeader();
                     // printROMData();
                     // printOpcodes();
-                    cpu = new CPU(romData, regs);
+                    cpu = new CPU(romData, regs, interruptManager);
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to
