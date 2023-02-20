@@ -553,8 +553,16 @@ public class Opcodes {
     }
 
     // right rotates bits in A
+        // right rotates bits in A
     public void RRCA() {
-        System.out.println("RRCS");
+        int a = regs.getA();
+        int carry = a & 0x01;  // Get the least significant bit of A
+        a = (a >> 1) | (carry << 7);  // Right shift A by 1 and insert carry into the most significant bit
+        regs.setA(a);
+
+        int msb = (a >> 7) & 0x01; // Get the most significant bit of A
+        // set the carry flag to true if most significant bit of result is 1 and false otherwise
+        regs.fByte.setC(msb == 1);
     }
 
     // stop cpu
@@ -574,8 +582,64 @@ public class Opcodes {
     }
 
     // add the value of addRegister into intoRegister and store it in intoRegister
-    public void ADD(int intoRegister, int addRegister) {
-        System.out.println("add");
+    public void ADD(String intoRegister, String addRegister) {
+        String registerPair = intoRegister + addRegister;
+
+        switch (intoRegister) {
+            case "a":
+                switch (addRegister) {
+                    case "a":
+                        regs.setA(regs.getA() + regs.getA());
+                        break;
+                    case "b":
+                        regs.setA(regs.getA() + regs.getB());
+                        break;
+                    case "c":
+                        regs.setA(regs.getA() + regs.getC());
+                        break;
+                    case "d":
+                        regs.setA(regs.getA() + regs.getD());
+                        break;
+                    case "e":
+                        regs.setA(regs.getA() + regs.getE());
+                        break;
+                    case "h":
+                        regs.setA(regs.getA() + regs.getH());
+                        break;
+                    case "l":
+                        regs.setA(regs.getA() + regs.getL());
+                        break;
+                    case "(hl)":
+                        regs.setA(regs.getA() + regs.getHL());
+                        break;
+                    // when you add an 8 bit int to a
+                    case "n":
+                        int d8Val = 0; // we will have to get the value from somewhere
+                        regs.setA(regs.getA() + d8Val);
+                        //regs.incPC();
+                        break;
+                }
+            case "hl":
+                switch (addRegister) {
+                    case "bc":
+                        regs.setHL(regs.getHL() + regs.getBC());
+                        break;
+                    case "de":
+                        regs.setHL(regs.getHL() + regs.getDE());
+                        break;
+                    case "hl":
+                        regs.setHL(regs.getHL() + regs.getHL());
+                        break;
+                    case "sp":
+                        regs.setHL(regs.getHL() + regs.getSP());
+                }
+                // add an 8 bit immediate value to sp
+            case "sp":
+                regs.setSP(regs.getSP() + 0);
+                break;
+
+
+        }
     }
 
     // right shift register
