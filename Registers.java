@@ -16,7 +16,7 @@
  */
 public class Registers {
     private int a; // accumulator, stores operands for logical functions
-    private Flags fByte = new Flags();; // flags
+    public Flags fByte = new Flags();; // flags
 
     private int b; // mem
     private int c; // mem
