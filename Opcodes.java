@@ -44,9 +44,9 @@ public class Opcodes {
          * opcodeHandlers.put(0xb, () -> DEC_BC);
          * opcodeHandlers.put(0xc, () -> INC_C);
          * opcodeHandlers.put(0xd, () -> DEC_C);
-         * opcodeHandlers.put(0xe, () -> LD_C,d8);
-         * opcodeHandlers.put(0xf, () -> RRCA);
-         * opcodeHandlers.put(0x10, () -> STOP);
+         * opcodeHandlers.put(0xe, () -> LD_C,d8);*/
+         opcodeHandlers.put(0xf, () -> RRCA());
+         /* opcodeHandlers.put(0x10, () -> STOP);
          * opcodeHandlers.put(0x11, () -> LD_DE,d16);
          * opcodeHandlers.put(0x12, () -> LD_(DE),A);
          * opcodeHandlers.put(0x13, () -> INC_DE);
@@ -552,10 +552,12 @@ public class Opcodes {
         System.out.println("decrement register");
     }
 
-    // right rotates bits in A
+
         // right rotates bits in A
     public void RRCA() {
+
         int a = regs.getA();
+        System.out.println(a);
         int carry = a & 0x01;  // Get the least significant bit of A
         a = (a >> 1) | (carry << 7);  // Right shift A by 1 and insert carry into the most significant bit
         regs.setA(a);
@@ -563,6 +565,7 @@ public class Opcodes {
         int msb = (a >> 7) & 0x01; // Get the most significant bit of A
         // set the carry flag to true if most significant bit of result is 1 and false otherwise
         regs.fByte.setC(msb == 1);
+        System.out.println(regs.getA());
     }
 
     // stop cpu
@@ -582,63 +585,119 @@ public class Opcodes {
     }
 
     // add the value of addRegister into intoRegister and store it in intoRegister
+    // NEED TO ADD THE ABILITY TO ADD next byte in memory for ADD A, n and from the value pointed to by HL for
+    // ADD A, (HL)
     public void ADD(String intoRegister, String addRegister) {
-        String registerPair = intoRegister + addRegister;
+        int result = 0;
+        int addValue = 0;
 
         switch (intoRegister) {
             case "a":
                 switch (addRegister) {
                     case "a":
-                        regs.setA(regs.getA() + regs.getA());
+                        result = regs.getA() + regs.getA();
+                        addValue =regs.getA();
+                        regs.setA(result);
                         break;
                     case "b":
-                        regs.setA(regs.getA() + regs.getB());
+                        result = regs.getA() + regs.getB();
+                        addValue =regs.getB();
+                        regs.setA(result);
                         break;
                     case "c":
-                        regs.setA(regs.getA() + regs.getC());
+                        result = regs.getA() + regs.getC();
+                        addValue =regs.getC();
+                        regs.setA(result);
                         break;
                     case "d":
-                        regs.setA(regs.getA() + regs.getD());
+                        result = regs.getA() + regs.getD();
+                        addValue =regs.getD();
+                        regs.setA(result);
                         break;
                     case "e":
-                        regs.setA(regs.getA() + regs.getE());
+                        result = regs.getA() + regs.getE();
+                        regs.setA(result);
+                        addValue =regs.getE();
                         break;
                     case "h":
-                        regs.setA(regs.getA() + regs.getH());
+                        result = regs.getA() + regs.getH();
+                        addValue =regs.getH();
+                        regs.setA(result);
                         break;
                     case "l":
-                        regs.setA(regs.getA() + regs.getL());
+                        result = regs.getA() + regs.getL();
+                        addValue =regs.getL();
+                        regs.setA(result);
                         break;
+                    // this one adds an 8 bit value to A that is pointed to by the value of HL
                     case "(hl)":
-                        regs.setA(regs.getA() + regs.getHL());
+                        result = regs.getA() + regs.getHL();
+                        addValue = regs.getHL();
+                        regs.setA(result);
                         break;
-                    // when you add an 8 bit int to a
+                    // add an 8 bit immediate value to A. The value that we add to A is the next byte in memory
                     case "n":
                         int d8Val = 0; // we will have to get the value from somewhere
-                        regs.setA(regs.getA() + d8Val);
+                        result = regs.getA() + d8Val;
+                        addValue = d8Val;
+                        regs.setA(result);
                         //regs.incPC();
                         break;
                 }
             case "hl":
                 switch (addRegister) {
                     case "bc":
-                        regs.setHL(regs.getHL() + regs.getBC());
+                        result = regs.getHL() + regs.getBC();
+                        regs.setHL(result);
                         break;
                     case "de":
+                        result = regs.getHL() + regs.getDE();
                         regs.setHL(regs.getHL() + regs.getDE());
                         break;
                     case "hl":
-                        regs.setHL(regs.getHL() + regs.getHL());
+                        result = regs.getHL() + regs.getHL();
+                        regs.setHL(result);
                         break;
                     case "sp":
-                        regs.setHL(regs.getHL() + regs.getSP());
+                        result = regs.getHL() + regs.getSP();
+                        regs.setHL(result);
                 }
                 // add an 8 bit immediate value to sp
             case "sp":
-                regs.setSP(regs.getSP() + 0);
+                result = regs.getSP() + 0;
+                regs.setSP(result);
                 break;
+        }
+        // set the flags
+        // zero flag and negative flag do not depend on whether we are addign the value to A or HL like carry and half
+        // carry
+        if (result == 0)
+            regs.fByte.setZ(true);
+        // subtract flag is always reset to false
+        regs.fByte.setN(false);
 
+        // carry flag is set if result of addition is larger than 8 bits if we are the results into A
+        if (intoRegister.equals("a")) {
+            if (result > 255) {
+                regs.fByte.setC(true);
+            }
+            else{
+                regs.fByte.setC(false);
+            }
+            // check if the half carry flag needs to be set for an 8 bit register
+            // get lower 4 bits w AND the sum them, then and the sum w 0x10 to see if it has a 1 bit then compare with
+            // 0x10 to see if we should set the half carry flag or not
+            boolean halfCarry = ((regs.getA() & 0x0F) + (addValue & 0x0F) & 0x10) == 0x10;
+            regs.fByte.setH(halfCarry);
+        } // if we aren't adding to A, we are adding to HL
+        else{
+            // check if we need to set the carry flag
+            boolean carry = ((regs.getHL() & 0xFFFF) + (addValue & 0xFFFF) > 0xFFFF);
+            regs.fByte.setC(carry);
 
+            // Check if there is a carry from the lower 4 bits to the upper 4 bits
+            boolean halfCarry = ((regs.getHL() & 0x0FFF) + (addValue & 0x0FFF)) > 0x0FFF;
+            regs.fByte.setH(halfCarry);
         }
     }
 

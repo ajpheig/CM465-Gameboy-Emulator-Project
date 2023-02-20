@@ -1,7 +1,5 @@
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class OpcodeTestUnit {
     Registers regs = new Registers();
@@ -25,6 +23,16 @@ public class OpcodeTestUnit {
         assertEquals(0x55, regs.getA());// actually grabs the value from b but not all reg to reg ld have been added
     }
 
+    @Test
+    public void testRRCA() {  // right rotate bits in a
+        // Test with A = 0b10011010
+        regs.setA(0b10011010);
+        Runnable operation = operations.opcodeHandlers.get(0xf); // opcode RRCA()
+        operation.run();
+        assertEquals(0b01001101, regs.getA());
+        assertFalse(regs.fByte.checkC());
+    }
+
     public static final int SERIAL = 0X58;
 
     @Test
@@ -44,5 +52,4 @@ public class OpcodeTestUnit {
         operation.run();
         assertEquals(false, intMan.postInterrupt(SERIAL));// returns false because IME flag is false from DI
     }
-
 }
