@@ -65,8 +65,9 @@ public class Opcodes {
          * opcodeHandlers.put(0x1c, () -> INC_E);
          * opcodeHandlers.put(0x1d, () -> DEC_E);
          * opcodeHandlers.put(0x1e, () -> LD_E,d8);
-         * // right shift reg A
-         * opcodeHandlers.put(0x1f, () -> RRA);
+         * // right shift reg A*/
+           opcodeHandlers.put(0x1f, () -> RR()); // opcode is RRA
+         /*
          * // jump to new address if teh zero flag is not set
          * opcodeHandlers.put(0x20, () -> JR_NZ,r8);
          * opcodeHandlers.put(0x21, () -> LD_HL,d16);
@@ -76,10 +77,10 @@ public class Opcodes {
          * opcodeHandlers.put(0x24, () -> INC_H);
          * opcodeHandlers.put(0x25, () -> DEC_H);
          * opcodeHandlers.put(0x26, () -> LD_H,d8);
-         * // Decimal adjust accumulator. Adjusts a to the correct representation of a
-         * binary-coded decimal using the flags
-         * opcodeHandlers.put(0x27, () -> DAA);
-         * // jump to new address if zero flag is set
+         * // Decimal adjust accumulator. Adjusts A to the correct representation of a
+         * binary-coded decimal using the flags*/
+          opcodeHandlers.put(0x27, () -> DAA());
+         /* // jump to new address if zero flag is set
          * opcodeHandlers.put(0x28, () -> JR_Z,r8);
          * opcodeHandlers.put(0x29, () -> ADD_HL,HL);
          * // load HL into A then increment it
@@ -568,12 +569,13 @@ public class Opcodes {
         System.out.println(regs.getA());
     }
 
-    // stop cpu
+    // turns the screen off and puts everything into low power mode
     public void STOP() {
         System.out.println("STOP");
     }
 
-    // jump relative by the amount of the value passed in
+    // jump relative by the amount of the value passed in ny adding e8 to the address of the instrucion following JR
+    // JR e8 & JR cc, e8
     public void JR(int value) {
         System.out.println("jump relative" + value);
     }
@@ -702,8 +704,16 @@ public class Opcodes {
     }
 
     // right shift register
-    public void RR(int register) {
-        System.out.println("right shit" + register);
+    // Right rotate without carry on A is currently implemented will need to add the other registers when implementing
+    // the extended opcodes
+    public void RR() {
+        int a = regs.getA();
+        int carry = a & 0x01;  // Get the least significant bit of A
+        a = (a >> 1) | (regs.fByte.checkC() ? 0x80 : 0x00);  // Right shift A by 1 and insert previous carry into the most significant bit
+        regs.setA(a);
+
+        // Set the carry flag to the least significant bit of the register being rotated
+        regs.fByte.setC(carry == 1);
     }
 
     // jump if zero flag is not set the amount that is passed in e.g. r8
@@ -712,14 +722,48 @@ public class Opcodes {
     };
 
     // load loadRegister into incRegister then increment incRegister
+    // all these opcodes load the memory address that is at the value HL then incement it once it has been loaded into
+    // the correct register e.g. LD, A (HL+)
     public void LDINCFIRST(int incRegister, int loadRegister) {
         System.out.println("load then inc register");
     }
 
-    // decimal adjust register
-    public void DA(int register) {
-        System.out.println("decimal addjust " + register);
+    // decimal adjust register A
+    // this is not working correctly but test cases are made
+    public void DAA() {
+        int a = regs.getA(); // Get the value of register A
+        int adjust = 0; // Initialize a variable to keep track of the adjustment to A
+
+        if (regs.fByte.checkN()) { // If the last operation was a subtraction:
+            if (regs.fByte.checkH() || (a & 0x0F) > 9) adjust |= 0x06; // Check if there was a half carry or the lower nibble is greater than 9, add 0x06 to the adjustment
+            if (regs.fByte.checkC()) adjust |= 0x60; // Check if there was a carry, add 0x60 to the adjustment
+            a -= adjust; // Subtract the adjustment from A
+        } else { // If the last operation was not a subtraction:
+            if (regs.fByte.checkH() || (a & 0x0F) > 9) adjust |= 0x06;
+            if (regs.fByte.checkC() || a > 0x99) adjust |= 0x60;
+            if (!regs.fByte.checkH() && (a & 0x0F) <= 9 && !regs.fByte.checkC() && a <= 0x99) adjust |= 0x00; // No adjustment needed
+            a += adjust;
+        }
+
+        regs.setA(a); // Set the new value of register A
+
+        // Set or clear the zero flag based on the result
+        regs.fByte.setZ(a == 0);
+
+        // Set or clear the carry flag based on the adjustment
+        regs.fByte.setC((adjust & 0x60) != 0);
+
+        // Clear the half-carry flag
+        regs.fByte.setH(false);
     }
+
+
+
+
+
+
+
+
 
     // jump if zero flag is set
     public void JRZ(int offset) {
