@@ -34,6 +34,17 @@ public class OpcodeTestUnit {
     }
 
     @Test
+    public void testSCF() {
+        regs.fByte.setC(false);
+        regs.fByte.setC(true);
+        assertTrue(regs.fByte.checkC());
+
+        regs.fByte.setC(true);
+        assertTrue(regs.fByte.checkC());
+    }
+
+
+    @Test
     public void testDA() {
         // Test with carry flag and no half-carry flag
         regs.setA(0x9C);
@@ -49,7 +60,8 @@ public class OpcodeTestUnit {
         regs.fByte.setN(false);
         regs.fByte.setH(true);
         regs.fByte.setC(true);
-        operation.run();
+        Runnable operation1 = operations.opcodeHandlers.get(0x27);
+        operation1.run();
         assertEquals(0x44, regs.getA()); // 3E -> 44 with carry flag set and half-carry flag set
 
         // Test with no carry flag and no half-carry flag

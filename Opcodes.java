@@ -30,29 +30,29 @@ public class Opcodes {
     {
         opcodeHandlers.put(0x0, this::nop);
         // opcodeHandlers.put(0x1, () -> ldBCd16);
-        /*
-         * opcodeHandlers.put(0x2, () -> LD_(BC),A);
-         * opcodeHandlers.put(0x3, () -> INC_BC);
-         * opcodeHandlers.put(0x4, () -> INC_B);
-         * opcodeHandlers.put(0x5, () -> DEC_B);
-         * opcodeHandlers.put(0x6, () -> LD_B,d8);
-         * // rotate bits right reg A
-         * opcodeHandlers.put(0x7, () -> RLCA);
+
+          //opcodeHandlers.put(0x2, () -> LD_(BC),A);
+          opcodeHandlers.put(0x3, () -> INC("bc"));
+          opcodeHandlers.put(0x4, () -> INC("b"));
+          opcodeHandlers.put(0x5, () -> DEC("b"));
+         //opcodeHandlers.put(0x6, () -> LD_B,d8);
+         // rotate bits right reg A
+         /* opcodeHandlers.put(0x7, () -> RLCA);
          * opcodeHandlers.put(0x8, () -> LD_(a16),SP);
          * opcodeHandlers.put(0x9, () -> ADD_HL,BC);
-         * opcodeHandlers.put(0xa, () -> LD_A,(BC));
-         * opcodeHandlers.put(0xb, () -> DEC_BC);
-         * opcodeHandlers.put(0xc, () -> INC_C);
-         * opcodeHandlers.put(0xd, () -> DEC_C);
-         * opcodeHandlers.put(0xe, () -> LD_C,d8);*/
+         * opcodeHandlers.put(0xa, () -> LD_A,(BC));*/
+          opcodeHandlers.put(0xb, () -> DEC("bc"));
+          opcodeHandlers.put(0xc, () -> INC("c"));
+          opcodeHandlers.put(0xd, () -> DEC("C"));
+         /* opcodeHandlers.put(0xe, () -> LD_C,d8);*/
          opcodeHandlers.put(0xf, () -> RRCA());
          /* opcodeHandlers.put(0x10, () -> STOP);
          * opcodeHandlers.put(0x11, () -> LD_DE,d16);
-         * opcodeHandlers.put(0x12, () -> LD_(DE),A);
-         * opcodeHandlers.put(0x13, () -> INC_DE);
-         * opcodeHandlers.put(0x14, () -> INC_D);
-         * opcodeHandlers.put(0x15, () -> DEC_D);
-         * opcodeHandlers.put(0x16, () -> LD_D,d8);
+         * opcodeHandlers.put(0x12, () -> LD_(DE),A);*/
+          opcodeHandlers.put(0x13, () -> INC("de"));
+          opcodeHandlers.put(0x14, () -> INC("d"));
+          opcodeHandlers.put(0x15, () -> DEC("d"));
+         /* opcodeHandlers.put(0x16, () -> LD_D,d8);
          * // shift bits left reg A
          * opcodeHandlers.put(0x17, () -> RLA);
          * // jump to an offset by adding r8 to the current program counter to determing
@@ -60,55 +60,55 @@ public class Opcodes {
          * opcodeHandlers.put(0x18, () -> JR_r8);
          * // add DE to HL and store result in HL
          * opcodeHandlers.put(0x19, () -> ADD_HL,DE);
-         * opcodeHandlers.put(0x1a, () -> LD_A,(DE));
-         * opcodeHandlers.put(0x1b, () -> DEC_DE);
-         * opcodeHandlers.put(0x1c, () -> INC_E);
-         * opcodeHandlers.put(0x1d, () -> DEC_E);
-         * opcodeHandlers.put(0x1e, () -> LD_E,d8);
+         * opcodeHandlers.put(0x1a, () -> LD_A,(DE));*/
+          opcodeHandlers.put(0x1b, () -> DEC("de"));
+          opcodeHandlers.put(0x1c, () -> INC("e"));
+          opcodeHandlers.put(0x1d, () -> DEC("e"));
+         /* opcodeHandlers.put(0x1e, () -> LD_E,d8);
          * // right shift reg A*/
            opcodeHandlers.put(0x1f, () -> RR()); // opcode is RRA
          /*
          * // jump to new address if teh zero flag is not set
          * opcodeHandlers.put(0x20, () -> JR_NZ,r8);
          * opcodeHandlers.put(0x21, () -> LD_HL,d16);
-         * // increment HL after loading A into memory
-         * opcodeHandlers.put(0x22, () -> LD_(HL+),A);
-         * opcodeHandlers.put(0x23, () -> INC_HL);
-         * opcodeHandlers.put(0x24, () -> INC_H);
-         * opcodeHandlers.put(0x25, () -> DEC_H);
-         * opcodeHandlers.put(0x26, () -> LD_H,d8);
+         * // increment HL after loading A into memory*/
+         opcodeHandlers.put(0x22, () -> LDINCDECHL("LD_(HL+),A)"));
+          opcodeHandlers.put(0x23, () -> INC("hl"));
+          opcodeHandlers.put(0x24, () -> INC("h"));
+          opcodeHandlers.put(0x25, () -> DEC("h"));
+         /* opcodeHandlers.put(0x26, () -> LD_H,d8);
          * // Decimal adjust accumulator. Adjusts A to the correct representation of a
          * binary-coded decimal using the flags*/
           opcodeHandlers.put(0x27, () -> DAA());
          /* // jump to new address if zero flag is set
          * opcodeHandlers.put(0x28, () -> JR_Z,r8);
          * opcodeHandlers.put(0x29, () -> ADD_HL,HL);
-         * // load HL into A then increment it
-         * opcodeHandlers.put(0x2a, () -> LD_A,(HL+));
-         * opcodeHandlers.put(0x2b, () -> DEC_HL);
-         * opcodeHandlers.put(0x2c, () -> INC_L);
-         * opcodeHandlers.put(0x2d, () -> DEC_L);
-         * opcodeHandlers.put(0x2e, () -> LD_L,d8);
+         * // load HL into A then increment it*/
+          opcodeHandlers.put(0x2a, () -> LDINCDECHL("LD_A,(HL+)")); // LD_A,(HL+)
+          opcodeHandlers.put(0x2b, () -> DEC("hl")); // decrement value of hl
+          opcodeHandlers.put(0x2c, () -> INC("l"));
+          opcodeHandlers.put(0x2d, () -> DEC("l"));
+         /* opcodeHandlers.put(0x2e, () -> LD_L,d8);
          * opcodeHandlers.put(0x2f, () -> CPL);
          * opcodeHandlers.put(0x30, () -> JR_NC,r8);
          * opcodeHandlers.put(0x31, () -> LD_SP,d16);
-         * // load A into HL then DEC HL
-         * opcodeHandlers.put(0x32, () -> LD_(HL-),A);
-         * opcodeHandlers.put(0x33, () -> INC_SP);
-         * opcodeHandlers.put(0x34, () -> INC_(HL));
-         * opcodeHandlers.put(0x35, () -> DEC_(HL));
-         * opcodeHandlers.put(0x36, () -> LD_(HL),d8);
-         * // set carry flag to 1
-         * opcodeHandlers.put(0x37, () -> SCF);
-         * // perform relative jump if if the carry flag is set
+         * // load A into HL then DEC HL*/
+          opcodeHandlers.put(0x32, () -> LDINCDECHL("LD_(HL-),A)"));
+          opcodeHandlers.put(0x33, () -> INC("sp"));
+          opcodeHandlers.put(0x34, () -> INC("(hl)")); // (hl) means the memory value at hl
+          opcodeHandlers.put(0x35, () -> DEC("(hl)"));
+         /* opcodeHandlers.put(0x36, () -> LD_(HL),d8);
+         * // set carry flag to 1 */
+         opcodeHandlers.put(0x37, () -> SCF());
+         /* // perform relative jump if if the carry flag is set
          * opcodeHandlers.put(0x38, () -> JR_C,r8);
-         * opcodeHandlers.put(0x39, () -> ADD_HL,SP);
-         * opcodeHandlers.put(0x3a, () -> LD_A,(HL-));
-         * opcodeHandlers.put(0x3b, () -> DEC_SP);
-         * opcodeHandlers.put(0x3c, () -> INC_A);
-         * opcodeHandlers.put(0x3d, () -> DEC_A);
-         */ opcodeHandlers.put(0x3e, () -> LD("a", 0x45));
-        // hardcoding just for test. Need to retrieve nect byte of data at mem(pc+1)
+         * opcodeHandlers.put(0x39, () -> ADD_HL,SP);*/
+         opcodeHandlers.put(0x3a, () -> LDINCDECHL("LD_A,(HL-)"));
+         opcodeHandlers.put(0x3b, () -> DEC("sp"));
+         opcodeHandlers.put(0x3c, () -> INC("a"));
+         opcodeHandlers.put(0x3d, () -> DEC("a"));
+         opcodeHandlers.put(0x3e, () -> LD("a", 0x45));
+        /* hardcoding just for test. Need to retrieve nect byte of data at mem(pc+1)
         // complement the carry flag
         /*
          * opcodeHandlers.put(0x3f, () -> CCF);
@@ -448,8 +448,7 @@ public class Opcodes {
         }
     }
 
-    // loag the value of valueRegister into register need to do something like a
-    // nested switch or better
+    // loag the value of valueRegister into register
     public void LD(String register, String valueRegister) {
         switch (register) {
             case "a":
@@ -501,56 +500,149 @@ public class Opcodes {
     }
 
     // increment the register
+    // INCOMPLETE need to make it so it incrememnts the byte pointed to by HL not the value of HL when (HL) is passed in
+
     public void INC(String register) {
+        int result = 0;
         switch (register) {
             case "a":
-                regs.setA(regs.getA() + 1);
+                result = regs.getA() + 1;
+                regs.setA(result);
                 break;
             case "b":
-                regs.setB(regs.getB() + 1);
+                result = regs.getB() + 1;
+                regs.setB(result);
                 break;
             case "c":
-                regs.setC(regs.getC() + 1);
+                result = regs.getC() + 1;
+                regs.setC(result );
                 break;
             case "d":
-                regs.setD(regs.getD() + 1);
+                result = regs.getD() + 1;
+                regs.setD(result );
                 break;
             case "e":
-                regs.setE(regs.getE() + 1);
+                result = regs.getE() + 1;
+                regs.setE(result );
                 break;
             case "h":
-                regs.setH(regs.getH() + 1);
+                result = regs.getH() + 1;
+                regs.setH(result );
                 break;
             case "l":
-                regs.setL(regs.getL() + 1);
+                result = regs.getL() + 1;
+                regs.setL(result );
                 break;
+            case "(hl)":
+                result = regs.getHL() + 1;
+                // this one does not update any flags because it decrements the byte at the memory address stored in hl
+                //regs.setHL(result );
+            case "hl:":
+                result = regs.getHL() + 1;
+                regs.setHL(result);
             case "sp":
-                regs.setSP(regs.getSP() + 1);
-                break;
-            case "pc":
-                regs.setPC(regs.getPC() + 1);
-                break;
-            // case "ad": regs.setAD(value);
-            // break;
-            case "bc":
-                regs.setBC(regs.getBC() + 1);
-                break;
-            case "af":
-                regs.setAF(regs.getAF() + 1);
+                regs.incrementSP();
+                result = regs.getSP();
                 break;
             case "de":
-                regs.setDE(regs.getDE() + 1);
+                result = regs.getDE() + 1;
+                regs.setDE(result);
                 break;
-            case "hl":
-                regs.setHL(regs.getHL() + 1);
+            case "bc":
+                result = regs.getBC() + 1;
+                regs.setBC(result);
                 break;
-
+        }
+        if (register.length() > 1){
+            // update the Zero flag (Z)
+            if (result == 0) {
+                regs.fByte.setZ(true);
+            } else {
+                regs.fByte.setZ(false);
+            }
+            // update the Subtract flag (N)
+            regs.fByte.setN(false);
+            // update the Half carry flag (H)
+            if ((result & 0x0F) == 0x0F) {
+                regs.fByte.setH(true);
+            } else {
+                regs.fByte.setH(false);
+            }
         }
     }
 
     // decrement register
-    public void DEC(int register) {
-        System.out.println("decrement register");
+    // INCOMPLETE
+    // when pairs of registers are incremented the flags are not updated
+    public void DEC(String register) {
+        int result = 0;
+        switch (register) {
+            case "a":
+                result = regs.getA() - 1;
+                regs.setA(result);
+                break;
+            case "b":
+                result = regs.getB() - 1;
+                regs.setB(result);
+                break;
+            case "c":
+                result = regs.getC() - 1;
+                regs.setC(result );
+                break;
+            case "d":
+                result = regs.getD() - 1;
+                regs.setD(result );
+                break;
+            case "e":
+                result = regs.getE() - 1;
+                regs.setE(result );
+                break;
+            case "h":
+                result = regs.getH() - 1;
+                regs.setH(result );
+                break;
+            case "l":
+                result = regs.getL() - 1;
+                regs.setL(result );
+                break;
+            case "(hl)":
+                result = regs.getHL() - 1;
+                // this one does not update any flags because it decrements the byte at the memory address stored in hl
+                //regs.setHL(result );
+                break;
+            case "sp":
+                regs.decrementSP();
+                result = regs.getSP();
+                break;
+            case "hl":
+                result = regs.getHL() - 1;
+                regs.setHL(result);
+                break;
+            case "de":
+                result = regs.getDE() - 1;
+                regs.setDE(result);
+                break;
+            case "bc":
+                result = regs.getBC() - 1;
+                regs.setBC(result);
+                break;
+        }
+        if (register.length() > 1 ){
+            // update the Zero flag (Z)
+            if (result == 0) {
+                regs.fByte.setZ(true);
+            } else {
+                regs.fByte.setZ(false);
+            }
+            // update the Subtract flag (N)
+            regs.fByte.setN(true);
+            // update the Half carry flag (H)
+            if ((result & 0x0F) == 0x0F) {
+                regs.fByte.setH(true);
+            } else {
+                regs.fByte.setH(false);
+            }
+        }
     }
 
 
@@ -717,84 +809,75 @@ public class Opcodes {
     }
 
     // jump if zero flag is not set the amount that is passed in e.g. r8
+    // INCOMPLETE
     public void JRNZ(int value) {
         System.out.println("jump" + value);
     };
 
-    // load loadRegister into incRegister then increment incRegister
-    // all these opcodes load the memory address that is at the value HL then incement it once it has been loaded into
-    // the correct register e.g. LD, A (HL+)
-    public void LDINCFIRST(int incRegister, int loadRegister) {
-        System.out.println("load then inc register");
+    // perform a load operation involving A and HL then increment or decrement HL accordingly
+    // INCOMPLETE
+    public void LDINCDECHL(String opcode) {
+        // need to update to load the contents of the memory address pointed to by HL not just the value of HL
+        switch (opcode){
+            case "LD A, (HL+)":
+                regs.setA(regs.getHL());
+                regs.setHL(regs.getHL() + 1);
+                break;
+            case "LD (HL+), A":
+                regs.setHL(regs.getA());
+                regs.setHL(regs.getHL() + 1);
+                break;
+            case "LD A, (HL-)":
+                regs.setA(regs.getHL());
+                regs.setHL(regs.getHL() - 1);
+                break;
+            case "LD (HL-), A":
+                regs.setHL(regs.getA());
+                regs.setHL(regs.getHL() - 1);
+                break;
+        }
+
     }
 
     // decimal adjust register A
-    // this is not working correctly but test cases are made
+    // NOT WORKING CORRECTLY
+    // INCOMPLETE
     public void DAA() {
-        int a = regs.getA(); // Get the value of register A
-        int adjust = 0; // Initialize a variable to keep track of the adjustment to A
-
-        if (regs.fByte.checkN()) { // If the last operation was a subtraction:
-            if (regs.fByte.checkH() || (a & 0x0F) > 9) adjust |= 0x06; // Check if there was a half carry or the lower nibble is greater than 9, add 0x06 to the adjustment
-            if (regs.fByte.checkC()) adjust |= 0x60; // Check if there was a carry, add 0x60 to the adjustment
-            a -= adjust; // Subtract the adjustment from A
-        } else { // If the last operation was not a subtraction:
-            if (regs.fByte.checkH() || (a & 0x0F) > 9) adjust |= 0x06;
-            if (regs.fByte.checkC() || a > 0x99) adjust |= 0x60;
-            if (!regs.fByte.checkH() && (a & 0x0F) <= 9 && !regs.fByte.checkC() && a <= 0x99) adjust |= 0x00; // No adjustment needed
-            a += adjust;
+        int a = regs.getA();
+        int adjust = 0;
+        if (regs.fByte.checkH() || (a & 0x0F) > 9) {
+            adjust |= 0x06;
         }
-
-        regs.setA(a); // Set the new value of register A
-
-        // Set or clear the zero flag based on the result
-        regs.fByte.setZ(a == 0);
-
-        // Set or clear the carry flag based on the adjustment
-        regs.fByte.setC((adjust & 0x60) != 0);
-
-        // Clear the half-carry flag
-        regs.fByte.setH(false);
+        if (regs.fByte.checkC() || a > 0x99 || (a > 0x8F && (a & 0x0F) > 9)) {
+            adjust |= 0x60;
+            regs.fByte.setC(true);
+        }
+        if (regs.fByte.checkH() && !regs.fByte.checkN() && (a & 0x0F) < 6) {
+            adjust |= 0x06;
+        }
+        int result = a + adjust;
+        regs.fByte.setZ(result == 0);
+        regs.fByte.setH((a & 0x0F) + (adjust & 0x0F) > 0x0F);
+        regs.setA(result & 0xFF);
     }
-
-
-
-
-
-
-
-
 
     // jump if zero flag is set
     public void JRZ(int offset) {
         System.out.println("Jump not zero" + offset);
     }
 
-    // load loadRegister into intoRegister then increment loadRegister
-    public void LDINCSECOND(int intoRegister, int loadRegister) {
-        System.out.println("Load " + loadRegister + " into " +
-                intoRegister + "then increment " + loadRegister);
-    }
-
-    // load loadRegister into intoRegister then decrement into
-    public void LDDECFIRST(int intoRegister, int loadRegister) {
-        System.out.println("");
-    }
 
     // set carry flag
-    public void SFC() {
-        System.out.println("");
+    public void SCF() {
+        regs.fByte.setC(true);
     }
 
-    // jump if the carry flag is set
+    // jump relateive to a target address by adding a signed 8-bit value if the carry flag is set
+    // where do we get target address from?
     public void JRC() {
         System.out.println("");
     }
 
-    // load loadRegister into intoRegister then decrement loadRegister
-    public void LDDECSECOND(int intoRegister, int loadRegister) {
-        System.out.println("");
-    }
 
     // compliment carry flag
     public void CCF() {
