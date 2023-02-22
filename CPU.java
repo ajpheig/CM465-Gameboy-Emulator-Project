@@ -1,14 +1,17 @@
+import Memory.Memory;
+
 public class CPU {
     Opcodes operations;
     byte[] romData;
     Registers regs;
+    Memory mem;
     static final int NOJUMP = -1;
     // CPU cpu;
 
     public CPU(byte[] romData, Registers regs, InterruptManager interruptManager) {
         this.romData = romData;
         this.regs = regs;
-        operations = new Opcodes(regs, romData, operations.interruptmanager);
+        operations = new Opcodes(regs, romData, operations.interruptmanager, mem);
         regs.setPC(0x100);// sets it to 100 to start testing opcode
 
     }

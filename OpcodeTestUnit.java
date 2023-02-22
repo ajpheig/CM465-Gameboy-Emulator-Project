@@ -44,6 +44,7 @@ public class OpcodeTestUnit {
     }
 
 
+
     @Test
     public void testDA() {
         // Test with carry flag and no half-carry flag
