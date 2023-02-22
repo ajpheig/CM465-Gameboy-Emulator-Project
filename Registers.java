@@ -156,5 +156,38 @@ public class Registers {
         h = hl >> 8;
         l = hl & 0xff;
     }
+    
+    public int getRegisterValue(String register) {
+        int value = 0;
+        switch (register) {
+            case "a":
+                value = getA();
+                break;
+            case "b":
+                value = getB();
+                break;
+            case "c":
+                value = getC();
+                break;
+            case "d":
+                value = getD();
+                break;
+            case "e":
+                value = getE();
+                break;
+            case "h":
+                value = getH();
+                break;
+            case "l":
+                value = getL();
+                break;
+            case "hl":
+                value = getHL();
+                break;
+            case "(hl)":
+                System.out.println("get the value pointed to by (HL)");
+        }
+        return value;
+    }
 
 }
