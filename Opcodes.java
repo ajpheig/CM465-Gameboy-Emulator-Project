@@ -5,13 +5,15 @@ public class Opcodes {
     Registers regs;
     byte[] romData;
     InterruptManager interruptmanager;
+    Memory mem;// Can cahnge just place holding with small features just to make Opcode
 
     // pass in Regs class and romData to operate on. Will need to give RAM(memory)
     // object when created
     public Opcodes(Registers regs, byte[] romData,
-            InterruptManager interruptmanager) {
+            InterruptManager interruptmanager, Memory mem) {
         this.regs = regs;
         this.romData = romData;
+        this.mem = mem;
         this.interruptmanager = interruptmanager;// to set interrupt flags
     }
 
@@ -30,29 +32,33 @@ public class Opcodes {
     {
         opcodeHandlers.put(0x0, this::nop);
         // opcodeHandlers.put(0x1, () -> ldBCd16);
-
-          //opcodeHandlers.put(0x2, () -> LD_(BC),A);
-          opcodeHandlers.put(0x3, () -> INC("bc"));
-          opcodeHandlers.put(0x4, () -> INC("b"));
-          opcodeHandlers.put(0x5, () -> DEC("b"));
-         //opcodeHandlers.put(0x6, () -> LD_B,d8);
-         // rotate bits right reg A
-         /* opcodeHandlers.put(0x7, () -> RLCA);
+        /*
+         * opcodeHandlers.put(0x2, () -> LD_(BC),A);
+         * opcodeHandlers.put(0x3, () -> INC("bc"));
+         * opcodeHandlers.put(0x4, () -> INC("b"));
+         * opcodeHandlers.put(0x5, () -> DEC("b"));
+         * //opcodeHandlers.put(0x6, () -> LD_B,d8);
+         * // rotate bits right reg A
+         * /* opcodeHandlers.put(0x7, () -> RLCA);
          * opcodeHandlers.put(0x8, () -> LD_(a16),SP);
          * opcodeHandlers.put(0x9, () -> ADD_HL,BC);
-         * opcodeHandlers.put(0xa, () -> LD_A,(BC));*/
-          opcodeHandlers.put(0xb, () -> DEC("bc"));
-          opcodeHandlers.put(0xc, () -> INC("c"));
-          opcodeHandlers.put(0xd, () -> DEC("C"));
-         /* opcodeHandlers.put(0xe, () -> LD_C,d8);*/
-         opcodeHandlers.put(0xf, () -> RRCA());
-         /* opcodeHandlers.put(0x10, () -> STOP);
+         * opcodeHandlers.put(0xa, () -> LD_A,(BC));
+         */
+        opcodeHandlers.put(0xb, () -> DEC("bc"));
+        opcodeHandlers.put(0xc, () -> INC("c"));
+        opcodeHandlers.put(0xd, () -> DEC("C"));
+        /* opcodeHandlers.put(0xe, () -> LD_C,d8); */
+        opcodeHandlers.put(0xf, () -> RRCA());
+        /*
+         * opcodeHandlers.put(0x10, () -> STOP);
          * opcodeHandlers.put(0x11, () -> LD_DE,d16);
-         * opcodeHandlers.put(0x12, () -> LD_(DE),A);*/
-          opcodeHandlers.put(0x13, () -> INC("de"));
-          opcodeHandlers.put(0x14, () -> INC("d"));
-          opcodeHandlers.put(0x15, () -> DEC("d"));
-         /* opcodeHandlers.put(0x16, () -> LD_D,d8);
+         * opcodeHandlers.put(0x12, () -> LD_(DE),A);
+         */
+        opcodeHandlers.put(0x13, () -> INC("de"));
+        opcodeHandlers.put(0x14, () -> INC("d"));
+        opcodeHandlers.put(0x15, () -> DEC("d"));
+        /*
+         * opcodeHandlers.put(0x16, () -> LD_D,d8);
          * // shift bits left reg A
          * opcodeHandlers.put(0x17, () -> RLA);
          * // jump to an offset by adding r8 to the current program counter to determing
@@ -60,55 +66,65 @@ public class Opcodes {
          * opcodeHandlers.put(0x18, () -> JR_r8);
          * // add DE to HL and store result in HL
          * opcodeHandlers.put(0x19, () -> ADD_HL,DE);
-         * opcodeHandlers.put(0x1a, () -> LD_A,(DE));*/
-          opcodeHandlers.put(0x1b, () -> DEC("de"));
-          opcodeHandlers.put(0x1c, () -> INC("e"));
-          opcodeHandlers.put(0x1d, () -> DEC("e"));
-         /* opcodeHandlers.put(0x1e, () -> LD_E,d8);
-         * // right shift reg A*/
-           opcodeHandlers.put(0x1f, () -> RR()); // opcode is RRA
-         /*
+         * opcodeHandlers.put(0x1a, () -> LD_A,(DE));
+         * opcodeHandlers.put(0x1b, () -> DEC("de"));
+         * opcodeHandlers.put(0x1c, () -> INC("e"));
+         * opcodeHandlers.put(0x1d, () -> DEC("e"));
+         * /* opcodeHandlers.put(0x1e, () -> LD_E,d8);
+         * // right shift reg A
+         */
+        opcodeHandlers.put(0x1f, () -> RR()); // opcode is RRA
+        /*
          * // jump to new address if teh zero flag is not set
          * opcodeHandlers.put(0x20, () -> JR_NZ,r8);
          * opcodeHandlers.put(0x21, () -> LD_HL,d16);
-         * // increment HL after loading A into memory*/
-         opcodeHandlers.put(0x22, () -> LDINCDECHL("LD_(HL+),A)"));
-          opcodeHandlers.put(0x23, () -> INC("hl"));
-          opcodeHandlers.put(0x24, () -> INC("h"));
-          opcodeHandlers.put(0x25, () -> DEC("h"));
-         /* opcodeHandlers.put(0x26, () -> LD_H,d8);
+         * // increment HL after loading A into memory
+         */
+        opcodeHandlers.put(0x22, () -> LDINCDECHL("LD_(HL+),A)"));
+        opcodeHandlers.put(0x23, () -> INC("hl"));
+        opcodeHandlers.put(0x24, () -> INC("h"));
+        opcodeHandlers.put(0x25, () -> DEC("h"));
+        /*
+         * opcodeHandlers.put(0x26, () -> LD_H,d8);
          * // Decimal adjust accumulator. Adjusts A to the correct representation of a
-         * binary-coded decimal using the flags*/
-          opcodeHandlers.put(0x27, () -> DAA());
-         /* // jump to new address if zero flag is set
+         * binary-coded decimal using the flags
+         */
+        opcodeHandlers.put(0x27, () -> DAA());
+        /*
+         * // jump to new address if zero flag is set
          * opcodeHandlers.put(0x28, () -> JR_Z,r8);
          * opcodeHandlers.put(0x29, () -> ADD_HL,HL);
-         * // load HL into A then increment it*/
-          opcodeHandlers.put(0x2a, () -> LDINCDECHL("LD_A,(HL+)")); // LD_A,(HL+)
-          opcodeHandlers.put(0x2b, () -> DEC("hl")); // decrement value of hl
-          opcodeHandlers.put(0x2c, () -> INC("l"));
-          opcodeHandlers.put(0x2d, () -> DEC("l"));
-         /* opcodeHandlers.put(0x2e, () -> LD_L,d8);
+         * // load HL into A then increment it
+         */
+        opcodeHandlers.put(0x2a, () -> LDINCDECHL("LD_A,(HL+)")); // LD_A,(HL+)
+        opcodeHandlers.put(0x2b, () -> DEC("hl")); // decrement value of hl
+        opcodeHandlers.put(0x2c, () -> INC("l"));
+        opcodeHandlers.put(0x2d, () -> DEC("l"));
+        /*
+         * opcodeHandlers.put(0x2e, () -> LD_L,d8);
          * opcodeHandlers.put(0x2f, () -> CPL);
          * opcodeHandlers.put(0x30, () -> JR_NC,r8);
          * opcodeHandlers.put(0x31, () -> LD_SP,d16);
-         * // load A into HL then DEC HL*/
-          opcodeHandlers.put(0x32, () -> LDINCDECHL("LD_(HL-),A)"));
-          opcodeHandlers.put(0x33, () -> INC("sp"));
-          opcodeHandlers.put(0x34, () -> INC("(hl)")); // (hl) means the memory value at hl
-          opcodeHandlers.put(0x35, () -> DEC("(hl)"));
-         /* opcodeHandlers.put(0x36, () -> LD_(HL),d8);
-         * // set carry flag to 1 */
-         opcodeHandlers.put(0x37, () -> SCF());
-         /* // perform relative jump if if the carry flag is set
+         * // load A into HL then DEC HL
+         */
+        opcodeHandlers.put(0x32, () -> LDINCDECHL("LD_(HL-),A)"));
+        opcodeHandlers.put(0x33, () -> INC("sp"));
+        opcodeHandlers.put(0x34, () -> INC("(hl)")); // (hl) means the memory value at hl
+        opcodeHandlers.put(0x35, () -> DEC("(hl)"));
+        /*
+         * opcodeHandlers.put(0x36, () -> LD_(HL),d8);
+         * // set carry flag to 1
+         * opcodeHandlers.put(0x37, () -> SCF());
+         * /* // perform relative jump if if the carry flag is set
          * opcodeHandlers.put(0x38, () -> JR_C,r8);
-         * opcodeHandlers.put(0x39, () -> ADD_HL,SP);*/
-         opcodeHandlers.put(0x3a, () -> LDINCDECHL("LD_A,(HL-)"));
-         opcodeHandlers.put(0x3b, () -> DEC("sp"));
-         opcodeHandlers.put(0x3c, () -> INC("a"));
-         opcodeHandlers.put(0x3d, () -> DEC("a"));
-         opcodeHandlers.put(0x3e, () -> LD("a", 0x45));
-        /* hardcoding just for test. Need to retrieve nect byte of data at mem(pc+1)
+         * opcodeHandlers.put(0x39, () -> ADD_HL,SP);
+         */
+        opcodeHandlers.put(0x3a, () -> LDINCDECHL("LD_A,(HL-)"));
+        opcodeHandlers.put(0x3b, () -> DEC("sp"));
+        opcodeHandlers.put(0x3c, () -> INC("a"));
+        opcodeHandlers.put(0x3d, () -> DEC("a"));
+        opcodeHandlers.put(0x3e, () -> LD("a", 0x45));
+        // hardcoding just for test. Need to retrieve nect byte of data at mem(pc+1)
         // complement the carry flag
         /*
          * opcodeHandlers.put(0x3f, () -> CCF);
@@ -248,23 +264,25 @@ public class Opcodes {
          * result is 0. Carry flag is set to 1 if
          * // A is smaller than B abd 0 otherwise. Half carry flag is set to 1 if a
          * carry occured from the lower nibble
-         * //Subtract flag is set to 1
-         * opcodeHandlers.put(0xb8, () -> CP_B);
-         * opcodeHandlers.put(0xb9, () -> CP_C);
-         * opcodeHandlers.put(0xba, () -> CP_D);
-         * opcodeHandlers.put(0xbb, () -> CP_E);
-         * opcodeHandlers.put(0xbc, () -> CP_H);
-         * opcodeHandlers.put(0xbd, () -> CP_L);
-         * opcodeHandlers.put(0xbe, () -> CP_(HL));
-         * opcodeHandlers.put(0xbf, () -> CP_A);
+         */ // Subtract flag is set to 1
+        opcodeHandlers.put(0xb8, () -> CP("b"));
+        opcodeHandlers.put(0xb9, () -> CP("c"));
+        opcodeHandlers.put(0xba, () -> CP("d"));
+        opcodeHandlers.put(0xbb, () -> CP("e"));
+        opcodeHandlers.put(0xbc, () -> CP("h"));
+        opcodeHandlers.put(0xbd, () -> CP("l"));
+        opcodeHandlers.put(0xbe, () -> CP("hl"));
+        opcodeHandlers.put(0xbf, () -> CP("a"));
+        /*
          * // return to the address at the top of the stack if 0 flag is not set
          * opcodeHandlers.put(0xc0, () -> RET_NZ);
          * // pop two bytes from the top of the stack and store them in BC
          * opcodeHandlers.put(0xc1, () -> POP_BC);
          * // jump if zero flag is not set
          * opcodeHandlers.put(0xc2, () -> JP_NZ,a16);
-         */ opcodeHandlers.put(0xc3, () -> JP(romData[regs.getPC() + 1] | (romData[regs.getPC() + 2] << 8)));
-        //
+         */ opcodeHandlers.put(0xc3, () -> JP(mem.readWord(regs.getPC() + 1)));
+        // JP([regs.getPC() + 1] | (romData[regs.getPC() + 2] << 8)));
+        // replace with next8() method??
         // test
         /*
          * / call a subroutine if zero flag is not set
@@ -274,7 +292,9 @@ public class Opcodes {
          * opcodeHandlers.put(0xc6, () -> ADD_A,d8);
          * // software reset. Moves the program counter to the start of the program by
          * loading it with 0x00
-         * opcodeHandlers.put(0xc7, () -> RST_00H);
+         */ opcodeHandlers.put(0xc7, () -> RST(00));
+        // RST 00
+        /*
          * // return from a subroutine by popping two bytes from the stack and loading
          * them into the program counter. Only
          * // executes if the zero flag is set
@@ -294,7 +314,9 @@ public class Opcodes {
          * // call a specific routine in memory located as address 0x08 that pushes the
          * address of teh next instruction
          * // onto the stack and transfers program control to the specified routine
-         * opcodeHandlers.put(0xcf, () -> RST_08H);
+         */ opcodeHandlers.put(0xcf, () -> RST(0x08));
+        // RST 08
+        /*
          * // return from a subroutine if carry flag is not set
          * opcodeHandlers.put(0xd0, () -> RET_NC);
          * opcodeHandlers.put(0xd1, () -> POP_DE);
@@ -308,7 +330,9 @@ public class Opcodes {
          * // subtract d8 from A
          * opcodeHandlers.put(0xd6, () -> SUB_d8);
          * // call routine located at 0x10
-         * opcodeHandlers.put(0xd7, () -> RST_10H);
+         */ opcodeHandlers.put(0xd7, () -> RST(0x10));
+        // RST 10
+        /*
          * // returns control of the program after a call instruction if carry flag is
          * set
          * opcodeHandlers.put(0xd8, () -> RET_C);
@@ -324,12 +348,14 @@ public class Opcodes {
          * half-carry, and negative flags are updated
          * opcodeHandlers.put(0xde, () -> SBC_d8);
          * // call subroutine at 0x18
-         * opcodeHandlers.put(0xdf, () -> RST_18H);
-         */
-        // load contents of the memory address pointed to by a8 into the high0bytes of
-        // memory address $FF00 + a8 and
-        // stores it into A
+         */ opcodeHandlers.put(0xdf, () -> RST(0x18));
+        // RST 18
         /*
+         * // load contents of the memory address pointed to by a8 into the high0bytes
+         * of
+         * // memory address $FF00 + a8 and
+         * // stores it into A
+         * /*
          * opcodeHandlers.put(0xe0, () -> LDH_(a8),A);
          * opcodeHandlers.put(0xe1, () -> POP_HL);
          * opcodeHandlers.put(0xe2, () -> LD_(C),A);
@@ -339,7 +365,8 @@ public class Opcodes {
          * // and d8 with A
          * opcodeHandlers.put(0xe6, () -> AND_d8);
          * // resets the program counter to address 0x0020
-         * opcodeHandlers.put(0xe7, () -> RST_20H);
+         */ opcodeHandlers.put(0xe7, () -> RST(0x20));
+        /*
          * opcodeHandlers.put(0xe8, () -> ADD_SP,r8);
          * // jumps to address stored in HL
          * opcodeHandlers.put(0xe9, () -> JP_HL);
@@ -351,7 +378,9 @@ public class Opcodes {
          * opcodeHandlers.put(0xee, () -> XOR_d8);
          * // call to 0x28 saving the program counter to the stack so teh execution can
          * resume after the routine is complete
-         * opcodeHandlers.put(0xef, () -> RST_28H);
+         */ opcodeHandlers.put(0xef, () -> RST(0x28));
+        // RST28
+        /*
          * opcodeHandlers.put(0xf0, () -> LD_A,(a8));
          * opcodeHandlers.put(0xf1, () -> POP_AF);
          * opcodeHandlers.put(0xf2, () -> LD_A,(C));
@@ -363,19 +392,20 @@ public class Opcodes {
          * // OR A and d8. I think it is inclusive
          * opcodeHandlers.put(0xf6, () -> OR_d8);
          * // call to 0x30
-         * opcodeHandlers.put(0xf7, () -> RST_30H);
+         */ opcodeHandlers.put(0xf7, () -> RST(0x30));
+        /*
          * opcodeHandlers.put(0xf8, () -> LD_HL,SP+r8);
          * opcodeHandlers.put(0xf9, () -> LD_SP,HL);
          * opcodeHandlers.put(0xfa, () -> LD_A,(a16));
          * // enables interrupts
          */ opcodeHandlers.put(0xfb, () -> EI());
-        /*
-         * opcodeHandlers.put(0xfc, () -> XXX);
-         * opcodeHandlers.put(0xfd, () -> XXX);
-         * opcodeHandlers.put(0xfe, () -> CP_d8);
-         * // call to 0x28
-         * opcodeHandlers.put(0xff, () -> RST_38H);
-         */
+
+        opcodeHandlers.put(0xfc, () -> nop());
+        opcodeHandlers.put(0xfd, () -> nop());
+        opcodeHandlers.put(0xfe, () -> CP(mem.readByte(regs.getPC() + 1)));
+        // call to 0x28
+        opcodeHandlers.put(0xff, () -> RST(0x38));//
+
     }
 
     /*
@@ -431,8 +461,6 @@ public class Opcodes {
             case "pc":
                 regs.setPC(value);
                 break;
-            // case "ad": regs.setAD(value);
-            // break;
             case "bc":
                 regs.setBC(value);
                 break;
@@ -448,7 +476,8 @@ public class Opcodes {
         }
     }
 
-    // loag the value of valueRegister into register
+    // loag the value of valueRegister into register need to do something like a
+    // nested switch or better
     public void LD(String register, String valueRegister) {
         switch (register) {
             case "a":
@@ -500,7 +529,8 @@ public class Opcodes {
     }
 
     // increment the register
-    // INCOMPLETE need to make it so it incrememnts the byte pointed to by HL not the value of HL when (HL) is passed in
+    // INCOMPLETE need to make it so it incrememnts the byte pointed to by HL not
+    // the value of HL when (HL) is passed in
 
     public void INC(String register) {
         int result = 0;
@@ -515,28 +545,29 @@ public class Opcodes {
                 break;
             case "c":
                 result = regs.getC() + 1;
-                regs.setC(result );
+                regs.setC(result);
                 break;
             case "d":
                 result = regs.getD() + 1;
-                regs.setD(result );
+                regs.setD(result);
                 break;
             case "e":
                 result = regs.getE() + 1;
-                regs.setE(result );
+                regs.setE(result);
                 break;
             case "h":
                 result = regs.getH() + 1;
-                regs.setH(result );
+                regs.setH(result);
                 break;
             case "l":
                 result = regs.getL() + 1;
-                regs.setL(result );
+                regs.setL(result);
                 break;
             case "(hl)":
                 result = regs.getHL() + 1;
-                // this one does not update any flags because it decrements the byte at the memory address stored in hl
-                //regs.setHL(result );
+                // this one does not update any flags because it decrements the byte at the
+                // memory address stored in hl
+                // regs.setHL(result );
             case "hl:":
                 result = regs.getHL() + 1;
                 regs.setHL(result);
@@ -553,7 +584,7 @@ public class Opcodes {
                 regs.setBC(result);
                 break;
         }
-        if (register.length() > 1){
+        if (register.length() > 1) {
             // update the Zero flag (Z)
             if (result == 0) {
                 regs.fByte.setZ(true);
@@ -587,28 +618,29 @@ public class Opcodes {
                 break;
             case "c":
                 result = regs.getC() - 1;
-                regs.setC(result );
+                regs.setC(result);
                 break;
             case "d":
                 result = regs.getD() - 1;
-                regs.setD(result );
+                regs.setD(result);
                 break;
             case "e":
                 result = regs.getE() - 1;
-                regs.setE(result );
+                regs.setE(result);
                 break;
             case "h":
                 result = regs.getH() - 1;
-                regs.setH(result );
+                regs.setH(result);
                 break;
             case "l":
                 result = regs.getL() - 1;
-                regs.setL(result );
+                regs.setL(result);
                 break;
             case "(hl)":
                 result = regs.getHL() - 1;
-                // this one does not update any flags because it decrements the byte at the memory address stored in hl
-                //regs.setHL(result );
+                // this one does not update any flags because it decrements the byte at the
+                // memory address stored in hl
+                // regs.setHL(result );
                 break;
             case "sp":
                 regs.decrementSP();
@@ -627,7 +659,7 @@ public class Opcodes {
                 regs.setBC(result);
                 break;
         }
-        if (register.length() > 1 ){
+        if (register.length() > 1) {
             // update the Zero flag (Z)
             if (result == 0) {
                 regs.fByte.setZ(true);
@@ -645,29 +677,28 @@ public class Opcodes {
         }
     }
 
-
-        // right rotates bits in A
+    // right rotates bits in A
     public void RRCA() {
 
         int a = regs.getA();
         System.out.println(a);
-        int carry = a & 0x01;  // Get the least significant bit of A
-        a = (a >> 1) | (carry << 7);  // Right shift A by 1 and insert carry into the most significant bit
+        int carry = a & 0x01; // Get the least significant bit of A
+        a = (a >> 1) | (carry << 7); // Right shift A by 1 and insert carry into the most significant bit
         regs.setA(a);
 
         int msb = (a >> 7) & 0x01; // Get the most significant bit of A
-        // set the carry flag to true if most significant bit of result is 1 and false otherwise
+        // set the carry flag to true if most significant bit of result is 1 and false
+        // otherwise
         regs.fByte.setC(msb == 1);
         System.out.println(regs.getA());
     }
 
-    // turns the screen off and puts everything into low power mode
+    // stop cpu
     public void STOP() {
         System.out.println("STOP");
     }
 
-    // jump relative by the amount of the value passed in ny adding e8 to the address of the instrucion following JR
-    // JR e8 & JR cc, e8
+    // jump relative by the amount of the value passed in
     public void JR(int value) {
         System.out.println("jump relative" + value);
     }
@@ -679,8 +710,6 @@ public class Opcodes {
     }
 
     // add the value of addRegister into intoRegister and store it in intoRegister
-    // NEED TO ADD THE ABILITY TO ADD next byte in memory for ADD A, n and from the value pointed to by HL for
-    // ADD A, (HL)
     public void ADD(String intoRegister, String addRegister) {
         int result = 0;
         int addValue = 0;
@@ -690,37 +719,37 @@ public class Opcodes {
                 switch (addRegister) {
                     case "a":
                         result = regs.getA() + regs.getA();
-                        addValue =regs.getA();
+                        addValue = regs.getA();
                         regs.setA(result);
                         break;
                     case "b":
                         result = regs.getA() + regs.getB();
-                        addValue =regs.getB();
+                        addValue = regs.getB();
                         regs.setA(result);
                         break;
                     case "c":
                         result = regs.getA() + regs.getC();
-                        addValue =regs.getC();
+                        addValue = regs.getC();
                         regs.setA(result);
                         break;
                     case "d":
                         result = regs.getA() + regs.getD();
-                        addValue =regs.getD();
+                        addValue = regs.getD();
                         regs.setA(result);
                         break;
                     case "e":
                         result = regs.getA() + regs.getE();
                         regs.setA(result);
-                        addValue =regs.getE();
+                        addValue = regs.getE();
                         break;
                     case "h":
                         result = regs.getA() + regs.getH();
-                        addValue =regs.getH();
+                        addValue = regs.getH();
                         regs.setA(result);
                         break;
                     case "l":
                         result = regs.getA() + regs.getL();
-                        addValue =regs.getL();
+                        addValue = regs.getL();
                         regs.setA(result);
                         break;
                     // this one adds an 8 bit value to A that is pointed to by the value of HL
@@ -729,13 +758,14 @@ public class Opcodes {
                         addValue = regs.getHL();
                         regs.setA(result);
                         break;
-                    // add an 8 bit immediate value to A. The value that we add to A is the next byte in memory
+                    // add an 8 bit immediate value to A. The value that we add to A is the next
+                    // byte in memory
                     case "n":
                         int d8Val = 0; // we will have to get the value from somewhere
                         result = regs.getA() + d8Val;
                         addValue = d8Val;
                         regs.setA(result);
-                        //regs.incPC();
+                        // regs.incPC();
                         break;
                 }
             case "hl":
@@ -763,28 +793,30 @@ public class Opcodes {
                 break;
         }
         // set the flags
-        // zero flag and negative flag do not depend on whether we are addign the value to A or HL like carry and half
+        // zero flag and negative flag do not depend on whether we are addign the value
+        // to A or HL like carry and half
         // carry
         if (result == 0)
             regs.fByte.setZ(true);
         // subtract flag is always reset to false
         regs.fByte.setN(false);
 
-        // carry flag is set if result of addition is larger than 8 bits if we are the results into A
+        // carry flag is set if result of addition is larger than 8 bits if we are the
+        // results into A
         if (intoRegister.equals("a")) {
             if (result > 255) {
                 regs.fByte.setC(true);
-            }
-            else{
+            } else {
                 regs.fByte.setC(false);
             }
             // check if the half carry flag needs to be set for an 8 bit register
-            // get lower 4 bits w AND the sum them, then and the sum w 0x10 to see if it has a 1 bit then compare with
+            // get lower 4 bits w AND the sum them, then and the sum w 0x10 to see if it has
+            // a 1 bit then compare with
             // 0x10 to see if we should set the half carry flag or not
             boolean halfCarry = ((regs.getA() & 0x0F) + (addValue & 0x0F) & 0x10) == 0x10;
             regs.fByte.setH(halfCarry);
         } // if we aren't adding to A, we are adding to HL
-        else{
+        else {
             // check if we need to set the carry flag
             boolean carry = ((regs.getHL() & 0xFFFF) + (addValue & 0xFFFF) > 0xFFFF);
             regs.fByte.setC(carry);
@@ -796,12 +828,14 @@ public class Opcodes {
     }
 
     // right shift register
-    // Right rotate without carry on A is currently implemented will need to add the other registers when implementing
+    // Right rotate without carry on A is currently implemented will need to add the
+    // other registers when implementing
     // the extended opcodes
     public void RR() {
         int a = regs.getA();
-        int carry = a & 0x01;  // Get the least significant bit of A
-        a = (a >> 1) | (regs.fByte.checkC() ? 0x80 : 0x00);  // Right shift A by 1 and insert previous carry into the most significant bit
+        int carry = a & 0x01; // Get the least significant bit of A
+        a = (a >> 1) | (regs.fByte.checkC() ? 0x80 : 0x00); // Right shift A by 1 and insert previous carry into the
+                                                            // most significant bit
         regs.setA(a);
 
         // Set the carry flag to the least significant bit of the register being rotated
@@ -809,16 +843,14 @@ public class Opcodes {
     }
 
     // jump if zero flag is not set the amount that is passed in e.g. r8
-    // INCOMPLETE
     public void JRNZ(int value) {
         System.out.println("jump" + value);
     };
 
-    // perform a load operation involving A and HL then increment or decrement HL accordingly
-    // INCOMPLETE
     public void LDINCDECHL(String opcode) {
-        // need to update to load the contents of the memory address pointed to by HL not just the value of HL
-        switch (opcode){
+        // need to update to load the contents of the memory address pointed to by HL
+        // not just the value of HL
+        switch (opcode) {
             case "LD A, (HL+)":
                 regs.setA(regs.getHL());
                 regs.setHL(regs.getHL() + 1);
@@ -866,18 +898,15 @@ public class Opcodes {
         System.out.println("Jump not zero" + offset);
     }
 
-
     // set carry flag
     public void SCF() {
         regs.fByte.setC(true);
     }
 
-    // jump relateive to a target address by adding a signed 8-bit value if the carry flag is set
-    // where do we get target address from?
+    // jump if the carry flag is set
     public void JRC() {
         System.out.println("");
     }
-
 
     // compliment carry flag
     public void CCF() {
@@ -897,16 +926,16 @@ public class Opcodes {
 
     // subtracts contents of register passed in and puts result in A and sets the
     // carry, zero, and negative flags
-    public int SUB(int register) {// for SUB A, u8
+    public int SUB(int u8) {// for SUB A, u8
         System.out.println(" Subu8 ");
-        int diff = regs.getA() - register;
+        int diff = regs.getA() - u8;
         int result = diff & 0xff;
         if (result == 0)
             regs.fByte.setZ(true);// zero
         if (diff < 0)
             regs.fByte.setC(true);// carry
         regs.fByte.setN(true);// negative
-        if ((regs.getA() & 0xf) - (register & 0xf) < 0)
+        if ((regs.getA() & 0xf) - (u8 & 0xf) < 0)
             regs.fByte.setH(true);// half carry
         return result;
     }
@@ -929,8 +958,8 @@ public class Opcodes {
                 value = regs.getH();
             case "L":
                 value = regs.getL();
-            case "HL":
-                value = regs.getHL();
+            case "HL":// (HL) byte where hl points to
+                value = mem.readByte(regs.getHL());
         }
         int diff = regs.getA() - value;
         int result = diff & 0xff;
@@ -945,45 +974,148 @@ public class Opcodes {
     }
 
     // AND A with register passed in
-    public void AND(int A, int register) {
+    public void AND(String register) {
         System.out.println("");
-    }
-
-    // XOR A with register passed in
-    public void XOR(int A, int register) {
-        System.out.println(" XOR ");
-        int result = regs.getA() ^ register;
+        int result = 0;
+        switch (register) {
+            case "a":
+                result = regs.getA() & regs.getA();
+            case "b":
+                result = regs.getA() & regs.getB();
+            case "c":
+                result = regs.getA() & regs.getC();
+            case "d":
+                result = regs.getA() & regs.getD();
+            case "e":
+                result = regs.getA() & regs.getE();
+            case "h":
+                result = regs.getA() & regs.getH();
+            case "l":
+                result = regs.getA() & regs.getL();
+            case "hl":
+                result = regs.getA() & mem.readByte(regs.getHL());
+        }
         if (result == 0)
             regs.fByte.setZ(true);
+        regs.fByte.setN(false);
+        regs.fByte.setH(true);
+        regs.fByte.setC(false);
         regs.setA(result);
     }
 
-    // OR A with register passed in
-    public void OR(int register) {
-        System.out.println(" OR ");
-        int result = regs.getA() | register;
+    // AND A with u8 passed in
+    public void AND(int u8) {
+        System.out.println("");
+        int result = 0;
+        result = regs.getA() & u8;
         if (result == 0)
             regs.fByte.setZ(true);
+        regs.fByte.setN(false);
+        regs.fByte.setH(true);
+        regs.fByte.setC(false);
+        regs.setA(result);
+    }
+
+    // XOR A with register passed in
+    public void XOR(String register) {
+        System.out.println(" XOR ");
+        int result = 0;
+        switch (register) {
+            case "a":
+                result = regs.getA() ^ regs.getA();
+            case "b":
+                result = regs.getA() ^ regs.getB();
+            case "c":
+                result = regs.getA() ^ regs.getC();
+            case "d":
+                result = regs.getA() ^ regs.getD();
+            case "e":
+                result = regs.getA() ^ regs.getE();
+            case "h":
+                result = regs.getA() ^ regs.getH();
+            case "l":
+                result = regs.getA() ^ regs.getL();
+            case "hl":
+                result = regs.getA() ^ mem.readByte(regs.getHL());
+        }
+        if (result == 0) {
+            regs.fByte.setZ(true);
+        }
+        regs.fByte.setN(false);
+        regs.fByte.setN(false);
+        regs.fByte.setN(false);
+        regs.setA(result);
+    }
+
+    public void XOR(int A, int u8) {// 0xEE op
+        System.out.println(" XOR ");
+        int result = 0;
+        result = regs.getA() ^ (u8 & 0xff);
+        if (result == 0) {
+            regs.fByte.setZ(true);
+        }
+        regs.fByte.setN(false);
+        regs.fByte.setN(false);
+        regs.fByte.setN(false);
+        regs.setA(result);
+    }
+
+    // OR A with register
+    public void OR(String register) {
+        System.out.println(" OR ");
+        int result = 0;
+        switch (register) {
+            case "a":
+                result = regs.getA() | regs.getA();
+            case "b":
+                result = regs.getA() | regs.getB();
+            case "c":
+                result = regs.getA() | regs.getC();
+            case "d":
+                result = regs.getA() | regs.getD();
+            case "e":
+                result = regs.getA() | regs.getE();
+            case "h":
+                result = regs.getA() | regs.getH();
+            case "l":
+                result = regs.getA() | regs.getL();
+            case "hl":
+                result = regs.getA() | mem.readByte(regs.getHL());
+        }
+        if (result == 0) {
+            regs.fByte.setZ(true);
+        }
+        regs.fByte.setN(false);
+        regs.fByte.setN(false);
+        regs.fByte.setN(false);
+        regs.setA(result);
+    }
+
+    // OR A with u8 passed in
+    public void OR(int u8) {
+        System.out.println(" OR ");
+        int result = regs.getA() | u8;
+        if (result == 0) {
+            regs.fByte.setZ(true);
+        }
+        regs.fByte.setN(false);
+        regs.fByte.setN(false);
+        regs.fByte.setN(false);
         regs.setA(result);
     }
 
     // compare contents of a register with A, sets flags, but does not modify either
-    public void CP(int register) {
+    public void CP(int u8) {
         System.out.println("CP");
-        int atemp = regs.getA();
-        int compare = SUB(register);
-        if (compare == 0)
-            regs.fByte.setZ(true);
-        regs.fByte.setN(true);
-        if (compare < 0)
-            regs.fByte.setC(true);
+        int atemp = regs.getA();// need temp cuz sub method will change A
+        SUB(u8);
         regs.setA(atemp);
     }
 
     public void CP(String register) {
         System.out.println("CP");
-        int atemp = regs.getA();
         int value = 0;
+        int atemp = regs.getA();// need temp cuz sub method will change A
         switch (register) {
             case "A":
                 value = regs.getA();
@@ -999,15 +1131,12 @@ public class Opcodes {
                 value = regs.getH();
             case "L":
                 value = regs.getL();
-            case "HL":
+            case "HL": {// (HL) points to address in memory
                 value = regs.getHL();
+                value = mem.readByte(value);
+            }
         }
-        int compare = SUB(value);
-        if (compare == 0)
-            regs.fByte.setZ(true);
-        regs.fByte.setN(true);
-        if (compare < 0)
-            regs.fByte.setC(true);
+        SUB(value);// SUB method will set flags
         regs.setA(atemp);
     }
 
@@ -1015,61 +1144,92 @@ public class Opcodes {
 
     // needs memory access for stack pointer
 
-    /*
-     * public void POP(String register) {
-     * System.out.println("");
-     * int sp =regs.getSP();
-     * switch(register){
-     * case "AF":
-     * {
-     * regs.fByte(mem.read(sp)&~0xf); sp++;//lower F nibble stays 0
-     * regs.setA(mem.read(sp)); sp++;
-     * //maybe need to set flags, dont know how though
-     * }
-     * case "BC":
-     * { regs.setC(mem.read(sp)); sp++;
-     * regs.setB(mem.read(sp)); sp++;
-     * regs.setSP(sp);
-     * }
-     * case "DE":
-     * { regs.setE(mem.read(sp)); sp++;
-     * regs.setD(mem.read(sp)); sp++;
-     * regs.setSP(sp);
-     * }
-     * case "HL":
-     * { regs.setL(mem.read(sp)); sp++;
-     * regs.setH(mem.read(sp)); sp++;
-     * regs.setSP(sp);
-     * }
-     * }
-     * }
-     */
+    public void POP(String register) {
+        System.out.println("");
+        int sp = regs.getSP();
+        switch (register) {
+            case "AF": {
+                regs.fByte.setFByte(mem.readByte(sp) & ~0xf);
+                sp++;// lower F nibble stays 0
+                regs.setA(mem.readByte(sp));
+                sp++;
+                // maybe need to set flags, dont know how though
+            }
+            case "BC": {
+                regs.setC(mem.readByte(sp));
+                sp++;
+                regs.setB(mem.readByte(sp));
+                sp++;
+            }
+            case "DE": {
+                regs.setE(mem.readByte(sp));
+                sp++;
+                regs.setD(mem.readByte(sp));
+                sp++;
+            }
+            case "HL": {
+                regs.setL(mem.readByte(sp));
+                sp++;
+                regs.setH(mem.readByte(sp));
+                sp++;
+            }
+        }
+        regs.setSP(sp);
+    }
 
     // push contents of a register onto the stack, need memory access
-    public void PUSH(int register) {
+    public void PUSH(String register) {// 16bit registers
         System.out.println("");
         int stackp = regs.getSP();
+        int upper = 0;
+        int lower = 0;
+        switch (register) {
+            case "AF": {
+                upper = regs.getA();
+                lower = regs.fByte.getFByte();
+                // maybe need to set flags, dont know how though
+            }
+            case "BC": {
+                upper = regs.getB();
+                lower = regs.getC();
+            }
+            case "DE": {
+                upper = regs.getD();
+                lower = regs.getE();
+            }
+            case "HL": {
+                upper = regs.getH();
+                lower = regs.getL();
+            }
+            case "nextPC":// for RST instruction
+            {
+                int nextpc = regs.getPC();
+                upper = regs.getPC() & 0xff;
+                lower = regs.getPC() << 8;
+            }
+        }
         stackp--;
-        // mem.write(register>>8);//sets upper
+        mem.writeByte(stackp, upper);// sets upper
         stackp--;
-        // mem.write(register&
+        mem.writeByte(stackp, lower);
         regs.setSP(stackp);
     }
 
     // software reset. Moves the program counter to the start of the program by
     // loading it with 0x00
-    public void RST() {
-        System.out.println("");
-    }
 
     // return from a subroutine by popping two bytes from the stack and loading them
     // into the program counter. Only
-    // executes if the zero flag is set
-    public void RETZ() {
-    }
 
     // returns from subroutine
     public void RET() {
+        int sp = 0;
+        int lower = (mem.readByte(sp));
+        sp++;
+        int upper = (mem.readByte(sp));
+        sp++;
+        regs.setSP(sp);
+        JP(upper << 8 | lower);
     }
 
     // call subroutine if zero flag is set
@@ -1083,8 +1243,8 @@ public class Opcodes {
     // call a specific routine in memory located as address passed in e.g. 0x08 that
     // pushes the address of the next instruction
     // onto the stack and transfers program control to the specified routine
-    public void RST(int address) {
-        PUSH(regs.getPC() + 1);
+    public void RST(int address) {// address specific to opcode
+        PUSH("nextPC");
 
         JP(address);
     }
@@ -1093,14 +1253,30 @@ public class Opcodes {
     // or return control to the calling routine if zero flag is not set. or are
     // these the same thing?
     public void RETNZ() {
+        if (!regs.fByte.checkZ() == true)
+            ;
+        RET();
+    }
+
+    // executes if the zero flag is set
+    public void RETZ() {
+        if (regs.fByte.checkZ() == true)
+            ;
+        RET();
     }
 
     // return from a subroutine if carry flag is not set
     public void RETNC() {
+        if (!regs.fByte.checkC() == true)
+            ;
+        RET();
     }
 
     // return from a subroutine if carry flag is set
     public void RETC() {
+        if (regs.fByte.checkC() == true)
+            ;
+        RET();
     }
 
     // jump to address passed in if carry flag is not set
@@ -1119,18 +1295,47 @@ public class Opcodes {
     public void CALLC() {
     }
 
-    // subtract d8 from A
-    public void SUBD8(int A, int D8) {
-    }
-
     // return from interrupt
     public void RETI() {
+        interruptmanager.setInterruptsEnabled(true);
+        RET();
     }
 
     // subtracts contents of the register and the carry flag from A stores it in A
     // and updates the carry, zero, and half carry
     // flag
-    public void SBC(int A, int register) {
+    public void SBC(String register) {
+        int carry = regs.fByte.checkC() ? 1 : 0;// short hand conditional if carry set, then 1
+        int value = 0;
+        int diff, result = 0;
+        switch (register) {
+            case "a":
+                value = regs.getA();
+            case "b":
+                value = regs.getB();
+            case "c":
+                value = regs.getC();
+            case "d":
+                value = regs.getD();
+            case "e":
+                value = regs.getE();
+            case "h":
+                value = regs.getH();
+            case "l":
+                value = regs.getL();
+            case "hl":
+                value = mem.readByte(regs.getPC());// gets value in mem pointed to by pc
+        }
+        diff = regs.getA() - value - carry;
+        result = diff & 0xff;
+        if (result == 0)
+            regs.fByte.setZ(true);
+        regs.fByte.setN(true);
+        if (diff < 0)
+            regs.fByte.setC(true);
+        if ((regs.getA() & 0xf) - (value & 0xf) - carry < 0)
+            regs.fByte.setH(true);
+        regs.setA(result);
     }
 
     // disable interupts
