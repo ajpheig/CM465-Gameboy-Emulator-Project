@@ -31,178 +31,160 @@ public class Opcodes {
     // one of two ways to call the method
     {
         opcodeHandlers.put(0x0, this::nop);
-        // opcodeHandlers.put(0x1, () -> ldBCd16);
-        /*
-         * opcodeHandlers.put(0x2, () -> LD_(BC),A);
-         * opcodeHandlers.put(0x3, () -> INC("bc"));
-         * opcodeHandlers.put(0x4, () -> INC("b"));
-         * opcodeHandlers.put(0x5, () -> DEC("b"));
-         * //opcodeHandlers.put(0x6, () -> LD_B,d8);
-         * // rotate bits right reg A
-         * /* opcodeHandlers.put(0x7, () -> RLCA);
-         * opcodeHandlers.put(0x8, () -> LD_(a16),SP);
-         * opcodeHandlers.put(0x9, () -> ADD_HL,BC);
-         * opcodeHandlers.put(0xa, () -> LD_A,(BC));
-         */
-        opcodeHandlers.put(0xb, () -> DEC("bc"));
-        opcodeHandlers.put(0xc, () -> INC("c"));
-        opcodeHandlers.put(0xd, () -> DEC("C"));
-        /* opcodeHandlers.put(0xe, () -> LD_C,d8); */
-        opcodeHandlers.put(0xf, () -> RRCA());
-        /*
-         * opcodeHandlers.put(0x10, () -> STOP);
+          // opcodeHandlers.put(0x1, () -> lD_(BC),d16);
+          //opcodeHandlers.put(0x2, () -> LD_(BC),A);
+          opcodeHandlers.put(0x3, () -> INC("bc"));
+          opcodeHandlers.put(0x4, () -> INC("b"));
+          opcodeHandlers.put(0x5, () -> DEC("b"));
+         //opcodeHandlers.put(0x6, () -> LD_B,d8);
+         // rotate bits right reg A
+         /* opcodeHandlers.put(0x7, () -> RLCA);
+         * opcodeHandlers.put(0x8, () -> LD_(a16),SP);*/
+          opcodeHandlers.put(0x9, () ->  ADD("hl","bc")); //ADD_HL,BC);
+         // opcodeHandlers.put(0xa, () -> LD_A,(BC));
+          opcodeHandlers.put(0xb, () -> DEC("bc"));
+          opcodeHandlers.put(0xc, () -> INC("c"));
+          opcodeHandlers.put(0xd, () -> DEC("C"));
+         /* opcodeHandlers.put(0xe, () -> LD_C,d8);*/
+          opcodeHandlers.put(0xf, () -> RRCA());
+         /* opcodeHandlers.put(0x10, () -> STOP);
          * opcodeHandlers.put(0x11, () -> LD_DE,d16);
-         * opcodeHandlers.put(0x12, () -> LD_(DE),A);
-         */
-        opcodeHandlers.put(0x13, () -> INC("de"));
-        opcodeHandlers.put(0x14, () -> INC("d"));
-        opcodeHandlers.put(0x15, () -> DEC("d"));
-        /*
-         * opcodeHandlers.put(0x16, () -> LD_D,d8);
+         * opcodeHandlers.put(0x12, () -> LD_(DE),A);*/
+          opcodeHandlers.put(0x13, () -> INC("de"));
+          opcodeHandlers.put(0x14, () -> INC("d"));
+          opcodeHandlers.put(0x15, () -> DEC("d"));
+         /* opcodeHandlers.put(0x16, () -> LD_D,d8);
          * // shift bits left reg A
          * opcodeHandlers.put(0x17, () -> RLA);
          * // jump to an offset by adding r8 to the current program counter to determing
          * the address to jump to
          * opcodeHandlers.put(0x18, () -> JR_r8);
-         * // add DE to HL and store result in HL
-         * opcodeHandlers.put(0x19, () -> ADD_HL,DE);
-         * opcodeHandlers.put(0x1a, () -> LD_A,(DE));
-         * opcodeHandlers.put(0x1b, () -> DEC("de"));
-         * opcodeHandlers.put(0x1c, () -> INC("e"));
-         * opcodeHandlers.put(0x1d, () -> DEC("e"));
-         * /* opcodeHandlers.put(0x1e, () -> LD_E,d8);
-         * // right shift reg A
-         */
-        opcodeHandlers.put(0x1f, () -> RR()); // opcode is RRA
-        /*
+          */// add DE to HL and store result in HL
+          opcodeHandlers.put(0x19, () -> ADD("hl", "de")); //ADD_HL,DE;
+         /* opcodeHandlers.put(0x1a, () -> LD_A,(DE));*/
+          opcodeHandlers.put(0x1b, () -> DEC("de"));
+          opcodeHandlers.put(0x1c, () -> INC("e"));
+          opcodeHandlers.put(0x1d, () -> DEC("e"));
+         /* opcodeHandlers.put(0x1e, () -> LD_E,d8);
+         * // right shift reg A*/
+           opcodeHandlers.put(0x1f, () -> RR()); // opcode is RRA
+         /*
          * // jump to new address if teh zero flag is not set
          * opcodeHandlers.put(0x20, () -> JR_NZ,r8);
          * opcodeHandlers.put(0x21, () -> LD_HL,d16);
-         * // increment HL after loading A into memory
-         */
-        opcodeHandlers.put(0x22, () -> LDINCDECHL("LD_(HL+),A)"));
-        opcodeHandlers.put(0x23, () -> INC("hl"));
-        opcodeHandlers.put(0x24, () -> INC("h"));
-        opcodeHandlers.put(0x25, () -> DEC("h"));
-        /*
-         * opcodeHandlers.put(0x26, () -> LD_H,d8);
+         * // increment HL after loading A into memory*/
+          opcodeHandlers.put(0x22, () -> LDINCDECHL("LD_(HL+),A)"));
+          opcodeHandlers.put(0x23, () -> INC("hl"));
+          opcodeHandlers.put(0x24, () -> INC("h"));
+          opcodeHandlers.put(0x25, () -> DEC("h"));
+         /* opcodeHandlers.put(0x26, () -> LD_H,d8);
          * // Decimal adjust accumulator. Adjusts A to the correct representation of a
-         * binary-coded decimal using the flags
-         */
-        opcodeHandlers.put(0x27, () -> DAA());
-        /*
-         * // jump to new address if zero flag is set
-         * opcodeHandlers.put(0x28, () -> JR_Z,r8);
-         * opcodeHandlers.put(0x29, () -> ADD_HL,HL);
-         * // load HL into A then increment it
-         */
-        opcodeHandlers.put(0x2a, () -> LDINCDECHL("LD_A,(HL+)")); // LD_A,(HL+)
-        opcodeHandlers.put(0x2b, () -> DEC("hl")); // decrement value of hl
-        opcodeHandlers.put(0x2c, () -> INC("l"));
-        opcodeHandlers.put(0x2d, () -> DEC("l"));
-        /*
-         * opcodeHandlers.put(0x2e, () -> LD_L,d8);
+         * binary-coded decimal using the flags*/
+          opcodeHandlers.put(0x27, () -> DAA());
+         /* // jump to new address if zero flag is set
+         */// opcodeHandlers.put(0x28, () -> JR_Z,r8);
+          opcodeHandlers.put(0x29, () -> ADD("hl","hl")); //ADD_HL,HL);
+          // load HL into A then increment it*/
+          opcodeHandlers.put(0x2a, () -> LDINCDECHL("LD_A,(HL+)")); // LD_A,(HL+)
+          opcodeHandlers.put(0x2b, () -> DEC("hl")); // decrement value of hl
+          opcodeHandlers.put(0x2c, () -> INC("l"));
+          opcodeHandlers.put(0x2d, () -> DEC("l"));
+         /* opcodeHandlers.put(0x2e, () -> LD_L,d8);
          * opcodeHandlers.put(0x2f, () -> CPL);
          * opcodeHandlers.put(0x30, () -> JR_NC,r8);
          * opcodeHandlers.put(0x31, () -> LD_SP,d16);
-         * // load A into HL then DEC HL
-         */
-        opcodeHandlers.put(0x32, () -> LDINCDECHL("LD_(HL-),A)"));
-        opcodeHandlers.put(0x33, () -> INC("sp"));
-        opcodeHandlers.put(0x34, () -> INC("(hl)")); // (hl) means the memory value at hl
-        opcodeHandlers.put(0x35, () -> DEC("(hl)"));
-        /*
-         * opcodeHandlers.put(0x36, () -> LD_(HL),d8);
-         * // set carry flag to 1
-         * opcodeHandlers.put(0x37, () -> SCF());
-         * /* // perform relative jump if if the carry flag is set
-         * opcodeHandlers.put(0x38, () -> JR_C,r8);
-         * opcodeHandlers.put(0x39, () -> ADD_HL,SP);
-         */
-        opcodeHandlers.put(0x3a, () -> LDINCDECHL("LD_A,(HL-)"));
-        opcodeHandlers.put(0x3b, () -> DEC("sp"));
-        opcodeHandlers.put(0x3c, () -> INC("a"));
-        opcodeHandlers.put(0x3d, () -> DEC("a"));
-        opcodeHandlers.put(0x3e, () -> LD("a", 0x45));
-        // hardcoding just for test. Need to retrieve nect byte of data at mem(pc+1)
+         * // load A into HL then DEC HL*/
+          opcodeHandlers.put(0x32, () -> LDINCDECHL("LD_(HL-),A)"));
+          opcodeHandlers.put(0x33, () -> INC("sp"));
+          opcodeHandlers.put(0x34, () -> INC("(hl)")); // (hl) means the memory value at hl
+          opcodeHandlers.put(0x35, () -> DEC("(hl)"));
+         /* opcodeHandlers.put(0x36, () -> LD_(HL),d8);
+         * // set carry flag to 1 */
+         opcodeHandlers.put(0x37, () -> SCF());
+         /* // perform relative jump if if the carry flag is set
+         */// opcodeHandlers.put(0x38, () -> JR_C,r8);
+         opcodeHandlers.put(0x39, () -> ADD("hl","sp")); //ADD_HL,SP);*/
+         opcodeHandlers.put(0x3a, () -> LDINCDECHL("LD_A,(HL-)"));
+         opcodeHandlers.put(0x3b, () -> DEC("sp"));
+         opcodeHandlers.put(0x3c, () -> INC("a"));
+         opcodeHandlers.put(0x3d, () -> DEC("a"));
+         opcodeHandlers.put(0x3e, () -> LD("a", 0x45));
+        /* hardcoding just for test. Need to retrieve nect byte of data at mem(pc+1)
         // complement the carry flag
-        /*
-         * opcodeHandlers.put(0x3f, () -> CCF);
-         * opcodeHandlers.put(0x40, () -> LD_B,B);
-         * opcodeHandlers.put(0x41, () -> LDBC);
-         *
-         * opcodeHandlers.put(0x42, () -> LD_B,D);
-         * opcodeHandlers.put(0x43, () -> LD_B,E);
-         * opcodeHandlers.put(0x44, () -> LD_B,H);
-         * opcodeHandlers.put(0x45, () -> LD_B,L);
-         * opcodeHandlers.put(0x46, () -> LD_B,(HL));
-         * opcodeHandlers.put(0x47, () -> LD_B,A);
-         * opcodeHandlers.put(0x48, () -> LD_C,B);
-         * opcodeHandlers.put(0x49, () -> LD_C,C);
-         * opcodeHandlers.put(0x4a, () -> LD_C,D);
-         * opcodeHandlers.put(0x4b, () -> LD_C,E);
-         * opcodeHandlers.put(0x4c, () -> LD_C,H);
-         * opcodeHandlers.put(0x4d, () -> LD_C,L);
-         * opcodeHandlers.put(0x4e, () -> LD_C,(HL));
-         * opcodeHandlers.put(0x4f, () -> LD_C,A);
-         * opcodeHandlers.put(0x50, () -> LD_D,B);
-         * opcodeHandlers.put(0x51, () -> LD_D,C);
-         * opcodeHandlers.put(0x52, () -> LD_D,D);
-         * opcodeHandlers.put(0x53, () -> LD_D,E);
-         * opcodeHandlers.put(0x54, () -> LD_D,H);
-         * opcodeHandlers.put(0x55, () -> LD_D,L);
-         * opcodeHandlers.put(0x56, () -> LD_D,(HL));
-         * opcodeHandlers.put(0x57, () -> LD_D,A);
-         * opcodeHandlers.put(0x58, () -> LD_E,B);
-         * opcodeHandlers.put(0x59, () -> LD_E,C);
-         * opcodeHandlers.put(0x5a, () -> LD_E,D);
-         * opcodeHandlers.put(0x5b, () -> LD_E,E);
-         * opcodeHandlers.put(0x5c, () -> LD_E,H);
-         * opcodeHandlers.put(0x5d, () -> LD_E,L);
-         * opcodeHandlers.put(0x5e, () -> LD_E,(HL));
-         * opcodeHandlers.put(0x5f, () -> LD_E,A);
-         * opcodeHandlers.put(0x60, () -> LD_H,B);
-         * opcodeHandlers.put(0x61, () -> LD_H,C);
-         * opcodeHandlers.put(0x62, () -> LD_H,D);
-         * opcodeHandlers.put(0x63, () -> LD_H,E);
-         * opcodeHandlers.put(0x64, () -> LD_H,H);
-         * opcodeHandlers.put(0x65, () -> LD_H,L);
-         * opcodeHandlers.put(0x66, () -> LD_H,(HL));
-         * opcodeHandlers.put(0x67, () -> LD_H,A);
-         * opcodeHandlers.put(0x68, () -> LD_L,B);
-         * opcodeHandlers.put(0x69, () -> LD_L,C);
-         * opcodeHandlers.put(0x6a, () -> LD_L,D);
-         * opcodeHandlers.put(0x6b, () -> LD_L,E);
-         * opcodeHandlers.put(0x6c, () -> LD_L,H);
-         * opcodeHandlers.put(0x6d, () -> LD_L,L);
-         * opcodeHandlers.put(0x6e, () -> LD_L,(HL));
-         * opcodeHandlers.put(0x6f, () -> LD_L,A);
-         * opcodeHandlers.put(0x70, () -> LD_(HL),B);
-         * opcodeHandlers.put(0x71, () -> LD_(HL),C);
-         * opcodeHandlers.put(0x72, () -> LD_(HL),D);
-         * opcodeHandlers.put(0x73, () -> LD_(HL),E);
-         * opcodeHandlers.put(0x74, () -> LD_(HL),H);
-         * opcodeHandlers.put(0x75, () -> LD_(HL),L);
-         * opcodeHandlers.put(0x76, () -> HALT);
-         * opcodeHandlers.put(0x77, () -> LD_(HL),A);
-         */ opcodeHandlers.put(0x78, () -> LD("a", "b"));
-        /*
-         * opcodeHandlers.put(0x79, () -> LD_A,C);
-         * opcodeHandlers.put(0x7a, () -> LD_A,D);
-         * opcodeHandlers.put(0x7b, () -> LD_A,E);
-         * opcodeHandlers.put(0x7c, () -> LD_A,H);
-         * opcodeHandlers.put(0x7d, () -> LD_A,L);
-         * opcodeHandlers.put(0x7e, () -> LD_A,(HL));
-         * opcodeHandlers.put(0x7f, () -> LD_A,A);
-         * opcodeHandlers.put(0x80, () -> ADD_A,B);
-         * opcodeHandlers.put(0x81, () -> ADD_A,C);
-         * opcodeHandlers.put(0x82, () -> ADD_A,D);
-         * opcodeHandlers.put(0x83, () -> ADD_A,E);
-         * opcodeHandlers.put(0x84, () -> ADD_A,H);
-         * opcodeHandlers.put(0x85, () -> ADD_A,L);
-         * opcodeHandlers.put(0x86, () -> ADD_A,(HL));
-         * opcodeHandlers.put(0x87, () -> ADD_A,A);
-         * opcodeHandlers.put(0x88, () -> ADC_A,B);
+         * opcodeHandlers.put(0x3f, () -> CCF);*/
+          opcodeHandlers.put(0x40, () -> LD("b","b")); //LD_B,B);
+          opcodeHandlers.put(0x41, () -> LD("b","c")); //LD_B,C);
+          opcodeHandlers.put(0x42, () -> LD("b","d")); //LD_B,D);
+          opcodeHandlers.put(0x43, () -> LD("b","e")); //LD_B,E);
+          opcodeHandlers.put(0x44, () -> LD("b","h")); //LD_B,H);
+          opcodeHandlers.put(0x45, () -> LD("b","l")); //LD_B,L);
+          opcodeHandlers.put(0x46, () -> LD("b","(hl)")); //LD_B,(HL));
+          opcodeHandlers.put(0x47, () -> LD("b","a")); //LD_B,A);
+          opcodeHandlers.put(0x48, () -> LD("c","b")); //LD_C,B);
+          opcodeHandlers.put(0x49, () -> LD("c","c")); //LD_C,C);
+          opcodeHandlers.put(0x4a, () -> LD("c","d")); //LD_C,D);
+          opcodeHandlers.put(0x4b, () -> LD("c","e")); //LD_C,E);
+          opcodeHandlers.put(0x4c, () -> LD("c","h")); //LD_C,H);
+          opcodeHandlers.put(0x4d, () -> LD("c","l")); //LD_C,L);
+          opcodeHandlers.put(0x4e, () -> LD("c","(HL)")); //LD_C,(HL));
+          opcodeHandlers.put(0x4f, () -> LD("c","a")); //LD_C,A);
+          opcodeHandlers.put(0x50, () -> LD("d","b")); //LD_D,B);
+          opcodeHandlers.put(0x51, () -> LD("d","c")); //LD_D,C);
+          opcodeHandlers.put(0x52, () -> LD("d","d")); //LD_D,D);
+          opcodeHandlers.put(0x53, () -> LD("d","e")); //LD_D,E);
+          opcodeHandlers.put(0x54, () -> LD("d","h")); //LD_D,H);
+          opcodeHandlers.put(0x55, () -> LD("d","l")); //LD_D,L);
+          opcodeHandlers.put(0x56, () -> LD("d","(hl)")); //LD_D,(HL));
+          opcodeHandlers.put(0x57, () -> LD("d","a")); //LD_D,A);
+          opcodeHandlers.put(0x58, () -> LD("e","b")); //LD_E,B);
+          opcodeHandlers.put(0x59, () -> LD("e","c")); //LD_E,C);
+          opcodeHandlers.put(0x5a, () -> LD("e","d")); //LD_E,D);
+          opcodeHandlers.put(0x5b, () -> LD("e","e")); //LD_E,E);
+          opcodeHandlers.put(0x5c, () -> LD("e","h")); //LD_E,H);
+          opcodeHandlers.put(0x5d, () -> LD("e","l")); //LD_E,L);
+          opcodeHandlers.put(0x5e, () -> LD("e","(hl)")); //LD_E,(HL));
+          opcodeHandlers.put(0x5f, () -> LD("e","a")); //LD_E,A);
+          opcodeHandlers.put(0x60, () -> LD("h","b")); //LD_H,B);
+          opcodeHandlers.put(0x61, () -> LD("h","c")); //LD_H,C);
+          opcodeHandlers.put(0x62, () -> LD("h","d")); //LD_H,D);
+          opcodeHandlers.put(0x63, () -> LD("h","e")); //LD_H,E);
+          opcodeHandlers.put(0x64, () -> LD("h","h")); //LD_H,H);
+          opcodeHandlers.put(0x65, () -> LD("h","l")); //LD_H,L);
+          opcodeHandlers.put(0x66, () -> LD("h","(hl)")); //LD_H,(HL));
+          opcodeHandlers.put(0x67, () -> LD("h","a")); //LD_H,A);
+          opcodeHandlers.put(0x68, () -> LD("l","b")); //LD_L,B);
+          opcodeHandlers.put(0x69, () -> LD("l","c")); //LD_L,C);
+          opcodeHandlers.put(0x6a, () -> LD("l","d")); //LD_L,D);
+          opcodeHandlers.put(0x6b, () -> LD("l","e")); //LD_L,E);
+          opcodeHandlers.put(0x6c, () -> LD("l","h")); //LD_L,H);
+          opcodeHandlers.put(0x6d, () -> LD("l","l")); //LD_L,L);
+          opcodeHandlers.put(0x6e, () -> LD("l","(hl)")); //LD_L,(HL));
+          opcodeHandlers.put(0x6f, () -> LD("l","a")); //LD_L,A);
+          opcodeHandlers.put(0x70, () -> LD("(hl)","b")); //LD_(HL),B);
+          opcodeHandlers.put(0x71, () -> LD("(hl)","c")); //LD_(HL),C);
+          opcodeHandlers.put(0x72, () -> LD("(hl)","d")); //LD_(HL),D);
+          opcodeHandlers.put(0x73, () -> LD("(hl)","e")); //LD_(HL),E);
+          opcodeHandlers.put(0x74, () -> LD("h","h")); //LD_(HL),H);
+          opcodeHandlers.put(0x75, () -> LD("l","l")); //LD_(HL),L);
+          //opcodeHandlers.put(0x76, () -> HALT);
+          opcodeHandlers.put(0x77, () -> LD("(HL)","a")); //LD_(HL),A);
+          opcodeHandlers.put(0x78, () -> LD("a", "b")); //LD_A,B
+          opcodeHandlers.put(0x79, () -> LD("a","c")); //LD_A,C);
+          opcodeHandlers.put(0x7a, () -> LD("a","d")); //LD_A,D);
+          opcodeHandlers.put(0x7b, () -> LD("a","e")); //LD_A,E);
+          opcodeHandlers.put(0x7c, () -> LD("a","h")); //LD_A,H);
+          opcodeHandlers.put(0x7d, () -> LD("a","l")); //LD_A,L);
+          opcodeHandlers.put(0x7e, () -> LD("a","(hl)")); //LD_A,(HL));
+          opcodeHandlers.put(0x7f, () -> LD("a","a")); //LD_A,A); ////////////////////////
+          opcodeHandlers.put(0x80, () -> ADD("a","b")); //ADD_A,B);
+          opcodeHandlers.put(0x81, () -> ADD("a","c")); // ADD_A,C);
+          opcodeHandlers.put(0x82, () -> ADD("a","d")); // ADD_A,D);
+          opcodeHandlers.put(0x83, () -> ADD("a","e")); // ADD_A,E);
+          opcodeHandlers.put(0x84, () -> ADD("a","h")); // ADD_A,H);
+          opcodeHandlers.put(0x85, () -> ADD("a","l")); // ADD_A,L);
+          opcodeHandlers.put(0x86, () -> ADD("a","(hl)")); // ADD_A,(HL));
+          opcodeHandlers.put(0x87, () -> ADD("a","a")); // ADD_A,A);
+         /* opcodeHandlers.put(0x88, () -> ADC_A,B);
          * opcodeHandlers.put(0x89, () -> ADC_A,C);
          * opcodeHandlers.put(0x8a, () -> ADC_A,D);
          * opcodeHandlers.put(0x8b, () -> ADC_A,E);
@@ -211,21 +193,22 @@ public class Opcodes {
          * opcodeHandlers.put(0x8d, () -> ADC_A,L);
          * opcodeHandlers.put(0x8e, () -> ADC_A,(HL));
          * opcodeHandlers.put(0x8f, () -> ADC_A,A);
+
          * // subtract teh contents of B from contents of A and updates the carry and
          * zero flags and half carry flag
-         * // and puts the value in A
-         * opcodeHandlers.put(0x90, () -> SUB_B);
-         * opcodeHandlers.put(0x91, () -> SUB_C);
-         * opcodeHandlers.put(0x92, () -> SUB_D);
-         * opcodeHandlers.put(0x93, () -> SUB_E);
-         * opcodeHandlers.put(0x94, () -> SUB_H);
-         * opcodeHandlers.put(0x95, () -> SUB_L);
-         * opcodeHandlers.put(0x96, () -> SUB_(HL));
-         * opcodeHandlers.put(0x97, () -> SUB_A);
-         * // subtracts contents of B and the carry flag from A stores it in A and
+         * // and puts the value in A */
+          opcodeHandlers.put(0x90, () -> SUB("b")); //SUB_B);
+          opcodeHandlers.put(0x91, () -> SUB("c")); //SUB_C);
+          opcodeHandlers.put(0x92, () -> SUB("d")); //SUB_D);
+          opcodeHandlers.put(0x93, () -> SUB("e")); //SUB_E);
+          opcodeHandlers.put(0x94, () -> SUB("h")); //SUB_H);
+          opcodeHandlers.put(0x95, () -> SUB("l")); //SUB_L);
+          opcodeHandlers.put(0x96, () -> SUB("(hl)")); //SUB_(HL));
+          opcodeHandlers.put(0x97, () -> SUB("a")); //SUB_A);
+         /* // subtracts contents of B and the carry flag from A stores it in A and
          * updates the carry, zero, and half carry
          * // flag
-         * opcodeHandlers.put(0x98, () -> SBC_B);
+        * opcodeHandlers.put(0x98, () -> SBC_B);
          * opcodeHandlers.put(0x99, () -> SBC_C);
          * opcodeHandlers.put(0x9a, () -> SBC_D);
          * opcodeHandlers.put(0x9b, () -> SBC_E);
@@ -242,59 +225,54 @@ public class Opcodes {
          * opcodeHandlers.put(0xa5, () -> AND_L);
          * opcodeHandlers.put(0xa6, () -> AND_(HL));
          * opcodeHandlers.put(0xa7, () -> AND_A);
-         * // XOR B with A
-         * opcodeHandlers.put(0xa8, () -> XOR_B);
-         * opcodeHandlers.put(0xa9, () -> XOR_C);
-         * opcodeHandlers.put(0xaa, () -> XOR_D);
-         * opcodeHandlers.put(0xab, () -> XOR_E);
-         * opcodeHandlers.put(0xac, () -> XOR_H);
-         * opcodeHandlers.put(0xad, () -> XOR_L);
-         * opcodeHandlers.put(0xae, () -> XOR_(HL));
-         * opcodeHandlers.put(0xaf, () -> XOR_A);
-         * // or with A
-         * opcodeHandlers.put(0xb0, () -> OR_B);
-         * opcodeHandlers.put(0xb1, () -> OR_C);
-         * opcodeHandlers.put(0xb2, () -> OR_D);
-         * opcodeHandlers.put(0xb3, () -> OR_E);
-         * opcodeHandlers.put(0xb4, () -> OR_H);
-         * opcodeHandlers.put(0xb5, () -> OR_L);
-         * opcodeHandlers.put(0xb6, () -> OR_(HL));
-         * opcodeHandlers.put(0xb7, () -> OR_A);
-         * // compare A and B without modifying either. zero flag is set to 1 if if
+         * // XOR B with A */
+          opcodeHandlers.put(0xa8, () -> XOR("b")); //XOR_B);
+          opcodeHandlers.put(0xa9, () -> XOR("c")); //XOR_C);
+          opcodeHandlers.put(0xaa, () -> XOR("d")); //XOR_D);
+          opcodeHandlers.put(0xab, () -> XOR("e")); //XOR_E);
+          opcodeHandlers.put(0xac, () -> XOR("h")); //XOR_H);
+          opcodeHandlers.put(0xad, () -> XOR("l")); //XOR_L);
+          opcodeHandlers.put(0xae, () -> XOR("(HL)")); //XOR_(HL));
+          opcodeHandlers.put(0xaf, () -> XOR("A")); //XOR_A);
+
+          opcodeHandlers.put(0xb0, () -> OR("b")); //OR_B);
+          opcodeHandlers.put(0xb1, () -> OR("c")); //OR_C);
+          opcodeHandlers.put(0xb2, () -> OR("d")); //OR_D);
+          opcodeHandlers.put(0xb3, () -> OR("e")); //OR_E);
+          opcodeHandlers.put(0xb4, () -> OR("h")); //OR_H);
+          opcodeHandlers.put(0xb5, () -> OR("l")); //OR_L);
+          opcodeHandlers.put(0xb6, () -> OR("(HL)")); //OR_(HL));opcodeHandlers.put(0xb7, () -> OR_A);
+         /* // compare A and B without modifying either. zero flag is set to 1 if if
          * result is 0. Carry flag is set to 1 if
          * // A is smaller than B abd 0 otherwise. Half carry flag is set to 1 if a
          * carry occured from the lower nibble
-         */ // Subtract flag is set to 1
-        opcodeHandlers.put(0xb8, () -> CP("b"));
-        opcodeHandlers.put(0xb9, () -> CP("c"));
-        opcodeHandlers.put(0xba, () -> CP("d"));
-        opcodeHandlers.put(0xbb, () -> CP("e"));
-        opcodeHandlers.put(0xbc, () -> CP("h"));
-        opcodeHandlers.put(0xbd, () -> CP("l"));
-        opcodeHandlers.put(0xbe, () -> CP("hl"));
-        opcodeHandlers.put(0xbf, () -> CP("a"));
-        /*
+         * //Subtract flag is set to 1
+         * opcodeHandlers.put(0xb8, () -> CP_B);
+         * opcodeHandlers.put(0xb9, () -> CP_C);
+         * opcodeHandlers.put(0xba, () -> CP_D);
+         * opcodeHandlers.put(0xbb, () -> CP_E);
+         * opcodeHandlers.put(0xbc, () -> CP_H);
+         * opcodeHandlers.put(0xbd, () -> CP_L);
+         * opcodeHandlers.put(0xbe, () -> CP_(HL));
+         * opcodeHandlers.put(0xbf, () -> CP_A);
          * // return to the address at the top of the stack if 0 flag is not set
          * opcodeHandlers.put(0xc0, () -> RET_NZ);
          * // pop two bytes from the top of the stack and store them in BC
          * opcodeHandlers.put(0xc1, () -> POP_BC);
          * // jump if zero flag is not set
          * opcodeHandlers.put(0xc2, () -> JP_NZ,a16);
-         */ opcodeHandlers.put(0xc3, () -> JP(mem.readWord(regs.getPC() + 1)));
-        // JP([regs.getPC() + 1] | (romData[regs.getPC() + 2] << 8)));
-        // replace with next8() method??
+         */ opcodeHandlers.put(0xc3, () -> JP(romData[regs.getPC() + 1] | (romData[regs.getPC() + 2] << 8)));
+        //
         // test
         /*
          * / call a subroutine if zero flag is not set
          * opcodeHandlers.put(0xc4, () -> CALL_NZ,a16);
          * // push contents of BC onto the stack
-         * opcodeHandlers.put(0xc5, () -> PUSH_BC);
-         * opcodeHandlers.put(0xc6, () -> ADD_A,d8);
-         * // software reset. Moves the program counter to the start of the program by
-         * loading it with 0x00
-         */ opcodeHandlers.put(0xc7, () -> RST(00));
-        // RST 00
-        /*
+         * opcodeHandlers.put(0xc5, () -> PUSH_BC); */
+          opcodeHandlers.put(0xc6, () -> ADD("a","d8")); //ADD_A,d8);
+          // software reset. Moves the program counter to the start of the program by
+         /* loading it with 0x00
+         * opcodeHandlers.put(0xc7, () -> RST_00H);
          * // return from a subroutine by popping two bytes from the stack and loading
          * them into the program counter. Only
          * // executes if the zero flag is set
@@ -314,9 +292,7 @@ public class Opcodes {
          * // call a specific routine in memory located as address 0x08 that pushes the
          * address of teh next instruction
          * // onto the stack and transfers program control to the specified routine
-         */ opcodeHandlers.put(0xcf, () -> RST(0x08));
-        // RST 08
-        /*
+         * opcodeHandlers.put(0xcf, () -> RST_08H);
          * // return from a subroutine if carry flag is not set
          * opcodeHandlers.put(0xd0, () -> RET_NC);
          * opcodeHandlers.put(0xd1, () -> POP_DE);
@@ -327,12 +303,10 @@ public class Opcodes {
          * // call a subroutine if the carry flag is not set
          * opcodeHandlers.put(0xd4, () -> CALL_NC,a16);
          * opcodeHandlers.put(0xd5, () -> PUSH_DE);
-         * // subtract d8 from A
-         * opcodeHandlers.put(0xd6, () -> SUB_d8);
-         * // call routine located at 0x10
-         */ opcodeHandlers.put(0xd7, () -> RST(0x10));
-        // RST 10
-        /*
+         * // subtract d8 from A*/
+          //opcodeHandlers.put(0xd6, () -> SUB("d8")); //SUB_d8);
+          // call routine located at 0x10
+         /* opcodeHandlers.put(0xd7, () -> RST_10H);
          * // returns control of the program after a call instruction if carry flag is
          * set
          * opcodeHandlers.put(0xd8, () -> RET_C);
@@ -348,14 +322,12 @@ public class Opcodes {
          * half-carry, and negative flags are updated
          * opcodeHandlers.put(0xde, () -> SBC_d8);
          * // call subroutine at 0x18
-         */ opcodeHandlers.put(0xdf, () -> RST(0x18));
-        // RST 18
+         * opcodeHandlers.put(0xdf, () -> RST_18H);
+         */
+        // load contents of the memory address pointed to by a8 into the high0bytes of
+        // memory address $FF00 + a8 and
+        // stores it into A
         /*
-         * // load contents of the memory address pointed to by a8 into the high0bytes
-         * of
-         * // memory address $FF00 + a8 and
-         * // stores it into A
-         * /*
          * opcodeHandlers.put(0xe0, () -> LDH_(a8),A);
          * opcodeHandlers.put(0xe1, () -> POP_HL);
          * opcodeHandlers.put(0xe2, () -> LD_(C),A);
@@ -365,11 +337,10 @@ public class Opcodes {
          * // and d8 with A
          * opcodeHandlers.put(0xe6, () -> AND_d8);
          * // resets the program counter to address 0x0020
-         */ opcodeHandlers.put(0xe7, () -> RST(0x20));
-        /*
-         * opcodeHandlers.put(0xe8, () -> ADD_SP,r8);
-         * // jumps to address stored in HL
-         * opcodeHandlers.put(0xe9, () -> JP_HL);
+         * opcodeHandlers.put(0xe7, () -> RST_20H);*/
+          opcodeHandlers.put(0xe8, () -> ADD("sp","d8")); //ADD_SP,r8);
+         // jumps to address stored in HL
+         /* opcodeHandlers.put(0xe9, () -> JP_HL);
          * opcodeHandlers.put(0xea, () -> LD_(a16),A);
          * opcodeHandlers.put(0xeb, () -> XXX);
          * opcodeHandlers.put(0xec, () -> XXX);
@@ -378,9 +349,7 @@ public class Opcodes {
          * opcodeHandlers.put(0xee, () -> XOR_d8);
          * // call to 0x28 saving the program counter to the stack so teh execution can
          * resume after the routine is complete
-         */ opcodeHandlers.put(0xef, () -> RST(0x28));
-        // RST28
-        /*
+         * opcodeHandlers.put(0xef, () -> RST_28H);
          * opcodeHandlers.put(0xf0, () -> LD_A,(a8));
          * opcodeHandlers.put(0xf1, () -> POP_AF);
          * opcodeHandlers.put(0xf2, () -> LD_A,(C));
@@ -392,19 +361,17 @@ public class Opcodes {
          * // OR A and d8. I think it is inclusive
          * opcodeHandlers.put(0xf6, () -> OR_d8);
          * // call to 0x30
-         */ opcodeHandlers.put(0xf7, () -> RST(0x30));
-        /*
+         * opcodeHandlers.put(0xf7, () -> RST_30H);
          * opcodeHandlers.put(0xf8, () -> LD_HL,SP+r8);
          * opcodeHandlers.put(0xf9, () -> LD_SP,HL);
          * opcodeHandlers.put(0xfa, () -> LD_A,(a16));
          * // enables interrupts
-         */ opcodeHandlers.put(0xfb, () -> EI());
-
-        opcodeHandlers.put(0xfc, () -> nop());
-        opcodeHandlers.put(0xfd, () -> nop());
-        opcodeHandlers.put(0xfe, () -> CP(mem.readByte(regs.getPC() + 1)));
-        // call to 0x28
-        opcodeHandlers.put(0xff, () -> RST(0x38));//
+          */ opcodeHandlers.put(0xfb, () -> EI());
+         opcodeHandlers.put(0xfc, () -> nop());
+         opcodeHandlers.put(0xfd, () -> nop());
+         opcodeHandlers.put(0xfe, () -> CP(mem.readByte(regs.getPC() + 1)));
+         // call to 0x28
+         opcodeHandlers.put(0xff, () -> RST(0x38));//
 
     }
 
@@ -481,49 +448,48 @@ public class Opcodes {
     public void LD(String register, String valueRegister) {
         switch (register) {
             case "a":
-                switch (valueRegister) {
-                    case "b":
-                        regs.setA(regs.getB());
-                        break;
-                }
+                regs.setA(regs.getRegisterValue(valueRegister));
                 break;
             case "b":
-                regs.setB(0);
+                regs.setB(regs.getRegisterValue(valueRegister));
                 break;
             case "c":
-                regs.setC(0);
+                regs.setC(regs.getRegisterValue(valueRegister));
                 break;
             case "d":
-                regs.setD(0);
+                regs.setD(regs.getRegisterValue(valueRegister));
                 break;
             case "e":
-                regs.setE(0);
+                regs.setE(regs.getRegisterValue(valueRegister));
                 break;
             case "h":
-                regs.setH(0);
+                regs.setH(regs.getRegisterValue(valueRegister));
                 break;
             case "l":
-                regs.setL(0);
+                regs.setL(regs.getRegisterValue(valueRegister));
                 break;
             case "sp":
-                regs.setSP(0);
+                regs.setSP(regs.getRegisterValue(valueRegister));
                 break;
             case "pc":
-                regs.setPC(0);
+                regs.setPC(regs.getRegisterValue(valueRegister));
                 break;
             // case "ad": regs.setAD(value);
             // break;
             case "bc":
-                regs.setBC(0);
+                regs.setBC(regs.getRegisterValue(valueRegister));
                 break;
             case "af":
-                regs.setAF(0);
+                regs.setAF(regs.getRegisterValue(valueRegister));
                 break;
             case "de":
-                regs.setDE(0);
+                regs.setDE(regs.getRegisterValue(valueRegister));
                 break;
             case "hl":
-                regs.setHL(0);
+                regs.setHL(regs.getRegisterValue(valueRegister));
+                break;
+            case "(hl)":
+                System.out.println("set the value pointed to by (HL)");
                 break;
         }
     }
@@ -1016,35 +982,26 @@ public class Opcodes {
         regs.setA(result);
     }
 
-    // XOR A with register passed in
+    // XOR with a register passed in 
     public void XOR(String register) {
-        System.out.println(" XOR ");
-        int result = 0;
-        switch (register) {
-            case "a":
-                result = regs.getA() ^ regs.getA();
-            case "b":
-                result = regs.getA() ^ regs.getB();
-            case "c":
-                result = regs.getA() ^ regs.getC();
-            case "d":
-                result = regs.getA() ^ regs.getD();
-            case "e":
-                result = regs.getA() ^ regs.getE();
-            case "h":
-                result = regs.getA() ^ regs.getH();
-            case "l":
-                result = regs.getA() ^ regs.getL();
-            case "hl":
-                result = regs.getA() ^ mem.readByte(regs.getHL());
+        if(register.equals("(HL)")){
+            System.out.println("XOR with value pointed to by hl");
         }
-        if (result == 0) {
-            regs.fByte.setZ(true);
+        else if(register.equals("d8")){
+            System.out.println("XOR with d8");
         }
-        regs.fByte.setN(false);
-        regs.fByte.setN(false);
-        regs.fByte.setN(false);
-        regs.setA(result);
+        else {
+            System.out.println(" XOR ");
+            int result = regs.getA() ^ regs.getRegisterValue(register);
+            if (result == 0)
+                regs.fByte.setZ(true);
+            regs.setA(result);
+
+            // other flags are set to false
+            regs.fByte.setC(false);
+            regs.fByte.setH(false);
+            regs.fByte.setZ(false);
+        }
     }
 
     public void XOR(int A, int u8) {// 0xEE op
