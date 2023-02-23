@@ -107,8 +107,6 @@ public class Registers {
         this.e = e;
     }
 
-
-
     public void setH(int h) {
         this.h = h;
     }
@@ -156,7 +154,7 @@ public class Registers {
         h = hl >> 8;
         l = hl & 0xff;
     }
-    
+
     public int getRegisterValue(String register) {
         int value = 0;
         switch (register) {
@@ -189,5 +187,4 @@ public class Registers {
         }
         return value;
     }
-
 }

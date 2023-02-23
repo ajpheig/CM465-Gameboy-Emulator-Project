@@ -1,13 +1,7 @@
+import java.io.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.awt.event.*;
 
 public class ReadGBFC {
     JFrame frame;
@@ -22,6 +16,7 @@ public class ReadGBFC {
     // Opcodes runOpcodes = new Opcodes();
     Registers regs = new Registers();
     CPU cpu;
+    // Memory mem = new Memory(romData);
     InterruptManager interruptManager = new InterruptManager();
 
     public ReadGBFC() {
@@ -62,7 +57,8 @@ public class ReadGBFC {
                     pullCartHeader();
                     // printROMData();
                     // printOpcodes();
-                    cpu = new CPU(romData, regs, interruptManager);
+                    Memory mem = new Memory(romData);
+                    cpu = new CPU(romData, regs, interruptManager, mem);
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to

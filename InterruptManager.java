@@ -1,6 +1,7 @@
 import java.util.HashMap;
 
 public class InterruptManager {
+    private CPU cpu;
     boolean imeFlag = false; // Interrupt Master Enable
     public static final int VBLANK = 0X40;
     public static final int LCDSTAT = 0X48;
@@ -17,6 +18,10 @@ public class InterruptManager {
         interruptTable.put(JOYPAD, false);
     }
 
+    public void setCPU(CPU cpu) {
+        this.cpu = cpu;
+    }
+
     public void setInterruptsEnabled(boolean ime) {
         this.imeFlag = ime; // set the master enable flag
     }
@@ -31,6 +36,7 @@ public class InterruptManager {
         if (!interruptTable.getOrDefault(interruptType, false))
             return false;// if interrupt is disabled, return false
         // Must be a interrupt enabled, give cpu interruptType to do something
+        cpu.interrupt(interruptType);
         return true;
     }
 
