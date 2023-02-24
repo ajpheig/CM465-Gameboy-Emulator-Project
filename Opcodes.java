@@ -35,7 +35,7 @@ public class Opcodes {
     // which can be run with handler.run
     // one of two ways to call the method
     {
-               opcodeHandlers.put(0x0, this::nop);
+        opcodeHandlers.put(0x0, this::nop);
         opcodeHandlers.put(0x1, () -> LDu("bc", mem.readWord(regs.getPC() + 1), 3));
         opcodeHandlers.put(0x2, () -> LD(regs.getBC(), "a", 1));
         opcodeHandlers.put(0x3, () -> INC("bc"));
@@ -58,7 +58,7 @@ public class Opcodes {
         opcodeHandlers.put(0x14, () -> INC("d"));
         opcodeHandlers.put(0x15, () -> DEC("d"));
         opcodeHandlers.put(0x16, () -> LDu("d", mem.readByte(regs.getPC() + 1), 2));
-        opcodeHandlers.put(0x17, () -> ()());
+        opcodeHandlers.put(0x17, () -> RLA());
         opcodeHandlers.put(0x18, () -> JR(mem.readWord(regs.getPC() + 1)));
         opcodeHandlers.put(0x19, () -> ADD("hl", regs.getDE())); //ADD_HL,DE);
         opcodeHandlers.put(0x1a, () -> LD("a", mem.readByte(regs.getDE())));// A,(DE));
