@@ -393,17 +393,7 @@ public class Opcodes {
         regs.fByte.setH(true);
         regs.setPC(regs.getPC() + 1);
     }
-    
-        public void RLA() {
-        int a = regs.getA();
-        boolean carry = regs.fByte.checkC(); // Get the carry flag
-        regs.fByte.setC((a & 0x80) == 0x80); // Set the carry flag to the value of the most significant bit of A
-        a = (a << 1) | (carry ? 1 : 0); // Left shift A by 1 and insert the carry flag into the least significant bit
-        regs.setA(a);
-        // Set the zero flag if A is now zero
-        regs.fByte.setZ(a == 0);
-    }
-    
+
     // load value into intoRegister
     public void LD(String register, int value) {
         int length = 1;
@@ -810,22 +800,7 @@ public class Opcodes {
         // Set the zero flag if A is now zero
         regs.fByte.setZ(a == 0);
     }
-    
-    // right rotates bits in A
-    public void RRCA() {
 
-        int a = regs.getA();
-        System.out.println(a);
-        int carry = a & 0x01; // Get the least significant bit of A
-        a = (a >> 1) | (carry << 7); // Right shift A by 1 and insert carry into the most significant bit
-        regs.setA(a);
-
-        int msb = (a >> 7) & 0x01; // Get the most significant bit of A
-        // set the carry flag to true if most significant bit of result is 1 and false
-        // otherwise
-        regs.fByte.setC(msb == 1);
-        System.out.println(regs.getA());
-    }
     
        // https://forums.nesdev.org/viewtopic.php?f=20&t=15944 psuedoCode for DAA
     // decimal adjust register A
@@ -1386,17 +1361,7 @@ public class Opcodes {
             JP(address);
         regs.setPC(regs.getPC() + 3);
     }
-    
-        // right shift register
-    public void RR() {
-        int a = regs.getA();
-        int carry = a & 0x01; // Get the least significant bit of A
-        a = (a >> 1) | (regs.fByte.checkC() ? 0x80 : 0x00); // Right shift A by 1 and insert previous carry into the
-                                                            // most significant bit
-        regs.setA(a);
 
-        // Set the carry flag to the least significant bit of the register being rotated
-    }
     
     // jump to address passed in if carry flag is not set
     public void JPC(int address) {
