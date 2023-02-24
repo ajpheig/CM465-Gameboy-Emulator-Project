@@ -26,6 +26,44 @@ public class OpcodeTestUnit {
     }
 
     @Test
+    public void testRLCA() {
+        // Test with A = 0b10011010
+        regs.setA(0b10011010);
+        Runnable operation = operations.opcodeHandlers.get(0x7);
+        operation.run();
+        assertEquals(0b00110101, regs.getA());
+        assertTrue(regs.fByte.checkC());
+
+        // Test with A = 0b00000001
+        regs.setA(0b00000001);
+        operation.run();
+        assertEquals(0b00000010, regs.getA());
+        assertFalse(regs.fByte.checkC());
+
+        // Test with A = 0b11111111
+        regs.setA(0b11111111);
+        operation.run();
+        assertEquals(0b11111110, regs.getA());
+        assertTrue(regs.fByte.checkC());
+
+        // Test with A = 0b00000000
+        regs.setA(0b00000000);
+        operation.run();
+        assertEquals(0b00000000, regs.getA());
+        assertFalse(regs.fByte.checkC());
+    }
+
+    @Test
+    public void testSCF() {
+        regs.fByte.setC(false);
+        regs.fByte.setC(true);
+        assertTrue(regs.fByte.checkC());
+
+        regs.fByte.setC(true);
+        assertTrue(regs.fByte.checkC());
+    }
+    
+    @Test
     public void testRRCA() { // right rotate bits in a
         // Test with A = 0b10011010
         regs.setA(0b10011010);
@@ -46,7 +84,7 @@ public class OpcodeTestUnit {
     }
 
     @Test
-    public void testDA() {
+    public void testDAA() {
         // Test with carry flag and no half-carry flag
         regs.setA(0x9C);
         regs.fByte.setN(false);
@@ -54,7 +92,7 @@ public class OpcodeTestUnit {
         regs.fByte.setC(true);
         Runnable operation = operations.opcodeHandlers.get(0x27);
         operation.run();
-        assertEquals(0x02, regs.getA()); // 0x9C -> 0x02 with carry flag set
+        assertEquals(0xA2, regs.getA()); // 0x9C -> 0xA2 with carry flag set
 
         // Test with carry flag and half-carry flag
         regs.setA(0x3E);
@@ -63,15 +101,15 @@ public class OpcodeTestUnit {
         regs.fByte.setC(true);
         Runnable operation1 = operations.opcodeHandlers.get(0x27);
         operation1.run();
-        assertEquals(0xA4, regs.getA()); // 3E -> 44 with carry flag set and
-        // half-carry flag set
+        assertEquals(0x44, regs.getA()); // 3E -> 44 with carry flag set and half-carry flag set
 
         // Test with no carry flag and no half-carry flag
         regs.setA(0xA5);
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(false);
-        operation.run();
+        Runnable operation2 = operations.opcodeHandlers.get(0x27);
+        operation2.run();
         assertEquals(0x05, regs.getA()); // A5 -> 05 with no flags set
 
         // Test with no carry flag and half-carry flag
@@ -79,8 +117,9 @@ public class OpcodeTestUnit {
         regs.fByte.setN(false);
         regs.fByte.setH(true);
         regs.fByte.setC(false);
-        operation.run();
-        assertEquals(0x2B, regs.getA()); // 25 -> 30 with half-carry flag set
+        Runnable operation3 = operations.opcodeHandlers.get(0x27);
+        operation3.run();
+        assertEquals(0x2B, regs.getA()); // 25 -> 2B with half-carry flag set
     }
 
     @Test
@@ -111,7 +150,26 @@ public class OpcodeTestUnit {
         operation.run();
         assertEquals(true, intMan.postInterrupt(SERIAL));
     }
+    
+        @Test
+    public void testRLA() {
+        // Test with carry flag not set
+        regs.setA(0b00101010); // A = 0x2A
+        regs.fByte.setC(false);
+        Runnable operation = operations.opcodeHandlers.get(0x17); // opcode RLA()
+        operation.run();
+        assertEquals(0b01010100, regs.getA()); // A should be 0x54 after the rotate
+        assertFalse(regs.fByte.checkC()); // carry flag should be reset
 
+        // Test with carry flag set
+        regs.setA(0b10000001); // A = 0x81
+        regs.fByte.setC(true);
+        Runnable operation2 = operations.opcodeHandlers.get(0x17); // opcode RLA()
+        operation2.run();
+        assertEquals(0b00000011, regs.getA()); // A should be 0x03 after the rotate
+        assertTrue(regs.fByte.checkC()); // carry flag should be set
+    }
+    
     @Test
     public void setDI() {
         intMan.setInterruptsEnabled(true);
