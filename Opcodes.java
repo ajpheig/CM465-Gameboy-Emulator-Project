@@ -46,14 +46,14 @@ public class Opcodes {
          * // rotate bits right reg A
          * /* opcodeHandlers.put(0x7, () -> RLCA);
          */ opcodeHandlers.put(0x8, () -> LD(mem.readWord(regs.getPC() + 1), "sp", 3));
-        // opcodeHandlers.put(0x9, () -> ADD_HL,BC);
+        opcodeHandlers.put(0x9, () -> ADD("hl", "bc"));// _HL,BC);
         opcodeHandlers.put(0xa, () -> LD("a", mem.readByte(regs.getBC())));
         // A,(BC));
-        /*
-         * opcodeHandlers.put(0xb, () -> DEC("bc"));
-         * opcodeHandlers.put(0xc, () -> INC("c"));
-         * opcodeHandlers.put(0xd, () -> DEC("C"));
-         */ opcodeHandlers.put(0xe, () -> LDu("c", mem.readByte(regs.getPC() + 1), 2));
+
+        opcodeHandlers.put(0xb, () -> DEC("bc"));
+        opcodeHandlers.put(0xc, () -> INC("c"));
+        opcodeHandlers.put(0xd, () -> DEC("C"));
+        opcodeHandlers.put(0xe, () -> LDu("c", mem.readByte(regs.getPC() + 1), 2));
 
         opcodeHandlers.put(0xf, () -> RRCA());
 
@@ -68,27 +68,28 @@ public class Opcodes {
         opcodeHandlers.put(0x15, () -> DEC("d"));
 
         opcodeHandlers.put(0x16, () -> LDu("d", mem.readByte(regs.getPC() + 1), 2));
-        /*
-         * // shift bits left reg A
-         * opcodeHandlers.put(0x17, () -> RLA);
-         * // jump to an offset by adding r8 to the current program counter to determing
-         * the address to jump to
-         */ opcodeHandlers.put(0x18, () -> JR(mem.readWord(regs.getPC() + 1)));
-        /*
-         * // add DE to HL and store result in HL
-         * opcodeHandlers.put(0x19, () -> ADD_HL,DE);
-         */ opcodeHandlers.put(0x1a, () -> LD("a", mem.readByte(regs.getDE())));// A,(DE));
-        /*
-         * opcodeHandlers.put(0x1b, () -> DEC("de"));
-         * opcodeHandlers.put(0x1c, () -> INC("e"));
-         * opcodeHandlers.put(0x1d, () -> DEC("e"));
-         * /* opcodeHandlers.put(0x1e, () -> LD_E,d8);
-         * // right shift reg A
-         */
+
+        // shift bits left reg A
+        // opcodeHandlers.put(0x17, () -> RLA());
+        // jump to an offset by adding r8 to the current program counter to determing
+        // the address to jump to
+        opcodeHandlers.put(0x18, () -> JR(mem.readWord(regs.getPC() + 1)));
+
+        // add DE to HL and store result in HL
+        opcodeHandlers.put(0x19, () -> ADD("hl", "de"));// _HL,DE);
+        opcodeHandlers.put(0x1a, () -> LD("a", mem.readByte(regs.getDE())));// A,(DE));
+
+        opcodeHandlers.put(0x1b, () -> DEC("de"));
+        opcodeHandlers.put(0x1c, () -> INC("e"));
+        opcodeHandlers.put(0x1d, () -> DEC("e"));
+
+        opcodeHandlers.put(0x1e, () -> LDu("e", mem.readByte(regs.getPC() + 1), 2));// _E,d8);
+        // right shift reg A
+
         opcodeHandlers.put(0x1f, () -> RR()); // opcode is RRA
         /*
          */ // jump to new address if teh zero flag is not set
-        opcodeHandlers.put(0x20, () -> JRNZ(mem.readByte(regs.getPC() + 1))); // r8);
+        opcodeHandlers.put(0x20, () -> JRNZ((byte) mem.readByte(regs.getPC() + 1))); // r8);
         opcodeHandlers.put(0x21, () -> LDu("hl", mem.readWord(regs.getPC() + 1), 3));
         /*
          * // increment HL after loading A into memory
@@ -97,16 +98,16 @@ public class Opcodes {
         opcodeHandlers.put(0x23, () -> INC("hl"));
         opcodeHandlers.put(0x24, () -> INC("h"));
         opcodeHandlers.put(0x25, () -> DEC("h"));
-        /*
-         * opcodeHandlers.put(0x26, () -> LD_H,d8);
-         * // Decimal adjust accumulator. Adjusts A to the correct representation of a
-         * binary-coded decimal using the flags
-         */
+
+        opcodeHandlers.put(0x26, () -> LDu("h", mem.readByte(regs.getPC() + 1), 2));// H,d8);
+        // Decimal adjust accumulator. Adjusts A to the correct representation of a
+        // binary-coded decimal using the flags
+
         opcodeHandlers.put(0x27, () -> DAA());
-        /*
-         * // jump to new address if zero flag is set
-         * opcodeHandlers.put(0x28, () -> JR_Z,r8);
-         */ opcodeHandlers.put(0x29, () -> ADD("hl", "hl")); // ADD_HL,HL);
+
+        // jump to new address if zero flag is set
+        opcodeHandlers.put(0x28, () -> JRZ(mem.readByte(regs.getPC() + 1)));// ,r8);
+        opcodeHandlers.put(0x29, () -> ADD("hl", "hl")); // ADD_HL,HL);
         /*
          * // load HL into A then increment it
          */
@@ -120,7 +121,7 @@ public class Opcodes {
         /*
          * opcodeHandlers.put(0x2f, () -> CPL);
          * opcodeHandlers.put(0x30, () -> JR_NC,r8);
-         */ opcodeHandlers.put(0x31, () -> LD("sp", mem.readWord(regs.getPC() + 1)));// SP,d16);
+         */ opcodeHandlers.put(0x31, () -> LDu("sp", mem.readWord(regs.getPC() + 1), 3));// SP,d16);
         /*
          * // load A into HL then DEC HL
          */
@@ -491,46 +492,40 @@ public class Opcodes {
                 regs.setA(value & 0xff);
                 break;
             case "b":
-                regs.setB(value);
+                regs.setB(value & 0xff);
                 break;
             case "c":
-                regs.setC(value);
+                regs.setC(value & 0xff);
                 break;
             case "d":
-                regs.setD(value);
+                regs.setD(value & 0xff);
                 break;
             case "e":
-                regs.setE(value);
+                regs.setE(value & 0xff);
                 break;
             case "h":
-                regs.setH(value);
+                regs.setH(value & 0xff);
                 break;
             case "l":
-                regs.setL(value);
+                regs.setL(value & 0xff);
                 break;
             case "sp":
-                regs.setSP(value);
-                length++;
+                regs.setSP(value & 0xffff);
                 break;
             case "pc":
-                regs.setPC(value);
-                length++;
+                regs.setPC(value & 0xffff);
                 break;
             case "bc":
-                regs.setBC(value);
-                length++;
+                regs.setBC(value & 0xffff);
                 break;
             case "af":
-                regs.setAF(value);
-                length++;
+                regs.setAF(value & 0xffff);
                 break;
             case "de":
-                regs.setDE(value);
-                length++;
+                regs.setDE(value & 0xffff);
                 break;
             case "hl":
-                regs.setHL(value);
-                length++;
+                regs.setHL(value & 0xffff);
                 break;
         }
         regs.setPC(regs.getPC() + length);
@@ -927,14 +922,14 @@ public class Opcodes {
 
     // jump relative by the amount of the value passed in
     public void JR(int value) {
-        System.out.println("jump relative" + value);
-        int address = regs.getPC() + (byte) value;
+        System.out.println("jump relative");
+        int address = regs.getPC() + 2 + (byte) value;// 2 for opcode and byte
         regs.setPC(address);
     }
 
     // jump if zero flag is set
     public void JRZ(int value) {
-        System.out.println("Jump not zero" + value);
+        System.out.println("Jump not zero");
         if (regs.fByte.checkZ()) {
             JR(value);
         } else
@@ -943,7 +938,7 @@ public class Opcodes {
 
     // jump if zero flag is not set the amount that is passed in e.g. r8
     public void JRNZ(int value) {
-        System.out.println("jump" + value);
+        System.out.println("jump");
         if (!regs.fByte.checkZ()) {
             JR(value);
         } else
