@@ -336,94 +336,94 @@ public class Opcodes {
         extendedOpcodeHandlers.put(0x25, () -> SLA("l"));
         extendedOpcodeHandlers.put(0x26, () -> SLA("hl"));
         extendedOpcodeHandlers.put(0x27, () -> SLA("a"));
-        //extendedOpcodeHandlers.put(0x28, () -> SRA_B());
-        //extendedOpcodeHandlers.put(0x29, () -> SRA_C());
-        //extendedOpcodeHandlers.put(0x2A, () -> SRA_D());
-        //extendedOpcodeHandlers.put(0x2B, () -> SRA_E());
-        //extendedOpcodeHandlers.put(0x2C, () -> SRA_H());
-        //extendedOpcodeHandlers.put(0x2D, () -> SRA_L());
-        //extendedOpcodeHandlers.put(0x2E, () -> SRA_mHL());
-        //extendedOpcodeHandlers.put(0x2F, () -> SRA_A());
-        //extendedOpcodeHandlers.put(0x30, () -> SWAP_B());
-        //extendedOpcodeHandlers.put(0x31, () -> SWAP_C());
-        //extendedOpcodeHandlers.put(0x32, () -> SWAP_D());
-        //extendedOpcodeHandlers.put(0x33, () -> SWAP_E());
-        //extendedOpcodeHandlers.put(0x34, () -> SWAP_H());
-        //extendedOpcodeHandlers.put(0x35, () -> SWAP_L());
-        //extendedOpcodeHandlers.put(0x36, () -> SWAP_mHL());
-        //extendedOpcodeHandlers.put(0x37, () -> SWAP_A());
-        //extendedOpcodeHandlers.put(0x38, () -> SRL_B());
-        //extendedOpcodeHandlers.put(0x39, () -> SRL_C());
-        //extendedOpcodeHandlers.put(0x3A, () -> SRL_D());
-        //extendedOpcodeHandlers.put(0x3B, () -> SRL_E());
-        //extendedOpcodeHandlers.put(0x3C, () -> SRL_H());
-        //extendedOpcodeHandlers.put(0x3D, () -> SRL_L());
-        //extendedOpcodeHandlers.put(0x3E, () -> SRL_mHL());
-        //extendedOpcodeHandlers.put(0x3F, () -> SRL_A());
-        //extendedOpcodeHandlers.put(0x40, () -> BIT_B(0));
-        //extendedOpcodeHandlers.put(0x41, () -> BIT_C(0));
-        //extendedOpcodeHandlers.put(0x42, () -> BIT_D(0));
-        //extendedOpcodeHandlers.put(0x43, () -> BIT_E(0));
-        //extendedOpcodeHandlers.put(0x44, () -> BIT_H(0));
-        //extendedOpcodeHandlers.put(0x45, () -> BIT_L(0));
-        //extendedOpcodeHandlers.put(0x46, () -> BIT_HL(0));
-        //extendedOpcodeHandlers.put(0x47, () -> BIT_A(0));
-        //extendedOpcodeHandlers.put(0x48, () -> BIT_B(1));
-        //extendedOpcodeHandlers.put(0x49, () -> BIT_C(1));
-        //extendedOpcodeHandlers.put(0x4A, () -> BIT_D(1));
-        //extendedOpcodeHandlers.put(0x4B, () -> BIT_E(1));
-        //extendedOpcodeHandlers.put(0x4C, () -> BIT_H(1));
-        //extendedOpcodeHandlers.put(0x4D, () -> BIT_L(1));
-        //extendedOpcodeHandlers.put(0x4E, () -> BIT_HL(1));
-        //extendedOpcodeHandlers.put(0x4F, () -> BIT_A(1));
-        //extendedOpcodeHandlers.put(0x50, () -> BIT_B(2));
-        //extendedOpcodeHandlers.put(0x51, () -> BIT_C(2));
-        //extendedOpcodeHandlers.put(0x52, () -> BIT_D(2));
-        //extendedOpcodeHandlers.put(0x53, () -> BIT_E(2));
-        //extendedOpcodeHandlers.put(0x54, () -> BIT_H(2));
-        //extendedOpcodeHandlers.put(0x55, () -> BIT_L(2));
-        //extendedOpcodeHandlers.put(0x56, () -> BIT_HL(2));
-        //extendedOpcodeHandlers.put(0x57, () -> BIT_A(2));
-        //extendedOpcodeHandlers.put(0x58, () -> BIT_B(3));
-        //extendedOpcodeHandlers.put(0x59, () -> BIT_C(3));
-        //extendedOpcodeHandlers.put(0x5A, () -> BIT_D(3));
-        //extendedOpcodeHandlers.put(0x5B, () -> BIT_E(3));
-        //extendedOpcodeHandlers.put(0x5C, () -> BIT_H(3));
-        //extendedOpcodeHandlers.put(0x5D, () -> BIT_L(3));
-        //extendedOpcodeHandlers.put(0x5E, () -> BIT_HL(3));
-        //extendedOpcodeHandlers.put(0x5F, () -> BIT_A(3));
-        //extendedOpcodeHandlers.put(0x60, () -> BIT(4, "b"));
-        //extendedOpcodeHandlers.put(0x61, () -> BIT(4, "c"));
-        //extendedOpcodeHandlers.put(0x62, () -> BIT(4, "d"));
-        //extendedOpcodeHandlers.put(0x63, () -> BIT(4, "e"));
-        //extendedOpcodeHandlers.put(0x64, () -> BIT(4, "h"));
-        //extendedOpcodeHandlers.put(0x65, () -> BIT(4, "l"));
-        //extendedOpcodeHandlers.put(0x66, () -> BIT_HL(4));
-        //extendedOpcodeHandlers.put(0x67, () -> BIT(4, "a"));
-        //extendedOpcodeHandlers.put(0x68, () -> BIT(5, "b"));
-        //extendedOpcodeHandlers.put(0x69, () -> BIT(5, "c"));
-        //extendedOpcodeHandlers.put(0x6A, () -> BIT(5, "d"));
-        //extendedOpcodeHandlers.put(0x6B, () -> BIT(5, "e"));
-        //extendedOpcodeHandlers.put(0x6C, () -> BIT(5, "h"));
-        //extendedOpcodeHandlers.put(0x6D, () -> BIT(5, "l"));
-        //extendedOpcodeHandlers.put(0x6E, () -> BIT_HL(5));
-        //extendedOpcodeHandlers.put(0x6F, () -> BIT(5, "a"));
-        //extendedOpcodeHandlers.put(0x70, () -> BIT(6, "b"));
-        //extendedOpcodeHandlers.put(0x71, () -> BIT(6, "c"));
-        //extendedOpcodeHandlers.put(0x72, () -> BIT(6, "d"));
-        //extendedOpcodeHandlers.put(0x73, () -> BIT(6, "e"));
-        //extendedOpcodeHandlers.put(0x74, () -> BIT(6, "h"));
-        //extendedOpcodeHandlers.put(0x75, () -> BIT(6, "l"));
-        //extendedOpcodeHandlers.put(0x76, () -> BIT_HL(6));
-        //extendedOpcodeHandlers.put(0x77, () -> BIT(6, "a"));
-        //extendedOpcodeHandlers.put(0x78, () -> BIT(7, "b"));
-        //extendedOpcodeHandlers.put(0x79, () -> BIT(7, "c"));
-        //extendedOpcodeHandlers.put(0x7A, () -> BIT(7, "d"));
-        //extendedOpcodeHandlers.put(0x7B, () -> BIT(7, "e"));
-        //extendedOpcodeHandlers.put(0x7C, () -> BIT(7, "h"));
-        //extendedOpcodeHandlers.put(0x7D, () -> BIT(7, "l"));
-        //extendedOpcodeHandlers.put(0x7E, () -> BIT_HL(7));
-        //extendedOpcodeHandlers.put(0x7F, () -> BIT(7, "a"));
+        extendedOpcodeHandlers.put(0x28, () -> SRA("b"));
+        extendedOpcodeHandlers.put(0x29, () -> SRA("c"));
+        extendedOpcodeHandlers.put(0x2A, () -> SRA("d"));
+        extendedOpcodeHandlers.put(0x2B, () -> SRA("e"));
+        extendedOpcodeHandlers.put(0x2C, () -> SRA("h"));
+        extendedOpcodeHandlers.put(0x2D, () -> SRA("l"));
+        extendedOpcodeHandlers.put(0x2E, () -> SRA("(hl)"));
+        extendedOpcodeHandlers.put(0x2F, () -> SRA("a"));
+        extendedOpcodeHandlers.put(0x30, () -> SWAP("b"));
+        extendedOpcodeHandlers.put(0x31, () -> SWAP("c"));
+        extendedOpcodeHandlers.put(0x32, () -> SWAP("d"));
+        extendedOpcodeHandlers.put(0x33, () -> SWAP("e"));
+        extendedOpcodeHandlers.put(0x34, () -> SWAP("h"));
+        extendedOpcodeHandlers.put(0x35, () -> SWAP("l"));
+        extendedOpcodeHandlers.put(0x36, () -> SWAP("(hl)"));
+        extendedOpcodeHandlers.put(0x37, () -> SWAP("a"));
+        extendedOpcodeHandlers.put(0x38, () -> SRL("b"));
+        extendedOpcodeHandlers.put(0x39, () -> SRL("c"));
+        extendedOpcodeHandlers.put(0x3A, () -> SRL("d"));
+        extendedOpcodeHandlers.put(0x3B, () -> SRL("e"));
+        extendedOpcodeHandlers.put(0x3C, () -> SRL("h"));
+        extendedOpcodeHandlers.put(0x3D, () -> SRL("l"));
+        extendedOpcodeHandlers.put(0x3E, () -> SRL("(hl)"));
+        extendedOpcodeHandlers.put(0x3F, () -> SRL("a"));
+        extendedOpcodeHandlers.put(0x40, () -> BIT(0, "b"));
+        extendedOpcodeHandlers.put(0x41, () -> BIT(0, "c"));
+        extendedOpcodeHandlers.put(0x42, () -> BIT(0, "d"));
+        extendedOpcodeHandlers.put(0x43, () -> BIT(0, "e"));
+        extendedOpcodeHandlers.put(0x44, () -> BIT(0, "h"));
+        extendedOpcodeHandlers.put(0x45, () -> BIT(0, "l"));
+        extendedOpcodeHandlers.put(0x46, () -> BIT(0, "(hl)"));
+        extendedOpcodeHandlers.put(0x47, () -> BIT(0, "a"));
+        extendedOpcodeHandlers.put(0x48, () -> BIT(1, "b"));
+        extendedOpcodeHandlers.put(0x49, () -> BIT(1, "c"));
+        extendedOpcodeHandlers.put(0x4A, () -> BIT(1, "d"));
+        extendedOpcodeHandlers.put(0x4B, () -> BIT(1, "e"));
+        extendedOpcodeHandlers.put(0x4C, () -> BIT(1, "h"));
+        extendedOpcodeHandlers.put(0x4D, () -> BIT(1, "l"));
+        extendedOpcodeHandlers.put(0x4E, () -> BIT(1, "(hl)"));
+        extendedOpcodeHandlers.put(0x4F, () -> BIT(1, "a"));
+        extendedOpcodeHandlers.put(0x50, () -> BIT(2, "b"));
+        extendedOpcodeHandlers.put(0x51, () -> BIT(2, "c"));
+        extendedOpcodeHandlers.put(0x52, () -> BIT(2, "d"));
+        extendedOpcodeHandlers.put(0x53, () -> BIT(2, "e"));
+        extendedOpcodeHandlers.put(0x54, () -> BIT(2, "h"));
+        extendedOpcodeHandlers.put(0x55, () -> BIT(2, "l"));
+        extendedOpcodeHandlers.put(0x56, () -> BIT(2, "(hl)"));
+        extendedOpcodeHandlers.put(0x57, () -> BIT(2, "a"));
+        extendedOpcodeHandlers.put(0x58, () -> BIT(3, "b"));
+        extendedOpcodeHandlers.put(0x59, () -> BIT(3, "c"));
+        extendedOpcodeHandlers.put(0x5A, () -> BIT(3, "d"));
+        extendedOpcodeHandlers.put(0x5B, () -> BIT(3, "e"));
+        extendedOpcodeHandlers.put(0x5C, () -> BIT(3, "h"));
+        extendedOpcodeHandlers.put(0x5D, () -> BIT(3, "l"));
+        extendedOpcodeHandlers.put(0x5E, () -> BIT(3, "(hl)"));
+        extendedOpcodeHandlers.put(0x5F, () -> BIT(3, "a"));
+        extendedOpcodeHandlers.put(0x60, () -> BIT(4, "b"));
+        extendedOpcodeHandlers.put(0x61, () -> BIT(4, "c"));
+        extendedOpcodeHandlers.put(0x62, () -> BIT(4, "d"));
+        extendedOpcodeHandlers.put(0x63, () -> BIT(4, "e"));
+        extendedOpcodeHandlers.put(0x64, () -> BIT(4, "h"));
+        extendedOpcodeHandlers.put(0x65, () -> BIT(4, "l"));
+        extendedOpcodeHandlers.put(0x66, () -> BIT(4, "(hl)"));
+        extendedOpcodeHandlers.put(0x67, () -> BIT(4, "a"));
+        extendedOpcodeHandlers.put(0x68, () -> BIT(5, "b"));
+        extendedOpcodeHandlers.put(0x69, () -> BIT(5, "c"));
+        extendedOpcodeHandlers.put(0x6A, () -> BIT(5, "d"));
+        extendedOpcodeHandlers.put(0x6B, () -> BIT(5, "e"));
+        extendedOpcodeHandlers.put(0x6C, () -> BIT(5, "h"));
+        extendedOpcodeHandlers.put(0x6D, () -> BIT(5, "l"));
+        extendedOpcodeHandlers.put(0x6E, () -> BIT(5, "(hl)"));
+        extendedOpcodeHandlers.put(0x6F, () -> BIT(5, "a"));
+        extendedOpcodeHandlers.put(0x70, () -> BIT(6, "b"));
+        extendedOpcodeHandlers.put(0x71, () -> BIT(6, "c"));
+        extendedOpcodeHandlers.put(0x72, () -> BIT(6, "d"));
+        extendedOpcodeHandlers.put(0x73, () -> BIT(6, "e"));
+        extendedOpcodeHandlers.put(0x74, () -> BIT(6, "h"));
+        extendedOpcodeHandlers.put(0x75, () -> BIT(6, "l"));
+        extendedOpcodeHandlers.put(0x76, () -> BIT(6, "(hl)"));
+        extendedOpcodeHandlers.put(0x77, () -> BIT(6, "a"));
+        extendedOpcodeHandlers.put(0x78, () -> BIT(7, "b"));
+        extendedOpcodeHandlers.put(0x79, () -> BIT(7, "c"));
+        extendedOpcodeHandlers.put(0x7A, () -> BIT(7, "d"));
+        extendedOpcodeHandlers.put(0x7B, () -> BIT(7, "e"));
+        extendedOpcodeHandlers.put(0x7C, () -> BIT(7, "h"));
+        extendedOpcodeHandlers.put(0x7D, () -> BIT(7, "l"));
+        extendedOpcodeHandlers.put(0x7E, () -> BIT(7, "(hl)"));
+        extendedOpcodeHandlers.put(0x7F, () -> BIT(7, "a"));
         //extendedOpcodeHandlers.put(0x80, () -> RES_B(0, "b"));
         //extendedOpcodeHandlers.put(0x81, () -> RES_B(0, "c"));
         //extendedOpcodeHandlers.put(0x82, () -> RES_B(0, "d"));
@@ -555,6 +555,123 @@ public class Opcodes {
         //extendedOpcodeHandlers.put(0xFF, () -> RST(0x38));
     }
 
+    // checks if the bit in the specified register is set or not set Z flag is bit is not set clears it otherwise
+    public void BIT(int bit, String register) {
+        int regValue;
+
+        if(register.equals("(hl)"))
+            regValue = mem.readByte(regs.getHL());
+        else
+            regValue = regs.getRegisterValue(register);
+
+        // Test the specified bit
+        if (((regValue >> bit) & 0x01) == 0) {
+            // Bit is not set
+            regs.fByte.setZ(true);
+        } else {
+            // Bit is set
+            regs.fByte.setZ(false);
+        }
+
+        // Set other flag values
+        regs.fByte.setN(false);
+        regs.fByte.setH(true);
+
+        regs.setPC(regs.getPC() + 2);
+    }
+
+
+    // shift right logical. Shift register value to the right by one but filling the vacant one with 0
+    // sets carry flag to the bit that was shifted out
+    public void SRL(String register) {
+        int regValue;
+        if (register.equals("(hl)")) {
+            regValue = mem.readByte(regs.getHL());
+        } else {
+            regValue = regs.getRegisterValue(register);
+        }
+
+        // shift the value right by one bit
+        int result = regValue >> 1;
+
+        // set the carry flag to the value of the bit that was shifted out
+        regs.fByte.setC((regValue & 0x01) == 0x01);
+
+        // clear the half carry and subtract flags
+        regs.fByte.setH(false);
+        regs.fByte.setN(false);
+
+        // set the zero flag if the resulting value is zero
+        regs.fByte.setZ(result == 0);
+
+        // write the resulting value back to the original register or memory location
+        if (register.equals("(hl)")) {
+            mem.writeByte(regs.getHL(), result);
+        } else {
+            regs.setRegisterValue(register, result);
+        }
+        regs.setPC(regs.getPC() + 2);
+    }
+
+    // swap the high and low nibbles of the value stored in a register
+    public void SWAP(String register){
+        int regValue;
+        int result;
+
+        if(register.equals("(hl)")){
+            regValue = mem.readByte(regs.getHL());
+        }
+        else
+            regValue = regs.getRegisterValue(register);
+
+        // swap nibbles by extract low and high bits by ANDing them then shifting teh nibbles to the other sides
+        // then OR them to combine them back into a single value with the nibbles switched
+        result = ((regValue & 0x0F) << 4) | ((regValue & 0xF0) >> 4);
+
+        if(register.equals("(hl)"))
+            mem.writeByte(regs.getHL(), result);
+        else
+            regs.setRegisterValue(register, result);
+
+        regs.fByte.setZ(result == 0);
+        regs.fByte.setC(false);
+        regs.fByte.setH(false);
+        regs.fByte.setN(false);
+        regs.setPC(regs.getPC() + 2);
+    }
+
+    // right shift the value of the mdb of the original value is used as the new value of the shifted bit
+    public void SRA(String register) {
+        int regValue;
+        if (register.equals("(hl)")) {
+            regValue = mem.readByte(regs.getHL());
+        } else {
+            regValue = regs.getRegisterValue(register);
+        }
+
+        // right shift the original value
+        int result = regValue >> 1;
+
+        if ((regValue & 0x80) != 0) { // test if the original value's sign bit is set
+            result |= 0x80; // preserve the sign bit in the shifted value
+        }
+
+        if (register.equals("(hl)")) {
+            mem.writeByte(regs.getHL(), result);
+        } else {
+            regs.setRegisterValue(register, result);
+        }
+
+
+        regs.fByte.setZ(result ==0);
+        regs.fByte.setN(false);
+        regs.fByte.setH(false);
+        // set the carry flag to the value of the bit that was shifted out
+        regs.fByte.setC((regValue & 0x01) != 0);
+        regs.setPC(regs.getPC() + 2);
+    }
+
+
     // rotate content of the register left by 1 bit
     public void RL(String register){
         int regValue;
@@ -582,6 +699,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(msb == 1);
+        regs.setPC(regs.getPC() + 2);
     }
 
     // left shift arithmetic. Leftmost bit is set to zero and the carry flag is set to the original value of that bit
@@ -609,6 +727,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(msb == 1);
+        regs.setPC(regs.getPC() + 2);
     }
 
     // extended Right rotate
@@ -636,6 +755,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(lsb == 1);
+        regs.setPC(regs.getPC() + 2);
     }
 
     // Rotate left circular operation sets zero, subtract, half-carry, and carry
@@ -665,6 +785,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(msb == 1);
+        regs.setPC(regs.getPC() + 2);
     }
 
 
@@ -685,6 +806,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(lsb != 0);
+        regs.setPC(regs.getPC() + 2);
     }
 
 
@@ -699,6 +821,7 @@ public class Opcodes {
         int extendedOpcode = mem.readByte(regs.getPC() + 1);
         Runnable exOperation = extendedOpcodeHandlers.get(extendedOpcode);
         exOperation.run();
+        regs.setPC(regs.getPC() + 1);
     }
 
     // load value into intoRegister

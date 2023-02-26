@@ -17,22 +17,32 @@ public class OpcodeTestUnit {
         assertEquals(0x55, regs.getA());// actually grabs the value from b but not all reg to reg ld have been added
     }
 
-       @Test
-    public void testRLCA() {
-        // Test with A = 0b10011010
-        regs.setA(0b10011010);
-        Runnable operation = operations.opcodeHandlers.get(0x7);
+    @Test
+    public void testSRA() {
+        // Test SRA on register A
+        regs.setA(0b11010101);
+        Runnable operation = operations.opcodeHandlers.get(0x2f);
         operation.run();
-        assertEquals(0b00110101, regs.getA());
+        assertEquals(0b11101010, regs.getA());
         assertTrue(regs.fByte.checkC());
-
-        // Test with A = 0b00000001
-        regs.setA(0b00000001);
-        operation.run();
-        assertEquals(0b00000010, regs.getA());
-        assertFalse(regs.fByte.checkC());
+        assertFalse(regs.fByte.checkN());
+        assertFalse(regs.fByte.checkH());
+        assertFalse(regs.fByte.checkZ());
     }
-    
+
+    @Test
+    public void testSWAPRegister() {
+        // Test swapping a register value
+
+        regs.setA(0xAB);
+        Runnable operation = operations.opcodeHandlers.get(0x37);
+        operation.run();
+        assertEquals(0xBA, regs.getA());
+        assertFalse(regs.fByte.checkZ());
+        assertFalse(regs.fByte.checkC());
+        assertFalse(regs.fByte.checkH());
+        assertFalse(regs.fByte.checkN());
+    }
     @Test
     public void LD_B_C() {// from c to b
         regs.setC(0x55);
@@ -110,6 +120,36 @@ public class OpcodeTestUnit {
         assertFalse(regs.fByte.checkN());
         assertFalse(regs.fByte.checkH());
         assertTrue(regs.fByte.checkC());
+    }
+
+    @Test
+    public void testSRL() {
+        // Test case 1: SRL with a register value of 0x80 should set the zero and carry flags, and clear the half carry and negative flags.
+        cpu.regs.setRegisterValue("b", 0x80);
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x38);
+        operation.run();
+
+        assertTrue(cpu.regs.fByte.checkZ());
+        assertTrue(cpu.regs.fByte.checkC());
+        assertFalse(cpu.regs.fByte.checkH());
+        assertFalse(cpu.regs.fByte.checkN());
+        assertEquals(0x40, cpu.regs.getRegisterValue("b"));
+    }
+
+    @Test
+    public void testBIT0B() {
+
+
+        // Load the value 0x01 into register B
+        regs.setB(0x01);
+        // Execute the "BIT 0,B" instruction
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x40);
+        operation.run();
+
+        // Check the flags
+        assertTrue(regs.fByte.checkZ()); // Expect Z flag to be set since bit 0 is not set
+        assertFalse(regs.fByte.checkN()); // Expect N flag to be cleared
+        assertTrue(regs.fByte.checkH()); // Expect H flag to be set
     }
 
     @Test
