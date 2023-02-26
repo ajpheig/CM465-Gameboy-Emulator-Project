@@ -12,16 +12,41 @@ public class OpcodeTestUnit {
     @Test
     public void LD_AB() {// from one reg to another
         regs.setB(0x55);
-        Runnable operation = operations.opcodeHandlers.get(0x78 & 0xff);// opcode 0x78 LD a b
+        Runnable operation = operations.opcodeHandlers.get(0x78 & 0xff);
         operation.run();
         assertEquals(0x55, regs.getA());// actually grabs the value from b but not all reg to reg ld have been added
+    }
+
+    public class SetTest {
+        @Test
+        public void testSet() {
+
+            cpu.regs.setRegisterValue("B", 0b00110011);
+            regs.setB(0b00110011);
+            // Set bit 3 of register B to 1
+            Runnable operation = operations.extendedOpcodeHandlers.get(0xC0);
+            operation.run();
+
+            assertEquals(0b00111011, cpu.regs.getRegisterValue("B"));
+        }
+
+    @Test
+    public void testRES() {
+        // Set bit 0 in the B register to 1
+        regs.setB(0b00000001);
+        // Call RES(0, "B") to clear bit 0
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x80);
+        operation.run();
+
+        // Verify that bit 0 is now 0 in the B register
+        assertEquals(0b00000000, regs.getB());
     }
 
     @Test
     public void testSRA() {
         // Test SRA on register A
         regs.setA(0b11010101);
-        Runnable operation = operations.opcodeHandlers.get(0x2f);
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x2f);
         operation.run();
         assertEquals(0b11101010, regs.getA());
         assertTrue(regs.fByte.checkC());
@@ -35,7 +60,7 @@ public class OpcodeTestUnit {
         // Test swapping a register value
 
         regs.setA(0xAB);
-        Runnable operation = operations.opcodeHandlers.get(0x37);
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x37);
         operation.run();
         assertEquals(0xBA, regs.getA());
         assertFalse(regs.fByte.checkZ());
@@ -56,7 +81,7 @@ public class OpcodeTestUnit {
         // Test with carry flag not set
         regs.setA(0b00101010); // A = 0x2A
         regs.fByte.setC(false);
-        Runnable operation = operations.opcodeHandlers.get(0x17); // opcode RLA()
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x17); // opcode RLA()
         operation.run();
         assertEquals(0b01010100, regs.getA()); // A should be 0x54 after the rotate
         assertFalse(regs.fByte.checkC()); // carry flag should be reset

@@ -424,135 +424,191 @@ public class Opcodes {
         extendedOpcodeHandlers.put(0x7D, () -> BIT(7, "l"));
         extendedOpcodeHandlers.put(0x7E, () -> BIT(7, "(hl)"));
         extendedOpcodeHandlers.put(0x7F, () -> BIT(7, "a"));
-        //extendedOpcodeHandlers.put(0x80, () -> RES_B(0, "b"));
-        //extendedOpcodeHandlers.put(0x81, () -> RES_B(0, "c"));
-        //extendedOpcodeHandlers.put(0x82, () -> RES_B(0, "d"));
-        //extendedOpcodeHandlers.put(0x83, () -> RES_B(0, "e"));
-        //extendedOpcodeHandlers.put(0x84, () -> RES_B(0, "h"));
-        //extendedOpcodeHandlers.put(0x85, () -> RES_B(0, "l"));
-        //extendedOpcodeHandlers.put(0x86, () -> RES_uHL(0));
-        //extendedOpcodeHandlers.put(0x87, () -> RES_B(0, "a"));
-        //extendedOpcodeHandlers.put(0x88, () -> RES_B(1, "b"));
-        //extendedOpcodeHandlers.put(0x89, () -> RES_B(1, "c"));
-        //extendedOpcodeHandlers.put(0x8A, () -> RES_B(1, "d"));
-        //extendedOpcodeHandlers.put(0x8B, () -> RES_B(1, "e"));
-        //extendedOpcodeHandlers.put(0x8C, () -> RES_B(1, "h"));
-        //extendedOpcodeHandlers.put(0x8D, () -> RES_B(1, "l"));
-        //extendedOpcodeHandlers.put(0x8E, () -> RES_uHL(1));
-        //extendedOpcodeHandlers.put(0x8F, () -> RES_B(1, "a"));
-        //extendedOpcodeHandlers.put(0x90, () -> RES_B(2, "b"));
-        //extendedOpcodeHandlers.put(0x91, () -> RES_B(2, "c"));
-        //extendedOpcodeHandlers.put(0x92, () -> RES_B(2, "d"));
-        //extendedOpcodeHandlers.put(0x93, () -> RES_B(2, "e"));
-        //extendedOpcodeHandlers.put(0x94, () -> RES_B(2, "h"));
-        //extendedOpcodeHandlers.put(0x95, () -> RES_B(2, "l"));
-        //extendedOpcodeHandlers.put(0x96, () -> RES_uHL(2));
-        //extendedOpcodeHandlers.put(0x97, () -> RES_B(2, "a"));
-        //extendedOpcodeHandlers.put(0x98, () -> RES_B(3, "b"));
-        //extendedOpcodeHandlers.put(0x99, () -> RES_B(3, "c"));
-        //extendedOpcodeHandlers.put(0x9A, () -> RES_B(3, "d"));
-        //extendedOpcodeHandlers.put(0x9B, () -> RES_B(3, "e"));
-        //extendedOpcodeHandlers.put(0x9C, () -> RES_B(3, "h"));
-        //extendedOpcodeHandlers.put(0x9D, () -> RES_B(3, "l"));
-        //extendedOpcodeHandlers.put(0x9E, () -> RES_uHL(3));
-        //extendedOpcodeHandlers.put(0x9F, () -> RES_B(3, "a"));
-        //extendedOpcodeHandlers.put(0xA0, () -> RES_B(4, "b"));
-        //extendedOpcodeHandlers.put(0xA1, () -> RES_B(4, "c"));
-        //extendedOpcodeHandlers.put(0xA2, () -> RES_B(4, "d"));
-        //extendedOpcodeHandlers.put(0xA3, () -> RES_B(4, "e"));
-        //extendedOpcodeHandlers.put(0xA4, () -> RES_B(4, "h"));
-        //extendedOpcodeHandlers.put(0xA5, () -> RES_B(4, "l"));
-        //extendedOpcodeHandlers.put(0xA6, () -> RES_uHL(4));
-        //extendedOpcodeHandlers.put(0xA6, () -> AND_A());
-        //extendedOpcodeHandlers.put(0xA7, () -> RST(0x20));
-        //extendedOpcodeHandlers.put(0xA8, () -> XOR_B());
-        //extendedOpcodeHandlers.put(0xA9, () -> XOR_C());
-        //extendedOpcodeHandlers.put(0xAA, () -> XOR_D());
-        //extendedOpcodeHandlers.put(0xAB, () -> XOR_E());
-        //extendedOpcodeHandlers.put(0xAC, () -> XOR_H());
-        //extendedOpcodeHandlers.put(0xAD, () -> XOR_L());
-        //extendedOpcodeHandlers.put(0xAE, () -> XOR_HL());
-        //extendedOpcodeHandlers.put(0xAF, () -> XOR_A());
-        //extendedOpcodeHandlers.put(0xB0, () -> OR_B());
-        //extendedOpcodeHandlers.put(0xB1, () -> OR_C());
-        //extendedOpcodeHandlers.put(0xB2, () -> OR_D());
-        //extendedOpcodeHandlers.put(0xB3, () -> OR_E());
-        //extendedOpcodeHandlers.put(0xB4, () -> OR_H());
-        //extendedOpcodeHandlers.put(0xB5, () -> OR_L());
-        //extendedOpcodeHandlers.put(0xB6, () -> OR_HL());
-        //extendedOpcodeHandlers.put(0xB7, () -> CP_A());
-        //extendedOpcodeHandlers.put(0xB8, () -> RET_C());
-        //extendedOpcodeHandlers.put(0xB9, () -> RET_NC());
-        //extendedOpcodeHandlers.put(0xBA, () -> RET_Z());
-        //extendedOpcodeHandlers.put(0xBB, () -> RET_NZ());
-        //extendedOpcodeHandlers.put(0xBC, () -> LD_A_u8());
-        //extendedOpcodeHandlers.put(0xBD, () -> POP_AF());
-        //extendedOpcodeHandlers.put(0xBE, () -> LD_A_HLI());
-        //extendedOpcodeHandlers.put(0xBF, () -> CP_u8());
-        //extendedOpcodeHandlers.put(0xC0, () -> RET_C());
-        //extendedOpcodeHandlers.put(0xC1, () -> POP_BC());
-        //extendedOpcodeHandlers.put(0xC2, () -> JP_C_u16());
-        //extendedOpcodeHandlers.put(0xC3, () -> CB_PREFIX());
-        //extendedOpcodeHandlers.put(0xC4, () -> CALL_C_u16());
-        //extendedOpcodeHandlers.put(0xC5, () -> PUSH_BC());
-        //extendedOpcodeHandlers.put(0xC6, () -> ADD_u8());
-        //extendedOpcodeHandlers.put(0xC7, () -> RST(0x00));
-        //extendedOpcodeHandlers.put(0xC8, () -> RET_C());
-        //extendedOpcodeHandlers.put(0xC9, () -> RET());
-        //extendedOpcodeHandlers.put(0xCA, () -> JP_C_u16());
-        //extendedOpcodeHandlers.put(0xCB, () -> CB_PREFIX());
-        //extendedOpcodeHandlers.put(0xCC, () -> CALL_C_u16());
-        //extendedOpcodeHandlers.put(0xCD, () -> CALL_u16());
-        //extendedOpcodeHandlers.put(0xCE, () -> ADC_u8());
-        //extendedOpcodeHandlers.put(0xCF, () -> RST(0x08));
-        //extendedOpcodeHandlers.put(0xD0, () -> RET_NC());
-        //extendedOpcodeHandlers.put(0xD1, () -> POP_DE());
-        //extendedOpcodeHandlers.put(0xD2, () -> JP_NC_u16());
-        //extendedOpcodeHandlers.put(0xD3, () -> INVALID_OPCODE());
-        //extendedOpcodeHandlers.put(0xD4, () -> CALL_NC_u16());
-        //extendedOpcodeHandlers.put(0xD5, () -> PUSH_DE());
-        //extendedOpcodeHandlers.put(0xD6, () -> SUB_u8());
-        //extendedOpcodeHandlers.put(0xD7, () -> RST(0x10));
-        //extendedOpcodeHandlers.put(0xD8, () -> RET_C());
-        //extendedOpcodeHandlers.put(0xD9, () -> RETI());
-        //extendedOpcodeHandlers.put(0xDA, () -> JP_C_nn());
-        //extendedOpcodeHandlers.put(0xDB, () -> NOP());
-        //extendedOpcodeHandlers.put(0xDC, () -> CALL_C_nn());
-        //extendedOpcodeHandlers.put(0xDD, () -> NOP());
-        //extendedOpcodeHandlers.put(0xDE, () -> SBC_A_n());
-        //extendedOpcodeHandlers.put(0xDF, () -> RST_18H());
-        //extendedOpcodeHandlers.put(0xE0, () -> LDH_n_A());
-        //extendedOpcodeHandlers.put(0xE1, () -> POP_HL());
-        //extendedOpcodeHandlers.put(0xE2, () -> LD_C_A());
-        //extendedOpcodeHandlers.put(0xE3, () -> NOP());
-        //extendedOpcodeHandlers.put(0xE4, () -> NOP());
-        //extendedOpcodeHandlers.put(0xE5, () -> PUSH_HL());
-        //extendedOpcodeHandlers.put(0xE6, () -> AND_n());
-        //extendedOpcodeHandlers.put(0xE7, () -> RST_20H());
-        //extendedOpcodeHandlers.put(0xE8, () -> ADD_SP_n());
-        //extendedOpcodeHandlers.put(0xE9, () -> JP_HL());
-        //extendedOpcodeHandlers.put(0xEA, () -> LD_nn_A());
-        //extendedOpcodeHandlers.put(0xEB, () -> NOP());
-        //extendedOpcodeHandlers.put(0xEC, () -> NOP());
-        //extendedOpcodeHandlers.put(0xED, () -> NOP());
-        //extendedOpcodeHandlers.put(0xEE, () -> XOR_n());
-        //extendedOpcodeHandlers.put(0xEF, () -> RST_28H());
-        //extendedOpcodeHandlers.put(0xF0, () -> LDH_A_n(mem.readByte(0xFF00 + mem.readByte(regs.getPC() + 1))));
-        //extendedOpcodeHandlers.put(0xF1, () -> POP_AF());
-        //extendedOpcodeHandlers.put(0xF2, () -> LD_A_n(mem.readByte(0xFF00 + regs.getC())));
-        //extendedOpcodeHandlers.put(0xF3, () -> DI());
-        //extendedOpcodeHandlers.put(0xF4, NOP());
-        //extendedOpcodeHandlers.put(0xF5, () -> PUSH_AF());
-        //extendedOpcodeHandlers.put(0xF6, () -> OR_n(mem.readByte(regs.getPC() + 1)));
-        //extendedOpcodeHandlers.put(0xF7, () -> RST(0x30));
-        //extendedOpcodeHandlers.put(0xF8, () -> LDHL_SP_n(mem.readByte(regs.getPC() + 1)));
-        //extendedOpcodeHandlers.put(0xF9, () -> LD_SP_HL());
-        //extendedOpcodeHandlers.put(0xFA, () -> LD_A_nn(mem.readWord(regs.getPC() + 1)));
-        //extendedOpcodeHandlers.put(0xFB, () -> EI());
-        //extendedOpcodeHandlers.put(0xFC, NOP());
-        //extendedOpcodeHandlers.put(0xFD, NOP());
-        //extendedOpcodeHandlers.put(0xFE, () -> CP_n(mem.readByte(regs.getPC() + 1)));
-        //extendedOpcodeHandlers.put(0xFF, () -> RST(0x38));
+        extendedOpcodeHandlers.put(0x80, () -> RES(0, "b"));
+        extendedOpcodeHandlers.put(0x81, () -> RES(0, "c"));
+        extendedOpcodeHandlers.put(0x82, () -> RES(0, "d"));
+        extendedOpcodeHandlers.put(0x83, () -> RES(0, "e"));
+        extendedOpcodeHandlers.put(0x84, () -> RES(0, "h"));
+        extendedOpcodeHandlers.put(0x85, () -> RES(0, "l"));
+        extendedOpcodeHandlers.put(0x86, () -> RES(0, "(hl)"));
+        extendedOpcodeHandlers.put(0x87, () -> RES(0, "a"));
+        extendedOpcodeHandlers.put(0x88, () -> RES(1, "b"));
+        extendedOpcodeHandlers.put(0x89, () -> RES(1, "c"));
+        extendedOpcodeHandlers.put(0x8A, () -> RES(1, "d"));
+        extendedOpcodeHandlers.put(0x8B, () -> RES(1, "e"));
+        extendedOpcodeHandlers.put(0x8C, () -> RES(1, "h"));
+        extendedOpcodeHandlers.put(0x8D, () -> RES(1, "l"));
+        extendedOpcodeHandlers.put(0x8E, () -> RES(1, "(hl)"));
+        extendedOpcodeHandlers.put(0x8F, () -> RES(1, "a"));
+        extendedOpcodeHandlers.put(0x90, () -> RES(2, "b"));
+        extendedOpcodeHandlers.put(0x91, () -> RES(2, "c"));
+        extendedOpcodeHandlers.put(0x92, () -> RES(2, "d"));
+        extendedOpcodeHandlers.put(0x93, () -> RES(2, "e"));
+        extendedOpcodeHandlers.put(0x94, () -> RES(2, "h"));
+        extendedOpcodeHandlers.put(0x95, () -> RES(2, "l"));
+        extendedOpcodeHandlers.put(0x96, () -> RES(2, "(hl)"));
+        extendedOpcodeHandlers.put(0x97, () -> RES(2, "a"));
+        extendedOpcodeHandlers.put(0x98, () -> RES(3, "b"));
+        extendedOpcodeHandlers.put(0x99, () -> RES(3, "c"));
+        extendedOpcodeHandlers.put(0x9A, () -> RES(3, "d"));
+        extendedOpcodeHandlers.put(0x9B, () -> RES(3, "e"));
+        extendedOpcodeHandlers.put(0x9C, () -> RES(3, "h"));
+        extendedOpcodeHandlers.put(0x9D, () -> RES(3, "l"));
+        extendedOpcodeHandlers.put(0x9E, () -> RES(3, "(hl)"));
+        extendedOpcodeHandlers.put(0x9F, () -> RES(3, "a"));
+        extendedOpcodeHandlers.put(0xA0, () -> RES(4, "b"));
+        extendedOpcodeHandlers.put(0xA1, () -> RES(4, "c"));
+        extendedOpcodeHandlers.put(0xA2, () -> RES(4, "d"));
+        extendedOpcodeHandlers.put(0xA3, () -> RES(4, "e"));
+        extendedOpcodeHandlers.put(0xA4, () -> RES(4, "h"));
+        extendedOpcodeHandlers.put(0xA5, () -> RES(4, "l"));
+        extendedOpcodeHandlers.put(0xA6, () -> RES(4, "(hl)"));
+        extendedOpcodeHandlers.put(0xA7, () -> RES(4, "a"));
+        extendedOpcodeHandlers.put(0xA8, () -> RES(5, "b"));
+        extendedOpcodeHandlers.put(0xA9, () -> RES(5, "c"));
+        extendedOpcodeHandlers.put(0xAA, () -> RES(5, "d"));
+        extendedOpcodeHandlers.put(0xAB, () -> RES(5, "e"));
+        extendedOpcodeHandlers.put(0xAC, () -> RES(5, "h"));
+        extendedOpcodeHandlers.put(0xAD, () -> RES(5, "l"));
+        extendedOpcodeHandlers.put(0xAE, () -> RES(5, "(hl)"));
+        extendedOpcodeHandlers.put(0xAF, () -> RES(5, "a"));
+        extendedOpcodeHandlers.put(0xB0, () -> RES(6, "b"));
+        extendedOpcodeHandlers.put(0xB1, () -> RES(6, "c"));
+        extendedOpcodeHandlers.put(0xB2, () -> RES(6, "d"));
+        extendedOpcodeHandlers.put(0xB3, () -> RES(6, "e"));
+        extendedOpcodeHandlers.put(0xB4, () -> RES(6, "h"));
+        extendedOpcodeHandlers.put(0xB5, () -> RES(6, "l"));
+        extendedOpcodeHandlers.put(0xB6, () -> RES(6, "(hl)"));
+        extendedOpcodeHandlers.put(0xB7, () -> RES(6, "a"));
+        extendedOpcodeHandlers.put(0xB8, () -> RES(7, "b"));
+        extendedOpcodeHandlers.put(0xB9, () -> RES(7, "c"));
+        extendedOpcodeHandlers.put(0xBA, () -> RES(7, "d"));
+        extendedOpcodeHandlers.put(0xBB, () -> RES(7, "e"));
+        extendedOpcodeHandlers.put(0xBC, () -> RES(7, "h"));
+        extendedOpcodeHandlers.put(0xBD, () -> RES(7, "l"));
+        extendedOpcodeHandlers.put(0xBE, () -> RES(7, "(hl)"));
+        extendedOpcodeHandlers.put(0xBF, () -> RES(7, "a"));
+        extendedOpcodeHandlers.put(0xC0, () -> SET(0,"b"));
+        extendedOpcodeHandlers.put(0xC1, () -> SET(0, "c"));
+        extendedOpcodeHandlers.put(0xC2, () -> SET(0, "d"));
+        extendedOpcodeHandlers.put(0xC3, () -> SET(0, "e"));
+        extendedOpcodeHandlers.put(0xC4, () -> SET(0, "h"));
+        extendedOpcodeHandlers.put(0xC5, () -> SET(0, "l"));
+        extendedOpcodeHandlers.put(0xC6, () -> SET(0, "(hl)"));
+        extendedOpcodeHandlers.put(0xC7, () -> SET(0, "a"));
+        extendedOpcodeHandlers.put(0xC8, () -> SET(1, "b"));
+        extendedOpcodeHandlers.put(0xC9, () -> SET(1, "c"));
+        extendedOpcodeHandlers.put(0xCA, () -> SET(1, "d"));
+        extendedOpcodeHandlers.put(0xCB, () -> SET(1, "e"));
+        extendedOpcodeHandlers.put(0xCC, () -> SET(1, "h"));
+        extendedOpcodeHandlers.put(0xCD, () -> SET(1, "l"));
+        extendedOpcodeHandlers.put(0xCE, () -> SET(1, "(hl)"));
+        extendedOpcodeHandlers.put(0xCF, () -> SET(1, "a"));
+        extendedOpcodeHandlers.put(0xD0, () -> SET(2, "b"));
+        extendedOpcodeHandlers.put(0xD1, () -> SET(2, "c"));
+        extendedOpcodeHandlers.put(0xD2, () -> SET(2, "d"));
+        extendedOpcodeHandlers.put(0xD3, () -> SET(2, "e"));
+        extendedOpcodeHandlers.put(0xD4, () -> SET(2, "h"));
+        extendedOpcodeHandlers.put(0xD5, () -> SET(2, "l"));
+        extendedOpcodeHandlers.put(0xD6, () -> SET(2, "(hl)"));
+        extendedOpcodeHandlers.put(0xD7, () -> SET(2, "a"));
+        extendedOpcodeHandlers.put(0xD8, () -> SET(3, "b"));
+        extendedOpcodeHandlers.put(0xD9, () -> SET(3, "c"));
+        extendedOpcodeHandlers.put(0xDA, () -> SET(3, "d"));
+        extendedOpcodeHandlers.put(0xDB, () -> SET(3, "e"));
+        extendedOpcodeHandlers.put(0xDC, () -> SET(3, "h"));
+        extendedOpcodeHandlers.put(0xDD, () -> SET(3, "l"));
+        extendedOpcodeHandlers.put(0xDE, () -> SET(3, "(hl)"));
+        extendedOpcodeHandlers.put(0xDF, () -> SET(3, "a"));
+        extendedOpcodeHandlers.put(0xE0, () -> SET(4, "b"));
+        extendedOpcodeHandlers.put(0xE1, () -> SET(4, "c"));
+        extendedOpcodeHandlers.put(0xE2, () -> SET(4, "d"));
+        extendedOpcodeHandlers.put(0xE3, () -> SET(4, "e"));
+        extendedOpcodeHandlers.put(0xE4, () -> SET(4, "h"));
+        extendedOpcodeHandlers.put(0xE5, () -> SET(4, "l"));
+        extendedOpcodeHandlers.put(0xE6, () -> SET(4, "(hl)"));
+        extendedOpcodeHandlers.put(0xE7, () -> SET(4, "a"));
+        extendedOpcodeHandlers.put(0xE8, () -> SET(5, "b"));
+        extendedOpcodeHandlers.put(0xE9, () -> SET(5, "c"));
+        extendedOpcodeHandlers.put(0xEA, () -> SET(5, "d"));
+        extendedOpcodeHandlers.put(0xEB, () -> SET(5, "e"));
+        extendedOpcodeHandlers.put(0xEC, () -> SET(5, "h"));
+        extendedOpcodeHandlers.put(0xED, () -> SET(5, "l"));
+        extendedOpcodeHandlers.put(0xEE, () -> SET(5, "(hl)"));
+        extendedOpcodeHandlers.put(0xEF, () -> SET(5, "a"));
+        extendedOpcodeHandlers.put(0xF0, () -> SET(6, "b"));
+        extendedOpcodeHandlers.put(0xF1, () -> SET(6, "c"));
+        extendedOpcodeHandlers.put(0xF2, () -> SET(6, "d"));
+        extendedOpcodeHandlers.put(0xF3, () -> SET(6, "e"));
+        extendedOpcodeHandlers.put(0xF4, () -> SET(6, "h"));
+        extendedOpcodeHandlers.put(0xF5, () -> SET(6, "l"));
+        extendedOpcodeHandlers.put(0xF6, () -> SET(6, "(hl)"));
+        extendedOpcodeHandlers.put(0xF7, () -> SET(6, "a"));
+        extendedOpcodeHandlers.put(0xF8, () -> SET(7, "b"));
+        extendedOpcodeHandlers.put(0xF9, () -> SET(7, "c"));
+        extendedOpcodeHandlers.put(0xFA, () -> SET(7, "d"));
+        extendedOpcodeHandlers.put(0xFB, () -> SET(7, "e"));
+        extendedOpcodeHandlers.put(0xFC, () -> SET(7, "h"));
+        extendedOpcodeHandlers.put(0xFD, () -> SET(7, "l"));
+        extendedOpcodeHandlers.put(0xFE, () -> SET(7, "(hl)"));
+        extendedOpcodeHandlers.put(0xFF, () -> SET(7, "a"));
+    }
+
+    // set the sepecified register in the specified bit to 1. Does not change any flags
+    public void SET(int bit, String register) {
+        int value;
+
+        if (register.equals("(HL)")) {
+            // Read the value from the memory location pointed to by HL
+            value = mem.readByte(regs.getHL());
+        } else {
+            // Read the value from the specified register
+            value = regs.getRegisterValue(register);
+        }
+
+        // shift the integer 1 to the left by the number passed into bit so only the one we are setting is set to one
+        // and the others are set to zero |= does a bitwise OR btwn valiue and (1 << bit) wich sets and bit that is in
+        // either to one in the result
+        value |= (1 << bit);
+
+        if (register.equals("(HL)")) {
+            // Write the value back to the memory location pointed to by HL
+            mem.writeByte(regs.getHL(), value);
+        } else {
+            // Write the value back to the specified register
+            regs.setRegisterValue(register, value);
+        }
+
+        regs.setPC(regs.getPC() + 2);
+    }
+
+
+    // clear a specific bit 0-7 in a specific register. Does not change any flags
+    public void RES(int bit, String register) {
+        int value;
+
+        if (register.equals("(HL)")) {
+            // Read the value from the memory location pointed to by HL
+            value = mem.readByte(regs.getHL());
+        } else {
+            // Read the value from the specified register
+            value = regs.getRegisterValue(register);
+        }
+
+        // shift the bits one to the left, use NOT ~ to remove the bit then AND & with the original value to leave
+        // all the other bits unchanged
+        // does not set any flags
+        value &= ~(1 << bit);
+
+        if (register.equals("(HL)")) {
+            // Write the value back to the memory location pointed to by HL
+           mem.writeByte(regs.getHL(), value);
+        } else {
+            // Write the value back to the specified register
+           regs.setRegisterValue(register, value);
+        }
+
+        regs.setPC(regs.getPC() + 2);
     }
 
     // checks if the bit in the specified register is set or not set Z flag is bit is not set clears it otherwise
