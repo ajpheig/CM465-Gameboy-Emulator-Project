@@ -26,6 +26,25 @@ public class OpcodeTestUnit {
     }
 
     @Test
+    public void testRLA() {
+        // Test with carry flag not set
+        regs.setA(0b00101010); // A = 0x2A
+        regs.fByte.setC(false);
+        Runnable operation = operations.opcodeHandlers.get(0x17); // opcode RLA()
+        operation.run();
+        assertEquals(0b01010100, regs.getA()); // A should be 0x54 after the rotate
+        assertFalse(regs.fByte.checkC()); // carry flag should be reset
+
+        // Test with carry flag set
+        regs.setA(0b10000001); // A = 0x81
+        regs.fByte.setC(true);
+        Runnable operation2 = operations.opcodeHandlers.get(0x17); // opcode RLA()
+        operation2.run();
+        assertEquals(0b00000011, regs.getA()); // A should be 0x03 after the rotate
+        assertTrue(regs.fByte.checkC()); // carry flag should be set
+    }
+
+    @Test
     public void testRLC() {
         // Test RLC on register B with initial value 0x80
 
@@ -49,6 +68,21 @@ public class OpcodeTestUnit {
         assertFalse(regs.fByte.checkC());
     }
 
+    @Test
+    public void testRLCA() {
+        // Test with A = 0b10011010
+        regs.setA(0b10011010);
+        Runnable operation = operations.opcodeHandlers.get(0x7);
+        operation.run();
+        assertEquals(0b00110101, regs.getA());
+        assertTrue(regs.fByte.checkC());
+
+        // Test with A = 0b00000001
+        regs.setA(0b00000001);
+        operation.run();
+        assertEquals(0b00000010, regs.getA());
+        assertFalse(regs.fByte.checkC());
+    }
 
     @Test
     public void testRRCA() { // right rotate bits in a
