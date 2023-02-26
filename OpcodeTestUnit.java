@@ -17,6 +17,22 @@ public class OpcodeTestUnit {
         assertEquals(0x55, regs.getA());// actually grabs the value from b but not all reg to reg ld have been added
     }
 
+       @Test
+    public void testRLCA() {
+        // Test with A = 0b10011010
+        regs.setA(0b10011010);
+        Runnable operation = operations.opcodeHandlers.get(0x7);
+        operation.run();
+        assertEquals(0b00110101, regs.getA());
+        assertTrue(regs.fByte.checkC());
+
+        // Test with A = 0b00000001
+        regs.setA(0b00000001);
+        operation.run();
+        assertEquals(0b00000010, regs.getA());
+        assertFalse(regs.fByte.checkC());
+    }
+    
     @Test
     public void LD_B_C() {// from c to b
         regs.setC(0x55);
