@@ -187,4 +187,36 @@ public class Registers {
         }
         return value;
     }
+
+    public int setRegisterValue(String register, int value) {
+        switch (register) {
+            case "a":
+                setA(value);
+                break;
+            case "b":
+                setB(value);
+                break;
+            case "c":
+                setC(value);
+                break;
+            case "d":
+                setD(value);
+                break;
+            case "e":
+                setE(value);
+                break;
+            case "h":
+                setH(value);
+                break;
+            case "l":
+                setL(value);
+                break;
+            case "hl":
+                setHL(value);
+                break;
+            case "(hl)":
+                System.out.println("get the value pointed to by (HL)");
+        }
+        return value;
+    }
 }
