@@ -302,40 +302,40 @@ public class Opcodes {
         extendedOpcodeHandlers.put(0x3, () -> RLC("e"));
         extendedOpcodeHandlers.put(0x4, () -> RLC("h"));
         extendedOpcodeHandlers.put(0x5, () -> RLC("l"));
-        extendedOpcodeHandlers.put(0x6, () -> RLC("hl"));
+        extendedOpcodeHandlers.put(0x6, () -> RLC("(hl)"));
         extendedOpcodeHandlers.put(0x7, () -> RLC("a"));
-        //extendedOpcodeHandlers.put(0x8, () -> RRC_B());
-        //extendedOpcodeHandlers.put(0x9, () -> RRC_C());
-        //extendedOpcodeHandlers.put(0xA, () -> RRC_D());
-        //extendedOpcodeHandlers.put(0xB, () -> RRC_E());
-        //extendedOpcodeHandlers.put(0xC, () -> RRC_H());
-        //extendedOpcodeHandlers.put(0xD, () -> RRC_L());
-        //extendedOpcodeHandlers.put(0xE, () -> RRC_HL());
-        //extendedOpcodeHandlers.put(0xF, () -> RRC_A());
-        //extendedOpcodeHandlers.put(0x10, () -> RL_B());
-        //extendedOpcodeHandlers.put(0x11, () -> RL_C());
-        //extendedOpcodeHandlers.put(0x12, () -> RL_D());
-        //extendedOpcodeHandlers.put(0x13, () -> RL_E());
-        //extendedOpcodeHandlers.put(0x14, () -> RL_H());
-        //extendedOpcodeHandlers.put(0x15, () -> RL_L());
-        //extendedOpcodeHandlers.put(0x16, () -> RL_HL());
-        //extendedOpcodeHandlers.put(0x17, () -> RL_A());
-        //extendedOpcodeHandlers.put(0x18, () -> RR_B());
-        //extendedOpcodeHandlers.put(0x19, () -> RR_C());
-        //extendedOpcodeHandlers.put(0x1A, () -> RR_D());
-        //extendedOpcodeHandlers.put(0x1B, () -> RR_E());
-        //extendedOpcodeHandlers.put(0x1C, () -> RR_H());
-        //extendedOpcodeHandlers.put(0x1D, () -> RR_L());
-        //extendedOpcodeHandlers.put(0x1E, () -> RR_HL());
-        //extendedOpcodeHandlers.put(0x1F, () -> RR_A());
-        //extendedOpcodeHandlers.put(0x20, () -> SLA_B());
-        //extendedOpcodeHandlers.put(0x21, () -> SLA_C());
-        //extendedOpcodeHandlers.put(0x22, () -> SLA_D());
-        //extendedOpcodeHandlers.put(0x23, () -> SLA_E());
-        //extendedOpcodeHandlers.put(0x24, () -> SLA_H());
-        //extendedOpcodeHandlers.put(0x25, () -> SLA_L());
-        //extendedOpcodeHandlers.put(0x26, () -> SLA_HL());
-        //extendedOpcodeHandlers.put(0x27, () -> SLA_A());
+        extendedOpcodeHandlers.put(0x8, () -> RRC("b"));
+        extendedOpcodeHandlers.put(0x9, () -> RRC("c"));
+        extendedOpcodeHandlers.put(0xA, () -> RRC("d"));
+        extendedOpcodeHandlers.put(0xB, () -> RRC("e"));
+        extendedOpcodeHandlers.put(0xC, () -> RRC("h"));
+        extendedOpcodeHandlers.put(0xD, () -> RRC("l"));
+        extendedOpcodeHandlers.put(0xE, () -> RRC("hl"));
+        extendedOpcodeHandlers.put(0xF, () -> RRC("a"));
+        extendedOpcodeHandlers.put(0x10, () -> RL("b"));
+        extendedOpcodeHandlers.put(0x11, () -> RL("c"));
+        extendedOpcodeHandlers.put(0x12, () -> RL("d"));
+        extendedOpcodeHandlers.put(0x13, () -> RL("e"));
+        extendedOpcodeHandlers.put(0x14, () -> RL("h"));
+        extendedOpcodeHandlers.put(0x15, () -> RL("l"));
+        extendedOpcodeHandlers.put(0x16, () -> RL("(hl)"));
+        extendedOpcodeHandlers.put(0x17, () -> RL("a"));
+        extendedOpcodeHandlers.put(0x18, () -> RR("b"));
+        extendedOpcodeHandlers.put(0x19, () -> RR("c"));
+        extendedOpcodeHandlers.put(0x1A, () -> RR("d"));
+        extendedOpcodeHandlers.put(0x1B, () -> RR("e"));
+        extendedOpcodeHandlers.put(0x1C, () -> RR("d"));
+        extendedOpcodeHandlers.put(0x1D, () -> RR("l"));
+        extendedOpcodeHandlers.put(0x1E, () -> RR("hl"));
+        extendedOpcodeHandlers.put(0x1F, () -> RR("a"));
+        extendedOpcodeHandlers.put(0x20, () -> SLA("b"));
+        extendedOpcodeHandlers.put(0x21, () -> SLA("c"));
+        extendedOpcodeHandlers.put(0x22, () -> SLA("d"));
+        extendedOpcodeHandlers.put(0x23, () -> SLA("e"));
+        extendedOpcodeHandlers.put(0x24, () -> SLA("h"));
+        extendedOpcodeHandlers.put(0x25, () -> SLA("l"));
+        extendedOpcodeHandlers.put(0x26, () -> SLA("hl"));
+        extendedOpcodeHandlers.put(0x27, () -> SLA("a"));
         //extendedOpcodeHandlers.put(0x28, () -> SRA_B());
         //extendedOpcodeHandlers.put(0x29, () -> SRA_C());
         //extendedOpcodeHandlers.put(0x2A, () -> SRA_D());
@@ -554,15 +554,128 @@ public class Opcodes {
         //extendedOpcodeHandlers.put(0xFE, () -> CP_n(mem.readByte(regs.getPC() + 1)));
         //extendedOpcodeHandlers.put(0xFF, () -> RST(0x38));
     }
+
+    // rotate content of the register left by 1 bit
+    public void RL(String register){
+        int regValue;
+        if(register.equals("(hl)"))
+            regValue = mem.readByte(regs.getHL());
+        else
+            regValue = regs.getRegisterValue(register);
+
+        // get the most significant bit
+        int msb = (regValue & 0x80) >> 7;
+
+        // shift the value left by 1 bit then OR that with the carry flag then and that with FF to set any higher
+        //bits to zero so it will fit in a register.
+        regValue = ((regValue << 1) | (regs.fByte.checkC() ? 1 : 0)) & 0xFF;
+
+
+        // set the result in the register
+        if(register.equals("(hl"))
+            mem.writeByte(regs.getHL(), regValue);
+        else
+            regs.setRegisterValue(register, regValue);
+
+        // set flags
+        regs.fByte.setZ(regValue == 0);
+        regs.fByte.setN(false);
+        regs.fByte.setH(false);
+        regs.fByte.setC(msb == 1);
+    }
+
+    // left shift arithmetic. Leftmost bit is set to zero and the carry flag is set to the original value of that bit
+    public void SLA(String register) {
+        int regValue;
+        if(register.equals("(hl)"))
+            regValue = mem.readByte(regs.getHL());
+        else
+            regValue = regs.getRegisterValue(register);
+
+        // Get the most significant bit
+        int msb = (regValue & 0x80) >> 7;
+
+        // Shift the value left by 1 bit, setting the least significant bit to 0
+        regValue = (regValue << 1) & 0xFF;
+
+        // Set the result in the register
+        if(register.equals("(hl)"))
+            mem.writeByte(regs.getHL(), regValue);
+        else
+            regs.setRegisterValue(register, regValue);
+
+        // Set flags
+        regs.fByte.setZ(regValue == 0);
+        regs.fByte.setN(false);
+        regs.fByte.setH(false);
+        regs.fByte.setC(msb == 1);
+    }
+
+    // extended Right rotate
+    public void RR(String register) {
+        int regValue;
+        if(register.equals("(hl)"))
+            regValue = mem.readByte(regs.getHL());
+        else
+            regValue = regs.getRegisterValue(register);
+
+        // Get the least significant bit of the register
+        int lsb = regValue & 0x01;
+
+        // Shift the register value right by 1 and insert the previous carry flag into the most significant bit
+        regValue = (regValue >> 1) | (regs.fByte.checkC() ? 0x80 : 0x00);
+
+        // Set the result back into the register
+        if(register.equals("(hl)"))
+            mem.writeByte(regs.getHL(), regValue);
+        else
+            regs.setRegisterValue(register, regValue);
+
+        // Set the flags
+        regs.fByte.setZ(regValue == 0);
+        regs.fByte.setN(false);
+        regs.fByte.setH(false);
+        regs.fByte.setC(lsb == 1);
+    }
+
     // Rotate left circular operation sets zero, subtract, half-carry, and carry
     public void RLC(String register){
-        int regValue = regs.getRegisterValue(register);
+        int regValue;
+        if (register.equals("(hl)")) {
+            regValue = mem.readByte(regs.getHL());
+        } else {
+            regValue = regs.getRegisterValue(register);
+        }
 
         // get the most significant byte
         int msb = (regValue & 0x80) >> 7;
 
         // shift the value left by 1 bit and set the least significant byte to the msb
         regValue = ((regValue << 1) | msb) & 0xFF;
+
+        if (register.equals("(hl)")) {
+            mem.writeByte(regs.getHL(), regValue);
+        } else {
+            // set the result in the register
+            regs.setRegisterValue(register, regValue);
+        }
+
+        // set flags
+        regs.fByte.setZ(regValue == 0);
+        regs.fByte.setN(false);
+        regs.fByte.setH(false);
+        regs.fByte.setC(msb == 1);
+    }
+
+
+    public void RRC(String register) {
+        int regValue = regs.getRegisterValue(register);
+
+        // get the least significant bit
+        int lsb = regValue & 0x01;
+
+        // shift the value right by 1 bit and set the most significant byte to the lsb
+        regValue = ((regValue >> 1) | (lsb << 7)) & 0xFF;
 
         // set the result in the register
         regs.setRegisterValue(register, regValue);
@@ -571,7 +684,7 @@ public class Opcodes {
         regs.fByte.setZ(regValue == 0);
         regs.fByte.setN(false);
         regs.fByte.setH(false);
-        regs.fByte.setC(false);
+        regs.fByte.setC(lsb != 0);
     }
 
 
@@ -1012,6 +1125,10 @@ public class Opcodes {
         regs.setA(a);
 
         // Set the carry flag to the least significant bit of the register being rotated
+        regs.fByte.setC(carry != 0);
+        regs.fByte.setZ(false);
+        regs.fByte.setN(false);
+        regs.fByte.setH(false);
     }
 
     public void LDINCDECHL(String opcode) {

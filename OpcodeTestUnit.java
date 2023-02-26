@@ -83,7 +83,64 @@ public class OpcodeTestUnit {
         assertEquals(0b00000010, regs.getA());
         assertFalse(regs.fByte.checkC());
     }
+    @Test
+    public void testRLWithCarry() {
+        cpu.regs.setRegisterValue("b", 0x80); // binary 10000000
+        regs.fByte.setC(true);
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x10);
+        operation.run();
+        assertEquals(0x01, cpu.regs.getRegisterValue("b")); // binary 00000001
+        assertFalse(regs.fByte.checkZ());
+        assertFalse(regs.fByte.checkN());
+        assertFalse(regs.fByte.checkH());
+        assertTrue(regs.fByte.checkC());
+    }
 
+    @Test
+    public void testRLWithoutCarry() {
+        cpu.regs.setRegisterValue("c", 0x7F); // binary 01111111
+        regs.fByte.setC(false);
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x11);
+        operation.run();
+        assertEquals(0xFE, cpu.regs.getRegisterValue("c")); // binary 11111110
+        assertFalse(regs.fByte.checkZ());
+        assertFalse(regs.fByte.checkN());
+        assertFalse(regs.fByte.checkH());
+        assertFalse(regs.fByte.checkC());
+    }
+
+    @Test
+    public void testSLARegister() {
+        // Initialize CPU and register B with value 0x81
+
+        regs.setB(0x81);
+
+        // Perform SLA on register B
+       Runnable operation = operations.extendedOpcodeHandlers.get(0x20);
+        operation.run();
+        // Assert that register B has been shifted left and zero bit has been set
+        assertEquals(0x02, cpu.regs.getB());
+        assertTrue(cpu.regs.fByte.checkZ());
+        assertFalse(cpu.regs.fByte.checkN());
+        assertFalse(cpu.regs.fByte.checkH());
+        assertTrue(cpu.regs.fByte.checkC());
+
+
+    }
+
+    @Test
+    public void testRRB() {
+
+        regs.setB(0x80); // binary 10000000
+        cpu.regs.fByte.setC(true);
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x18);
+        operation.run();
+        assertEquals(0xC0, cpu.regs.getB()); // binary 11000000
+        assertTrue(cpu.regs.fByte.checkC());
+        assertFalse(cpu.regs.fByte.checkZ());
+        assertFalse(cpu.regs.fByte.checkN());
+        assertFalse(cpu.regs.fByte.checkH());
+    }
     @Test
     public void testRRCA() { // right rotate bits in a
         // Test with A = 0b10011010
