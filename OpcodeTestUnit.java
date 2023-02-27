@@ -1,3 +1,4 @@
+import Memory.Memory;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -5,8 +6,8 @@ public class OpcodeTestUnit {
     Registers regs = new Registers();
     byte[] romData = new byte[100];
     InterruptManager intMan = new InterruptManager();
-    Memory mem;// non functional
-    CPU cpu;
+    Memory mem = new Memory(romData);// non functional
+    CPU cpu = new CPU(romData, regs, intMan, mem);
     Opcodes operations = new Opcodes(regs, romData, intMan, mem, cpu);
 
     @Test
@@ -17,18 +18,17 @@ public class OpcodeTestUnit {
         assertEquals(0x55, regs.getA());// actually grabs the value from b but not all reg to reg ld have been added
     }
 
-    public class SetTest {
-        @Test
-        public void testSet() {
+    @Test
+    public void testSet() {
 
-            cpu.regs.setRegisterValue("B", 0b00110011);
-            regs.setB(0b00110011);
-            // Set bit 3 of register B to 1
-            Runnable operation = operations.extendedOpcodeHandlers.get(0xC0);
-            operation.run();
+        cpu.regs.setRegisterValue("b", 0b00110011);
+        regs.setB(0b00110011);
+        // Set bit 3 of register B to 1
+        Runnable operation = operations.extendedOpcodeHandlers.get(0xD8);
+        operation.run();
 
-            assertEquals(0b00111011, cpu.regs.getRegisterValue("B"));
-        }
+        assertEquals(0b00111011, cpu.regs.getRegisterValue("b"));
+    }
 
     @Test
     public void testRES() {
@@ -68,6 +68,7 @@ public class OpcodeTestUnit {
         assertFalse(regs.fByte.checkH());
         assertFalse(regs.fByte.checkN());
     }
+
     @Test
     public void LD_B_C() {// from c to b
         regs.setC(0x55);
@@ -109,14 +110,14 @@ public class OpcodeTestUnit {
         assertTrue(regs.fByte.checkC());
 
         // Test RLC on register A with initial value 0x00
+        regs.fByte.setC(false);
         cpu.regs.setRegisterValue("c", 0x00);
         operation = operations.extendedOpcodeHandlers.get(0x01);
         operation.run();
-        assertEquals(0x00, cpu.regs.getRegisterValue("a"));
-        assertTrue(regs.fByte.checkC());
+        assertEquals(0x00, cpu.regs.getRegisterValue("c"));
+        assertFalse(regs.fByte.checkC());
         assertFalse(regs.fByte.checkN());
         assertFalse(regs.fByte.checkH());
-        assertFalse(regs.fByte.checkC());
     }
 
     @Test
@@ -134,6 +135,7 @@ public class OpcodeTestUnit {
         assertEquals(0b00000010, regs.getA());
         assertFalse(regs.fByte.checkC());
     }
+
     @Test
     public void testRLWithCarry() {
         cpu.regs.setRegisterValue("b", 0x80); // binary 10000000
@@ -149,13 +151,15 @@ public class OpcodeTestUnit {
 
     @Test
     public void testSRL() {
-        // Test case 1: SRL with a register value of 0x80 should set the zero and carry flags, and clear the half carry and negative flags.
+        // Test case 1: SRL with a register value of 0x80 should set the zero and carry
+        // flags, and clear the half carry and negative flags.*****result is 0b01000000,
+        // no carry and not zero
         cpu.regs.setRegisterValue("b", 0x80);
         Runnable operation = operations.extendedOpcodeHandlers.get(0x38);
         operation.run();
 
-        assertTrue(cpu.regs.fByte.checkZ());
-        assertTrue(cpu.regs.fByte.checkC());
+        assertFalse(cpu.regs.fByte.checkZ());
+        assertFalse(cpu.regs.fByte.checkC());
         assertFalse(cpu.regs.fByte.checkH());
         assertFalse(cpu.regs.fByte.checkN());
         assertEquals(0x40, cpu.regs.getRegisterValue("b"));
@@ -164,9 +168,8 @@ public class OpcodeTestUnit {
     @Test
     public void testBIT0B() {
 
-
         // Load the value 0x01 into register B
-        regs.setB(0x01);
+        regs.setB(0x10);
         // Execute the "BIT 0,B" instruction
         Runnable operation = operations.extendedOpcodeHandlers.get(0x40);
         operation.run();
@@ -197,15 +200,14 @@ public class OpcodeTestUnit {
         regs.setB(0x81);
 
         // Perform SLA on register B
-       Runnable operation = operations.extendedOpcodeHandlers.get(0x20);
+        Runnable operation = operations.extendedOpcodeHandlers.get(0x20);
         operation.run();
         // Assert that register B has been shifted left and zero bit has been set
         assertEquals(0x02, cpu.regs.getB());
-        assertTrue(cpu.regs.fByte.checkZ());
+        assertFalse(cpu.regs.fByte.checkZ());
         assertFalse(cpu.regs.fByte.checkN());
         assertFalse(cpu.regs.fByte.checkH());
         assertTrue(cpu.regs.fByte.checkC());
-
 
     }
 
@@ -217,11 +219,12 @@ public class OpcodeTestUnit {
         Runnable operation = operations.extendedOpcodeHandlers.get(0x18);
         operation.run();
         assertEquals(0xC0, cpu.regs.getB()); // binary 11000000
-        assertTrue(cpu.regs.fByte.checkC());
+        assertFalse(cpu.regs.fByte.checkC());// no carry
         assertFalse(cpu.regs.fByte.checkZ());
         assertFalse(cpu.regs.fByte.checkN());
         assertFalse(cpu.regs.fByte.checkH());
     }
+
     @Test
     public void testRRCA() { // right rotate bits in a
         // Test with A = 0b10011010

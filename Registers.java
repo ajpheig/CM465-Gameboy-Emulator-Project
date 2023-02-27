@@ -88,31 +88,31 @@ public class Registers {
     }
 
     public void setA(int a) {
-        this.a = a;
+        this.a = a & 0xff;
     }
 
     public void setB(int b) {
-        this.b = b;
+        this.b = b & 0xff;
     }
 
     public void setC(int c) {
-        this.c = c;
+        this.c = c & 0xff;
     }
 
     public void setD(int d) {
-        this.d = d;
+        this.d = d & 0xff;
     }
 
     public void setE(int e) {
-        this.e = e;
+        this.e = e & 0xff;
     }
 
     public void setH(int h) {
-        this.h = h;
+        this.h = h & 0xff;
     }
 
     public void setL(int l) {
-        this.l = l;
+        this.l = l & 0xff;
     }
 
     public void incrementPC() {
@@ -128,11 +128,11 @@ public class Registers {
     }
 
     public void setPC(int pc) {
-        this.pc = pc;
+        this.pc = pc & 0xffff;
     }
 
     public void setSP(int sp) {
-        this.sp = sp;
+        this.sp = sp & 0xffff;
     }
 
     public void setAF(int af) {
