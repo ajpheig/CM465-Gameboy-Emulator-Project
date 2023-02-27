@@ -237,7 +237,7 @@ public class Opcodes {
         opcodeHandlers.put(0xc9, () -> RET());
         opcodeHandlers.put(0xca, () -> JPZ(mem.readWord(regs.getPC() + 1)));// ,a16);
         // read the next byte in memory and use that as the opcode
-        opcodeHandlers.put(0xcb, () -> NEW_CB());//Send to new table or catch before
+        opcodeHandlers.put(0xcb, () -> NEW_CB());// Send to new table or catch before
         // operation.run()?
         opcodeHandlers.put(0xcc, () -> CALLZ(mem.readWord(regs.getPC() + 1), regs.fByte.checkZ()));// ,a16);
         opcodeHandlers.put(0xcd, () -> CALL(mem.readWord(regs.getPC() + 1)));// _a16);
@@ -326,7 +326,7 @@ public class Opcodes {
         extendedOpcodeHandlers.put(0x1B, () -> RR("e"));
         extendedOpcodeHandlers.put(0x1C, () -> RR("d"));
         extendedOpcodeHandlers.put(0x1D, () -> RR("l"));
-        extendedOpcodeHandlers.put(0x1E, () -> RR("hl"));
+        extendedOpcodeHandlers.put(0x1E, () -> RR("(hl)"));
         extendedOpcodeHandlers.put(0x1F, () -> RR("a"));
         extendedOpcodeHandlers.put(0x20, () -> SLA("b"));
         extendedOpcodeHandlers.put(0x21, () -> SLA("c"));
@@ -334,7 +334,7 @@ public class Opcodes {
         extendedOpcodeHandlers.put(0x23, () -> SLA("e"));
         extendedOpcodeHandlers.put(0x24, () -> SLA("h"));
         extendedOpcodeHandlers.put(0x25, () -> SLA("l"));
-        extendedOpcodeHandlers.put(0x26, () -> SLA("hl"));
+        extendedOpcodeHandlers.put(0x26, () -> SLA("(hl)"));
         extendedOpcodeHandlers.put(0x27, () -> SLA("a"));
         extendedOpcodeHandlers.put(0x28, () -> SRA("b"));
         extendedOpcodeHandlers.put(0x29, () -> SRA("c"));
@@ -488,7 +488,7 @@ public class Opcodes {
         extendedOpcodeHandlers.put(0xBD, () -> RES(7, "l"));
         extendedOpcodeHandlers.put(0xBE, () -> RES(7, "(hl)"));
         extendedOpcodeHandlers.put(0xBF, () -> RES(7, "a"));
-        extendedOpcodeHandlers.put(0xC0, () -> SET(0,"b"));
+        extendedOpcodeHandlers.put(0xC0, () -> SET(0, "b"));
         extendedOpcodeHandlers.put(0xC1, () -> SET(0, "c"));
         extendedOpcodeHandlers.put(0xC2, () -> SET(0, "d"));
         extendedOpcodeHandlers.put(0xC3, () -> SET(0, "e"));
@@ -554,7 +554,8 @@ public class Opcodes {
         extendedOpcodeHandlers.put(0xFF, () -> SET(7, "a"));
     }
 
-    // set the sepecified register in the specified bit to 1. Does not change any flags
+    // set the sepecified register in the specified bit to 1. Does not change any
+    // flags
     public void SET(int bit, String register) {
         int value;
 
@@ -566,8 +567,10 @@ public class Opcodes {
             value = regs.getRegisterValue(register);
         }
 
-        // shift the integer 1 to the left by the number passed into bit so only the one we are setting is set to one
-        // and the others are set to zero |= does a bitwise OR btwn valiue and (1 << bit) wich sets and bit that is in
+        // shift the integer 1 to the left by the number passed into bit so only the one
+        // we are setting is set to one
+        // and the others are set to zero |= does a bitwise OR btwn valiue and (1 <<
+        // bit) wich sets and bit that is in
         // either to one in the result
         value |= (1 << bit);
 
@@ -582,7 +585,6 @@ public class Opcodes {
         regs.setPC(regs.getPC() + 2);
     }
 
-
     // clear a specific bit 0-7 in a specific register. Does not change any flags
     public void RES(int bit, String register) {
         int value;
@@ -595,27 +597,29 @@ public class Opcodes {
             value = regs.getRegisterValue(register);
         }
 
-        // shift the bits one to the left, use NOT ~ to remove the bit then AND & with the original value to leave
+        // shift the bits one to the left, use NOT ~ to remove the bit then AND & with
+        // the original value to leave
         // all the other bits unchanged
         // does not set any flags
         value &= ~(1 << bit);
 
         if (register.equals("(HL)")) {
             // Write the value back to the memory location pointed to by HL
-           mem.writeByte(regs.getHL(), value);
+            mem.writeByte(regs.getHL(), value);
         } else {
             // Write the value back to the specified register
-           regs.setRegisterValue(register, value);
+            regs.setRegisterValue(register, value);
         }
 
         regs.setPC(regs.getPC() + 2);
     }
 
-    // checks if the bit in the specified register is set or not set Z flag is bit is not set clears it otherwise
+    // checks if the bit in the specified register is set or not set Z flag is bit
+    // is not set clears it otherwise
     public void BIT(int bit, String register) {
         int regValue;
 
-        if(register.equals("(hl)"))
+        if (register.equals("(hl)"))
             regValue = mem.readByte(regs.getHL());
         else
             regValue = regs.getRegisterValue(register);
@@ -636,8 +640,8 @@ public class Opcodes {
         regs.setPC(regs.getPC() + 2);
     }
 
-
-    // shift right logical. Shift register value to the right by one but filling the vacant one with 0
+    // shift right logical. Shift register value to the right by one but filling the
+    // vacant one with 0
     // sets carry flag to the bit that was shifted out
     public void SRL(String register) {
         int regValue;
@@ -670,21 +674,22 @@ public class Opcodes {
     }
 
     // swap the high and low nibbles of the value stored in a register
-    public void SWAP(String register){
+    public void SWAP(String register) {
         int regValue;
         int result;
 
-        if(register.equals("(hl)")){
+        if (register.equals("(hl)")) {
             regValue = mem.readByte(regs.getHL());
-        }
-        else
+        } else
             regValue = regs.getRegisterValue(register);
 
-        // swap nibbles by extract low and high bits by ANDing them then shifting teh nibbles to the other sides
-        // then OR them to combine them back into a single value with the nibbles switched
+        // swap nibbles by extract low and high bits by ANDing them then shifting teh
+        // nibbles to the other sides
+        // then OR them to combine them back into a single value with the nibbles
+        // switched
         result = ((regValue & 0x0F) << 4) | ((regValue & 0xF0) >> 4);
 
-        if(register.equals("(hl)"))
+        if (register.equals("(hl)"))
             mem.writeByte(regs.getHL(), result);
         else
             regs.setRegisterValue(register, result);
@@ -696,7 +701,8 @@ public class Opcodes {
         regs.setPC(regs.getPC() + 2);
     }
 
-    // right shift the value of the mdb of the original value is used as the new value of the shifted bit
+    // right shift the value of the mdb of the original value is used as the new
+    // value of the shifted bit
     public void SRA(String register) {
         int regValue;
         if (register.equals("(hl)")) {
@@ -718,8 +724,7 @@ public class Opcodes {
             regs.setRegisterValue(register, result);
         }
 
-
-        regs.fByte.setZ(result ==0);
+        regs.fByte.setZ(result == 0);
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         // set the carry flag to the value of the bit that was shifted out
@@ -727,11 +732,10 @@ public class Opcodes {
         regs.setPC(regs.getPC() + 2);
     }
 
-
     // rotate content of the register left by 1 bit
-    public void RL(String register){
+    public void RL(String register) {
         int regValue;
-        if(register.equals("(hl)"))
+        if (register.equals("(hl)"))
             regValue = mem.readByte(regs.getHL());
         else
             regValue = regs.getRegisterValue(register);
@@ -739,13 +743,13 @@ public class Opcodes {
         // get the most significant bit
         int msb = (regValue & 0x80) >> 7;
 
-        // shift the value left by 1 bit then OR that with the carry flag then and that with FF to set any higher
-        //bits to zero so it will fit in a register.
+        // shift the value left by 1 bit then OR that with the carry flag then and that
+        // with FF to set any higher
+        // bits to zero so it will fit in a register.
         regValue = ((regValue << 1) | (regs.fByte.checkC() ? 1 : 0)) & 0xFF;
 
-
         // set the result in the register
-        if(register.equals("(hl"))
+        if (register.equals("(hl"))
             mem.writeByte(regs.getHL(), regValue);
         else
             regs.setRegisterValue(register, regValue);
@@ -758,10 +762,11 @@ public class Opcodes {
         regs.setPC(regs.getPC() + 2);
     }
 
-    // left shift arithmetic. Leftmost bit is set to zero and the carry flag is set to the original value of that bit
+    // left shift arithmetic. Leftmost bit is set to zero and the carry flag is set
+    // to the original value of that bit
     public void SLA(String register) {
         int regValue;
-        if(register.equals("(hl)"))
+        if (register.equals("(hl)"))
             regValue = mem.readByte(regs.getHL());
         else
             regValue = regs.getRegisterValue(register);
@@ -773,7 +778,7 @@ public class Opcodes {
         regValue = (regValue << 1) & 0xFF;
 
         // Set the result in the register
-        if(register.equals("(hl)"))
+        if (register.equals("(hl)"))
             mem.writeByte(regs.getHL(), regValue);
         else
             regs.setRegisterValue(register, regValue);
@@ -789,7 +794,7 @@ public class Opcodes {
     // extended Right rotate
     public void RR(String register) {
         int regValue;
-        if(register.equals("(hl)"))
+        if (register.equals("(hl)"))
             regValue = mem.readByte(regs.getHL());
         else
             regValue = regs.getRegisterValue(register);
@@ -797,11 +802,12 @@ public class Opcodes {
         // Get the least significant bit of the register
         int lsb = regValue & 0x01;
 
-        // Shift the register value right by 1 and insert the previous carry flag into the most significant bit
+        // Shift the register value right by 1 and insert the previous carry flag into
+        // the most significant bit
         regValue = (regValue >> 1) | (regs.fByte.checkC() ? 0x80 : 0x00);
 
         // Set the result back into the register
-        if(register.equals("(hl)"))
+        if (register.equals("(hl)"))
             mem.writeByte(regs.getHL(), regValue);
         else
             regs.setRegisterValue(register, regValue);
@@ -815,7 +821,7 @@ public class Opcodes {
     }
 
     // Rotate left circular operation sets zero, subtract, half-carry, and carry
-    public void RLC(String register){
+    public void RLC(String register) {
         int regValue;
         if (register.equals("(hl)")) {
             regValue = mem.readByte(regs.getHL());
@@ -844,9 +850,13 @@ public class Opcodes {
         regs.setPC(regs.getPC() + 2);
     }
 
-
     public void RRC(String register) {
-        int regValue = regs.getRegisterValue(register);
+        int regValue;
+        if (register.equals("(hl)")) {
+            regValue = mem.readByte(regs.getHL());
+        } else {
+            regValue = regs.getRegisterValue(register);
+        }
 
         // get the least significant bit
         int lsb = regValue & 0x01;
@@ -854,9 +864,13 @@ public class Opcodes {
         // shift the value right by 1 bit and set the most significant byte to the lsb
         regValue = ((regValue >> 1) | (lsb << 7)) & 0xFF;
 
-        // set the result in the register
-        regs.setRegisterValue(register, regValue);
-
+        // set the result in the register or hl location
+        if (register.equals("(hl)")) {
+            mem.writeByte(regs.getHL(), regValue);
+        } else {
+            // set the result in the register
+            regs.setRegisterValue(register, regValue);
+        }
         // set flags
         regs.fByte.setZ(regValue == 0);
         regs.fByte.setN(false);
@@ -865,19 +879,19 @@ public class Opcodes {
         regs.setPC(regs.getPC() + 2);
     }
 
-
     public void nop() {
         System.out.println("nop");
         regs.setPC(regs.getPC() + 1);
     }
 
-    // run the extended opcode that corresponds to the next byte in memory read after the opcode CB is read
-    public void NEW_CB(){
+    // run the extended opcode that corresponds to the next byte in memory read
+    // after the opcode CB is read
+    public void NEW_CB() {
         // get the next byte
         int extendedOpcode = mem.readByte(regs.getPC() + 1);
         Runnable exOperation = extendedOpcodeHandlers.get(extendedOpcode);
         exOperation.run();
-        regs.setPC(regs.getPC() + 1);
+        regs.setPC(regs.getPC() + 1);// nice
     }
 
     // load value into intoRegister
