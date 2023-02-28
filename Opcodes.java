@@ -582,7 +582,7 @@ public class Opcodes {
             regs.setRegisterValue(register, value);
         }
 
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // clear a specific bit 0-7 in a specific register. Does not change any flags
@@ -611,7 +611,7 @@ public class Opcodes {
             regs.setRegisterValue(register, value);
         }
 
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // checks if the bit in the specified register is set or not set Z flag is bit
@@ -637,7 +637,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(true);
 
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // shift right logical. Shift register value to the right by one but filling the
@@ -670,7 +670,7 @@ public class Opcodes {
         } else {
             regs.setRegisterValue(register, result);
         }
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // swap the high and low nibbles of the value stored in a register
@@ -698,7 +698,7 @@ public class Opcodes {
         regs.fByte.setC(false);
         regs.fByte.setH(false);
         regs.fByte.setN(false);
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // right shift the value of the mdb of the original value is used as the new
@@ -729,7 +729,7 @@ public class Opcodes {
         regs.fByte.setH(false);
         // set the carry flag to the value of the bit that was shifted out
         regs.fByte.setC((regValue & 0x01) != 0);
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // rotate content of the register left by 1 bit
@@ -746,7 +746,7 @@ public class Opcodes {
         // shift the value left by 1 bit then OR that with the carry flag then and that
         // with FF to set any higher
         // bits to zero so it will fit in a register.
-        regValue = ((regValue << 1) | (regs.fByte.checkC() ? 1 : 0)) & 0xFF;
+        regValue = ((regValue << 1) | (regs.fByte.checkC() ? 1 : 0)) & 0xff;
 
         // set the result in the register
         if (register.equals("(hl"))
@@ -759,7 +759,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(msb == 1);
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // left shift arithmetic. Leftmost bit is set to zero and the carry flag is set
@@ -788,7 +788,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(msb == 1);
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // extended Right rotate
@@ -817,7 +817,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(lsb == 1);
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     // Rotate left circular operation sets zero, subtract, half-carry, and carry
@@ -847,7 +847,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(msb == 1);
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     public void RRC(String register) {
@@ -876,7 +876,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.fByte.setC(lsb != 0);
-        regs.setPC(regs.getPC() + 2);
+        regs.setPC(regs.getPC() + 1);
     }
 
     public void nop() {
@@ -1063,9 +1063,11 @@ public class Opcodes {
                 // this one does update any flags because it decrements the byte at the
                 // memory address stored in hl
                 mem.writeByte(regs.getHL(), result);
-            case "hl:":
+                break;
+            case "hl":
                 result = regs.getHL() + 1;
                 regs.setHL(result);
+                break;
             case "sp":
                 regs.incrementSP();
                 result = regs.getSP();
@@ -1327,19 +1329,19 @@ public class Opcodes {
     public void LDINCDECHL(String opcode) {
         // I think it works how it should now - ALEX
         switch (opcode) {
-            case "LD A, (HL+)":
+            case "LD_A,(HL+)":
                 regs.setA(mem.readByte(regs.getHL()));
                 regs.setHL(regs.getHL() + 1);
                 break;
-            case "LD (HL+), A":
+            case "LD_(HL+),A)":
                 mem.writeByte(regs.getHL(), regs.getA());
                 regs.setHL(regs.getHL() + 1);
                 break;
-            case "LD A, (HL-)":
+            case "LD_A,(HL-)":
                 regs.setA(mem.readByte(regs.getHL()));
                 regs.setHL(regs.getHL() - 1);
                 break;
-            case "LD (HL-), A":
+            case "LD_(HL-),A)":
                 mem.writeByte(regs.getHL(), regs.getA());
                 regs.setHL(regs.getHL() - 1);
                 break;
@@ -1537,11 +1539,17 @@ public class Opcodes {
         result = value + a + carry;
         if (result == 0)
             regs.fByte.setZ(true);
+        else
+            regs.fByte.setZ(false);
         regs.fByte.setZ(false);
         if ((result & 0xff) != result)
             regs.fByte.setC(true);
+        else
+            regs.fByte.setC(false);// N carry
         if ((value & 0xf) + (a & 0xf) + carry > 0xf)
             regs.fByte.setH(true);
+        else
+            regs.fByte.setH(false);// N half carry
         regs.setA(result & 0xff);
         regs.setPC(regs.getPC() + 2);
     }
@@ -1554,11 +1562,17 @@ public class Opcodes {
         int result = diff & 0xff;
         if (result == 0)
             regs.fByte.setZ(true);// zero
+        else
+            regs.fByte.setZ(false);// Notzero
         if (diff < 0)
             regs.fByte.setC(true);// carry
+        else
+            regs.fByte.setC(false);// no carry
         regs.fByte.setN(true);// negative
         if ((regs.getA() & 0xf) - (u8 & 0xf) < 0)
             regs.fByte.setH(true);// half carry
+        else
+            regs.fByte.setH(false);// no half carry
         regs.setPC(regs.getPC() + 2);
         return result;
     }
@@ -1569,30 +1583,44 @@ public class Opcodes {
         switch (register) {
             case "a":
                 value = regs.getA();
+                break;
             case "b":
                 value = regs.getB();
+                break;
             case "c":
                 value = regs.getC();
+                break;
             case "d":
                 value = regs.getD();
+                break;
             case "e":
                 value = regs.getE();
+                break;
             case "h":
                 value = regs.getH();
+                break;
             case "l":
                 value = regs.getL();
+                break;
             case "hl":// (HL) byte where hl points to
                 value = mem.readByte(regs.getHL());
+                break;
         }
         int diff = regs.getA() - value;
         int result = diff & 0xff;
         if (result == 0)
             regs.fByte.setZ(true);// zero
+        else
+            regs.fByte.setZ(false);//
         if (diff < 0)
             regs.fByte.setC(true);// carry
+        else
+            regs.fByte.setC(false);// carry
         regs.fByte.setN(true);// negative
         if ((regs.getA() & 0xf) - (value & 0xf) < 0)
             regs.fByte.setH(true);// half carry
+        else
+            regs.fByte.setH(false);// half carry
         regs.setPC(regs.getPC() + 1);
         return result;
     }
@@ -1604,20 +1632,28 @@ public class Opcodes {
         switch (register) {
             case "a":
                 result = regs.getA() & regs.getA();
+                break;
             case "b":
                 result = regs.getA() & regs.getB();
+                break;
             case "c":
                 result = regs.getA() & regs.getC();
+                break;
             case "d":
                 result = regs.getA() & regs.getD();
+                break;
             case "e":
                 result = regs.getA() & regs.getE();
+                break;
             case "h":
                 result = regs.getA() & regs.getH();
+                break;
             case "l":
                 result = regs.getA() & regs.getL();
+                break;
             case "hl":
                 result = regs.getA() & mem.readByte(regs.getHL());
+                break;
         }
         if (result == 0)
             regs.fByte.setZ(true);
@@ -1678,20 +1714,28 @@ public class Opcodes {
         switch (register) {
             case "a":
                 result = regs.getA() | regs.getA();
+                break;
             case "b":
                 result = regs.getA() | regs.getB();
+                break;
             case "c":
                 result = regs.getA() | regs.getC();
+                break;
             case "d":
                 result = regs.getA() | regs.getD();
+                break;
             case "e":
                 result = regs.getA() | regs.getE();
+                break;
             case "h":
                 result = regs.getA() | regs.getH();
+                break;
             case "l":
                 result = regs.getA() | regs.getL();
+                break;
             case "hl":
                 result = regs.getA() | mem.readByte(regs.getHL());
+                break;
         }
         if (result == 0) {
             regs.fByte.setZ(true);
@@ -1723,7 +1767,6 @@ public class Opcodes {
         int atemp = regs.getA();// need temp cuz sub method will change A
         SUB(u8);
         regs.setA(atemp);
-        regs.setPC(regs.getPC() + 2);
     }
 
     public void CP(String register) {
@@ -1733,26 +1776,34 @@ public class Opcodes {
         switch (register) {
             case "a":
                 value = regs.getA();
+                break;
             case "b":
                 value = regs.getB();
+                break;
             case "c":
                 value = regs.getC();
+                break;
             case "d":
                 value = regs.getD();
+                break;
             case "e":
                 value = regs.getE();
+                break;
             case "h":
                 value = regs.getH();
+                break;
             case "l":
                 value = regs.getL();
+                break;
             case "hl": {// (HL) points to address in memory
                 value = regs.getHL();
                 value = mem.readByte(value);
+                break;
             }
         }
         SUB(value);// SUB method will set flags
         regs.setA(atemp);
-        regs.setPC(regs.getPC() + 1);
+        regs.setPC(regs.getPC() - 1);// sub inc pc 2
     }
 
     // pops value of top of stack and stores it into the register specified
@@ -1760,7 +1811,6 @@ public class Opcodes {
     // needs memory access for stack pointer
 
     public void POP(String register) {
-        System.out.println("");
         int sp = regs.getSP();
         switch (register) {
             case "af": {
@@ -1769,33 +1819,43 @@ public class Opcodes {
                 regs.setA(mem.readByte(sp));
                 sp++;
                 // maybe need to set flags, dont know how though
+                break;
             }
             case "bc": {
+                System.out.println("POP bc " + sp);
                 regs.setC(mem.readByte(sp));
                 sp++;
                 regs.setB(mem.readByte(sp));
                 sp++;
+                break;
             }
             case "de": {
+                System.out.println("POP de " + sp);
                 regs.setE(mem.readByte(sp));
                 sp++;
                 regs.setD(mem.readByte(sp));
                 sp++;
+                break;
             }
             case "hl": {
+                System.out.println("POP hl " + sp);
                 regs.setL(mem.readByte(sp));
                 sp++;
                 regs.setH(mem.readByte(sp));
                 sp++;
+                break;
             }
         }
         regs.setSP(sp);
+        System.out.println("POP value: " + ((int) (mem.readByte(sp - 1) << 8 | mem.readByte(sp - 2)) & 0xff));
+        regs.setPC(regs.getPC() + 1);
     }
 
     // push contents of a register onto the stack, need memory access
     public void PUSH(String register) {// 16bit registers
         System.out.println("");
         int stackp = regs.getSP();
+        System.out.println("PUSH" + stackp);
         int upper = 0;
         int lower = 0;
         switch (register) {
@@ -1803,24 +1863,34 @@ public class Opcodes {
                 upper = regs.getA();
                 lower = regs.fByte.getFByte();
                 // maybe need to set flags, dont know how though
+                System.out.println("PUSH af " + (upper << 8 | lower));
+                break;
             }
             case "bc": {
                 upper = regs.getB();
                 lower = regs.getC();
+                System.out.println("PUSH bc " + (upper << 8 | lower));
+                break;
             }
             case "de": {
                 upper = regs.getD();
                 lower = regs.getE();
+                System.out.println("PUSH de " + (upper << 8 | lower));
+                break;
             }
             case "hl": {
                 upper = regs.getH();
                 lower = regs.getL();
+                System.out.println("PUSH hl " + (upper << 8 | lower));
+                break;
             }
             case "nextPC":// for RST instruction
             {
                 int nextpc = regs.getPC();
                 upper = regs.getPC() & 0xff;
                 lower = regs.getPC() << 8;
+                System.out.println("PUSH nextPC " + (upper << 8 | lower));
+                break;
             }
         }
         stackp--;
@@ -1833,9 +1903,11 @@ public class Opcodes {
 
     public void PUSH(int address) {
         int stackp = regs.getSP();
+        stackp -= 2;
         mem.writeWord(stackp, address);
-        regs.setSP(stackp - 2);
+        regs.setSP(stackp);
         regs.setPC(regs.getPC() + 1);
+        System.out.println("PUSH af " + (address));
     }
 
     // software reset. Moves the program counter to the start of the program by
@@ -1847,11 +1919,13 @@ public class Opcodes {
     // returns from subroutine
     public void RET() {
         int sp = regs.getSP();
+        System.out.println("RET" + sp);
         int lower = (mem.readByte(sp));
         sp++;
         int upper = (mem.readByte(sp));
         sp++;
         regs.setSP(sp);
+        System.out.println("RET" + sp);
         JP((upper << 8) | lower);
     }
 
@@ -1859,34 +1933,40 @@ public class Opcodes {
     public void CALLZ(int location, boolean flag) {
         if (flag)
             CALL(location);
-        regs.setPC(regs.getPC() + 3);
+        else
+            regs.setPC(regs.getPC() + 3);
     }
 
     // call a subroutine if zero flag is not set
     public void CALLNZ(int location, boolean flag) {
         if (flag)
             CALL(location);
-        regs.setPC(regs.getPC() + 3);
+        else
+            regs.setPC(regs.getPC() + 3);
     }
 
     /// call a subroutine if the carry flag is not set
     public void CALLNC(int location, boolean flag) {
         if (flag)
             CALL(location);
-        regs.setPC(regs.getPC() + 3);
+        else
+            regs.setPC(regs.getPC() + 3);
     }
 
     // call subroutine if carry flag is set
     public void CALLC(int location, boolean flag) {
         if (flag)
             CALL(location);
-        regs.setPC(regs.getPC() + 3);
+        else
+            regs.setPC(regs.getPC() + 3);
     }
 
     // calls subroutine
     public void CALL(int location) {
         int nextPC = regs.getPC() + 3;// 3 bytes long for CALL
         PUSH(nextPC);// pointer for next program on stack
+        System.out.println("Call SP" + regs.getSP());// "Call to " + Integer.toHexString(location) + ", save PC= " +
+                                                     // Integer.toHexString(nextPC));
         JP(location);
     }
 
