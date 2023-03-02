@@ -1310,21 +1310,25 @@ public class Opcodes {
                     case "bc":
                         result = (regs.getHL() + regs.getBC()) & 0xffff;
                         reg = regs.getHL();
+                        addValue = regs.getBC();
                         regs.setHL(result);
                         break;
                     case "de":
                         result = (regs.getHL() + regs.getDE()) & 0xffff;
                         reg = regs.getHL();
+                        addValue = regs.getDE();
                         regs.setHL(regs.getHL() + regs.getDE());
                         break;
                     case "hl":
                         result = (regs.getHL() + regs.getHL()) & 0xffff;
                         reg = regs.getHL();
+                        addValue = regs.getHL();
                         regs.setHL(result);
                         break;
                     case "sp":
                         result = (regs.getHL() + regs.getSP()) & 0xffff;
                         reg = regs.getHL();
+                        addValue = regs.getSP();
                         regs.setHL(result);
                         break;
                 }
@@ -1338,16 +1342,6 @@ public class Opcodes {
                 break;
         }
         // set the flags
-        // zero flag and negative flag do not depend on whether we are addign the value
-        // to A or HL like carry and half
-        // carry
-        if (result == 0)
-            regs.fByte.setZ(true);
-        else
-            regs.fByte.setZ(false);
-        // subtract flag is always reset to false
-        regs.fByte.setN(false);
-
         // carry flag is set if result of addition is larger than 8 bits if we are the
         // results into A
         if (intoRegister.equals("a")) {
@@ -1356,21 +1350,30 @@ public class Opcodes {
             } else {
                 regs.fByte.setC(false);
             }
+            if (result == 0)
+                regs.fByte.setZ(true);
+            else
+                regs.fByte.setZ(false);
+            // subtract flag is always reset to false
+            regs.fByte.setN(false);
             // check if the half carry flag needs to be set for an 8 bit register
             // get lower 4 bits w AND the sum them, then and the sum w 0x10 to see if it has
             // a 1 bit then compare with
-            // 0x10 to see if we should set the half carry flag or not
             boolean halfCarry = ((reg & 0xF) + (addValue & 0xF)) >= 0x10;
-            // System.out.println((reg & 0xF) + " " + (addValue & 0xF));
             regs.fByte.setH(halfCarry);
         } // if we aren't adding to A, we are adding to HL
         else {
+            if (intoRegister.equals("sp")) {
+                regs.fByte.setZ(false);
+            }
+            regs.fByte.setN(false);
             // check if we need to set the carry flag
             boolean carry = ((reg & 0xFFFF) + (addValue & 0xFFFF) > 0xFFFF);
             regs.fByte.setC(carry);
 
             // Check if there is a carry from the lower 4 bits to the upper 4 bits
             boolean halfCarry = ((reg & 0x0FFF) + (addValue & 0x0FFF)) > 0x0FFF;
+            // System.out.println((reg & 0xfff) + (addValue & 0xfff));
             regs.fByte.setH(halfCarry);
         }
         regs.setPC(regs.getPC() + length);
@@ -1769,6 +1772,8 @@ public class Opcodes {
     public void XOR(String register) {
         int result = 0;
         result = regs.getA() ^ regs.getRegisterValue(register);
+        if (register.equals("hl"))
+            result = regs.getA() ^ mem.readByte(regs.getHL());
         if (result == 0) {
             regs.fByte.setZ(true);
         } else
