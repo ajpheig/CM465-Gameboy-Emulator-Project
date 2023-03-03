@@ -901,8 +901,8 @@ public class Opcodes {
         int sp = regs.getSP();
         int i8 = (byte) mem.readByte(regs.getPC() + 1);
         int value = sp + (byte) i8;
-        regs.setHL(value);
-        System.out.println(sp + " + " + i8 + " = " + value);
+        regs.setHL(value & 0xffff);
+        // System.out.println(sp + " + " + i8 + " = " + value);
         regs.fByte.setZ(false);
         regs.fByte.setN(false);
         if (i8 >= 0) {
@@ -1035,7 +1035,6 @@ public class Opcodes {
                 break;
             case "sp":// 0x08
                 mem.writeWord(address, regs.getSP());
-                length += 2;
                 break;
         }
         regs.setPC(regs.getPC() + length);
@@ -1100,19 +1099,20 @@ public class Opcodes {
             case "hl":
                 og = regs.getHL();
                 result = og + 1;
-                regs.setHL(result);
+                regs.setHL(result & 0xffff);
                 break;
             case "sp":
-                regs.incrementSP();
-                result = regs.getSP();
+                og = (regs.getSP()) & 0xffff;
+                result = (regs.getSP() + 1) & 0xffff;
+                regs.setSP(result);
                 break;
             case "de":
                 result = regs.getDE() + 1;
-                regs.setDE(result);
+                regs.setDE(result & 0xffff);
                 break;
             case "bc":
                 result = regs.getBC() + 1;
-                regs.setBC(result);
+                regs.setBC(result & 0xffff);
                 break;
         }
         if (register.length() < 2 || register == "(hl)") {
@@ -1183,18 +1183,20 @@ public class Opcodes {
                 break;
             case "sp":
                 regs.decrementSP();
-                result = regs.getSP();
+                og = regs.getSP();
+                result = (og) & 0xffff;
+                regs.setSP(result);
                 break;
             case "hl":
-                result = regs.getHL() - 1;
+                result = (regs.getHL() - 1) & 0xffff;
                 regs.setHL(result);
                 break;
             case "de":
-                result = regs.getDE() - 1;
+                result = (regs.getDE() - 1) & 0xffff;
                 regs.setDE(result);
                 break;
             case "bc":
-                result = regs.getBC() - 1;
+                result = (regs.getBC() - 1) & 0xffff;
                 regs.setBC(result);
                 break;
         }
@@ -1317,7 +1319,7 @@ public class Opcodes {
                         result = (regs.getHL() + regs.getDE()) & 0xffff;
                         reg = regs.getHL();
                         addValue = regs.getDE();
-                        regs.setHL(regs.getHL() + regs.getDE());
+                        regs.setHL(result);
                         break;
                     case "hl":
                         result = (regs.getHL() + regs.getHL()) & 0xffff;
@@ -1335,8 +1337,9 @@ public class Opcodes {
                 break;
             // add an 8 bit immediate value to sp
             case "sp":
-                result = (regs.getSP() + mem.readByte(regs.getPC() + 1)) & 0xffff;
+                result = (regs.getSP() + (byte) mem.readByte(regs.getPC() + 1)) & 0xffff;
                 reg = regs.getSP();
+                addValue = mem.readByte(regs.getPC() + 1);
                 regs.setSP(result);
                 length = 2;
                 break;
@@ -1365,16 +1368,26 @@ public class Opcodes {
         else {
             if (intoRegister.equals("sp")) {
                 regs.fByte.setZ(false);
-            }
-            regs.fByte.setN(false);
-            // check if we need to set the carry flag
-            boolean carry = ((reg & 0xFFFF) + (addValue & 0xFFFF) > 0xFFFF);
-            regs.fByte.setC(carry);
+                regs.fByte.setN(false);
+                if (addValue >= 0) {
+                    regs.fByte.setH((reg & 0xf) + (addValue & 0xf) > 0xf);
+                    regs.fByte.setC((reg & 0xff) + (addValue) > 0xff);
+                } else {
+                    regs.fByte.setH((result & 0xf) <= (reg & 0xf));
+                    regs.fByte.setC((result & 0xff) <= (reg & 0xff));
+                }
 
-            // Check if there is a carry from the lower 4 bits to the upper 4 bits
-            boolean halfCarry = ((reg & 0x0FFF) + (addValue & 0x0FFF)) > 0x0FFF;
-            // System.out.println((reg & 0xfff) + (addValue & 0xfff));
-            regs.fByte.setH(halfCarry);
+            } else {
+                regs.fByte.setN(false);
+                // check if we need to set the carry flag
+                boolean carry = ((reg & 0xFFFF) + (addValue & 0xFFFF) > 0xFFFF);
+                regs.fByte.setC(carry);
+
+                // Check if there is a carry from the lower 4 bits to the upper 4 bits
+                boolean halfCarry = ((reg & 0x0FFF) + (addValue & 0x0FFF)) > 0x0FFF;
+                // System.out.println((reg & 0xfff) + (addValue & 0xfff));
+                regs.fByte.setH(halfCarry);
+            }
         }
         regs.setPC(regs.getPC() + length);
     }
@@ -1483,19 +1496,25 @@ public class Opcodes {
     public void DAA() {
         int a = regs.getA();
         int adjust = 0;
-        if (regs.fByte.checkH() || (a & 0x0F) > 9) {
-            adjust |= 0x06;
+        if (!regs.fByte.checkN()) {
+            if (regs.fByte.checkC() || a > 0x99) {
+                adjust += 0x60;
+                regs.fByte.setC(true);
+            }
+            if (regs.fByte.checkH() || (a & 0x0f) > 0x09) {
+                adjust += 0x6;
+            }
+        } else {
+            if (regs.fByte.checkC()) {
+                adjust -= 0x60;
+            }
+            if (regs.fByte.checkH()) {
+                adjust -= 0x6;
+            }
         }
-        if (regs.fByte.checkC() || a > 0x99 || (a > 0x8F && (a & 0x0F) > 9)) {
-            adjust |= 0x60;
-            regs.fByte.setC(true);
-        }
-        if (regs.fByte.checkH() && !regs.fByte.checkN() && (a & 0x0F) < 6) {
-            adjust |= 0x06;
-        }
-        int result = a + adjust;
+        int result = (a + adjust) & 0xff;
         regs.fByte.setZ(result == 0);
-        regs.fByte.setH((a & 0x0F) + (adjust & 0x0F) > 0x0F);
+        regs.fByte.setH(false);
         regs.setA(result & 0xFF);
         regs.setPC(regs.getPC() + 1);
     }
