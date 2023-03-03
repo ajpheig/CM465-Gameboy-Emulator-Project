@@ -1,11 +1,30 @@
 package Memory;
 
+import java.util.Base64;
+import java.io.*;
+import java.io.File.*;
+
 public class Memory {
 
     private byte[] memory;
+    private byte[] romData;
+    private boolean bootRomEnabled = false;
+    private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465 CIS Capstone/GBVStest/dmg_boot.bin");
+    private byte[] bootRom = new byte[(int) bootFile.length()];
 
-    public Memory() {
+    public final static int IE = 0xffff;
+    public final static int IF = 0xff0f;
+
+    public Memory(byte[] romData) {
         memory = new byte[0x10000];// This should initialize memory size to 64 kb
+        writeBytes(0, romData);
+        try {
+            FileInputStream is = new FileInputStream(bootFile);
+            is.read(bootRom);
+            is.close();
+        } catch (IOException ioe) {
+            ;
+        }
         /*
          * For reference, 0x0000 - 0x00FF should load the boot rom initially to play the
          * splash screen
@@ -33,13 +52,33 @@ public class Memory {
          * 0xFFFF should hold the Interrupt Enable (IE) Register
          */
     }
+    // need CPU reference for interrupts
+    /*
+     * public void setCPU(CPU cpu) {
+     * this.cpu = cpu;
+     * }
+     */
 
-    public byte readByte(int address) {
-        return memory[address];
+    public int readByte(int address) {
+        if (bootRomEnabled == true && address < bootRom.length) {
+            System.out.println("| read: " + Integer.toHexString(bootRom[address]) + "|");
+            return ((int) bootRom[address] & 0xff);
+        }
+        return (int) memory[address] & 0xff;
     }
 
     public void writeByte(int address, int value) {
-        memory[address] = (byte) value;
+        if (address == 0xff50) {
+            bootRomEnabled = false;
+            System.out.println("boot rom disabled");
+        }
+        if (address == IE) {
+            // cpu.interruptManager.intEnableHandler(value);
+        }
+        if (address == IF) {
+            // cpu.interruptManager.intFlagHandler(value);
+        }
+        memory[address & 0xffff] = (byte) value;
     }
 
     public void writeWord(int location, int u16) {
@@ -48,8 +87,7 @@ public class Memory {
     }
 
     public int readWord(int location) {
-
-        return readByte(location + 1) << 8 | readByte(location);
+        return ((readByte(location + 1) << 8) | readByte(location));
     }
 
     public void writeBytes(int address, byte[] values) {
