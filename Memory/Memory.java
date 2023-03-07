@@ -31,7 +31,7 @@ public class Memory {
     TAC tac = new TAC();
     
     public final static int IE = 0xffff;
-    public final static int IF = 0xff0f;
+    // public final static int IF = 0xff0f;
 
     public Memory(byte[] romData) {
         memory = new byte[0x10000];// This should initialize memory size to 64 kb
@@ -93,7 +93,7 @@ public class Memory {
         if (address == IE) {
             // cpu.interruptManager.intEnableHandler(value);
         }
-        if (address == IF) {
+        if (address == 0xff0f) {
             // cpu.interruptManager.intFlagHandler(value);
         }
         memory[address & 0xffff] = (byte) value;

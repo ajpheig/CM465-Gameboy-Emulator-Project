@@ -1,10 +1,11 @@
-
+package Memory;
 /**
  * Write a description of class MemRegisters here.
  *
  * @author (your name)
  * @version (a version number or a date)
  */
+import Memory.*;
 import java.util.*;
 public class MemRegisters
 {
