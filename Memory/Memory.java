@@ -31,6 +31,7 @@ public class Memory {
     TIMA tima = new TIMA();
     TMA tma = new TMA();
     TAC tac = new TAC();
+    OAM oam = new OAM();
 
     public Memory(byte[] romData) {
         memory = new byte[0x10000];// This should initialize memory size to 64 kb
@@ -80,7 +81,10 @@ public class Memory {
             // System.out.println("| read: " + Integer.toHexString(bootRom[address]) + "|");
             return ((int) bootRom[address] & 0xff);
         }
-        return (int) memory[address] & 0xff;
+        if(address >= 0xFE00 & address < 0xFEA0)
+            return oam.readByte(address);
+        else
+            return (int)memory[address] & 0xff;
     }
 
     public void writeByte(int address, int value) {
@@ -100,7 +104,10 @@ public class Memory {
             memory[0xff04] = 0;
             return;
         }
-        memory[address & 0xffff] = (byte) value;
+        if(address >= 0xFE00 && address < 0xFEA0)
+            oam.writeByte(address,value)
+        else
+            memory[address & 0xffff] = (byte) value;
     }
 
     public void writeWord(int location, int u16) {
@@ -422,15 +429,26 @@ public class Memory {
         }
     }
 
-    /*
-     * private class OAM
-     * {
-     * public OAM()
-     * {
-     * oam = new byte[0xA0];
-     * }
-     * }
-     */
+    private class OAM
+    {
+        byte[] data;
+        private int location;
+        public OAM()
+        {
+            this.data = new byte[160];
+            this.location = 0xFE00;
+            //located between 0xFE00 and 0xFE9F
+        }
+        public byte readByte(int address)
+        {
+            return data[address - location];
+        }
+        public void writeByte(int address, byte value)
+        {
+            data[address - location] = value;
+            memory[address] = value;
+        }
+    }
     private class OBP0 extends MemRegisters {
         public OBP0() {
             location = 0xFF48;
