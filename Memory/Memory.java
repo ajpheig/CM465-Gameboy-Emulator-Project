@@ -30,7 +30,7 @@ public class Memory {
     TMA tma = new TMA();
     TAC tac = new TAC();
     
-    public final static int IE = 0xffff;
+    //public final static int IE = 0xffff;
     // public final static int IF = 0xff0f;
 
     public Memory(byte[] romData) {
@@ -90,7 +90,7 @@ public class Memory {
             bootRomEnabled = false;
             System.out.println("boot rom disabled");
         }
-        if (address == IE) {
+        if (address == 0xffff) {
             // cpu.interruptManager.intEnableHandler(value);
         }
         if (address == 0xff0f) {
