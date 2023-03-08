@@ -34,6 +34,11 @@ public class PPU {
     public static final int OAM_READ = 2;
     public static final int VRAM_READ = 3;
 
+    // number of cycles that have elapsed since the start of the current mode
+    int modeCycles = 0;
+    // current scanline that the PPU is drawing
+    int line = 0;
+
 
     // LCDC, background, and dma are public classes inside Memory class
     // We can do everything in VRAM with get/setByte in the Memory from PPU or we can make a VRAM class
@@ -47,6 +52,52 @@ public class PPU {
         this.oam = memory.getOam();
         this.bgp = memory.getBgp();
 
+        // filler variable to keep track of ticks from timer for now
+        int tick = 0;
+        // OAM read mode, scanline active
+        switch (mode){
+            case 2:
+                if(modeCycles >= 80){
+                    // move to mode 3
+                    modeCycles = 0;
+                    mode = VRAM_READ;
+                }
+                break;
+            case 3:
+                if(modeCycles >= 172){
+                    // enter HBLANK
+                    modeCycles = 0;
+                    mode = HBLANK;
+                }
+                break;
+            case 0:
+                if(modeCycles >= 204){
+                    modeCycles = 0;
+                    line++;
+
+                    if(line == 143){
+                        // enter VBLANK
+                        mode = VBLANK;
+                    }
+                    else{
+                        // enter OAM
+                        mode = OAM_READ;
+                    }
+                }
+                break;
+            case 1:
+                if(modeCycles >= 456){
+                    modeCycles = 0;
+                    line++;
+
+                    if(line > 153){
+                        // enter OAM
+                        mode = OAM_READ;
+                        line = 0;
+                    }
+                }
+                break;
+        }
     }
 
     public void setMode(int mode){
