@@ -71,6 +71,19 @@ public class Memory {
          */
     }
 
+    // getters for the PPU
+    public LCDC getLcdc(){
+        return lcdc;
+    }
+
+    public OAM getOam(){
+        return oam;
+    }
+
+    public BGP getBgp(){
+        return bgp;
+    }
+
     public void setCPU(CPU cpu, InterruptManager intMan) {
         this.cpu = cpu;
         this.intMan = intMan;
@@ -105,7 +118,7 @@ public class Memory {
             return;
         }
         if(address >= 0xFE00 && address < 0xFEA0)
-            oam.writeByte(address,value)
+            oam.writeByte(address, (byte) value);
         else
             memory[address & 0xffff] = (byte) value;
     }
@@ -216,7 +229,7 @@ public class Memory {
          */
     }
 
-    private class LCDC extends MemRegisters {
+    public class LCDC extends MemRegisters {
         public LCDC() {
             location = 0xFF40;
         }
@@ -373,7 +386,7 @@ public class Memory {
         }
     }
 
-    private class BGP extends MemRegisters {
+    public class BGP extends MemRegisters {
         public BGP() {
             location = 0xFF47;
         }
@@ -429,7 +442,7 @@ public class Memory {
         }
     }
 
-    private class OAM
+    public class OAM
     {
         byte[] data;
         private int location;

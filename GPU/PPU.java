@@ -1,7 +1,9 @@
 package GPU;
 import CPU.*;
 import Memory.*;
-
+import Memory.Memory.LCDC;
+import Memory.Memory.OAM;
+import Memory.Memory.BGP;
 
 
 public class PPU {
@@ -13,6 +15,9 @@ public class PPU {
     Ram ram;
     InterruptManager interruptManager;
     private int mode;
+    LCDC lcdc;
+    OAM oam;
+    BGP bgp;
     // OuterClass.InnerClass innerObject = outerObject.new InnerClass();
 
 
@@ -38,8 +43,11 @@ public class PPU {
         this.memory = new Memory(romData);
         this.ram = ram;
         this.interruptManager = interruptManager;
-    }
+        this.lcdc = memory.getLcdc();
+        this.oam = memory.getOam();
+        this.bgp = memory.getBgp();
 
+    }
 
     public void setMode(int mode){
         this.mode = mode;
