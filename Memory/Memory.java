@@ -442,13 +442,20 @@ public class Memory {
         }
     }
 
-    public class OAM
+    private class OAM
     {
         byte[] data;
         private int location;
+        private final int OAM_SIZE = 0xA0;
+        private final int SPRITE_COUNT = 40;
+        private final int SPRITE_SIZE = 4;
+        private final int ATTR_PALETTE = 0x10;
+        private final int ATTR_FLIP_H = 0x20;
+        private final int ATTR_FLIP_V = 0x40;
+        private final int ATTR_PRIORITY = 0x80;
         public OAM()
         {
-            this.data = new byte[160];
+            this.data = new byte[0xA0];
             this.location = 0xFE00;
             //located between 0xFE00 and 0xFE9F
         }
@@ -460,6 +467,61 @@ public class Memory {
         {
             data[address - location] = value;
             memory[address] = value;
+        }
+        public byte[] getSpriteData(int spriteIndex)
+        {
+            byte[] spriteData = new byte[SPRITE_SIZE];
+            int spriteStartAddress = spriteIndex * SPRITE_SIZE;
+            for(int i = 0; i < SPRITE_SIZE; i++)
+            {
+                spriteData[i] = data[spriteStartAddress + 1];
+            }
+            return spriteData;
+            //given one of the 40 sprites in OAM, returns details about it with
+            //byte 1 being y location
+            //byte 2 being x location
+            //byte 3 being tile number
+            //byte 4 being flags
+        }
+        public boolean isSpriteEnabled(int spriteIndex)
+        {
+            int spriteStartAddress = spriteIndex * SPRITE_SIZE;
+            return data[spriteStartAddress] != 0;
+        }
+        public int getSpriteX(int spriteIndex)
+        {
+            int spriteStartAddress = spriteIndex * SPRITE_SIZE;
+            return Byte.toUnsignedInt(data[spriteStartAddress + 1]) - 8;
+        }
+        public int getSpriteY(int spriteIndex)
+        {
+            int spriteStartAddress = spriteIndex * SPRITE_SIZE;
+            return Byte.toUnsignedInt(data[spriteStartAddress]) - 16;
+        }
+        public int getSpriteFlags(int spriteIndex)
+        {
+            int spriteStartAddress = spriteIndex * SPRITE_SIZE;
+            return Byte.toUnsignedInt(data[spriteStartAddress + 3]);
+        }
+        public int getSpritePalette(int spriteIndex)
+        {
+            int attributes = getSpriteFlags(spriteIndex);
+            return (attributes & ATTR_PALETTE) == 0 ? 0 : 1;
+        }   
+        public boolean isSpriteFlippedHorizontally(int spriteIndex)
+        {
+            int attributes = getSpriteFlags(spriteIndex);
+            return (attributes & ATTR_FLIP_H) != 0;
+        }
+        public boolean isSpriteFlippedVertically(int spriteIndex)
+        {
+            int attributes = getSpriteFlags(spriteIndex);
+            return (attributes & ATTR_FLIP_V) != 0;
+        }
+        public boolean hasSpritePriority(int spriteIndex)
+        {
+            int attributes = getSpriteFlags(spriteIndex);
+            return (attributes & ATTR_PRIORITY) == 0;
         }
     }
     private class OBP0 extends MemRegisters {
