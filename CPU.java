@@ -1,3 +1,4 @@
+import Memory.Memory;
 
 //class to collect regs,ram,rom,opcodes and have execute cycle
 public class CPU {
@@ -20,6 +21,7 @@ public class CPU {
         regs.setPC(0x100);// sets it to 0x100 in ROM to start testing opcode
         interruptManager.setCPU(this);
     }
+
 
     public void step() {// takes 1 (fetch/decode/execute)cycle in execution
         if (halted) {

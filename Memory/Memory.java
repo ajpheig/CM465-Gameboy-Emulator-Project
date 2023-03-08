@@ -417,7 +417,7 @@ public class Memory {
     {
         public OAM()
         {
-            location = ;
+             oam = new byte[0xA0];
         }
     }*/
     private class OBP0 extends MemRegisters

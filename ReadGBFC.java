@@ -1,7 +1,7 @@
 import java.io.*;
 import javax.swing.*;
 
-import Memory.Memory;
+import Memory.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -24,7 +24,9 @@ public class ReadGBFC {
     Registers regs = new Registers();
     CPU cpu;
     Memory mem;
+    Ram ram;
     InterruptManager interruptManager = new InterruptManager();
+    PPU ppu;
 
     public ReadGBFC() {
         frame = new JFrame("GameBoy");
@@ -66,6 +68,7 @@ public class ReadGBFC {
                     // printOpcodes();
                     mem = new Memory(romData);
                     cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
+                    ppu = new PPU(romData, cpu, ram, interruptManager);
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to
