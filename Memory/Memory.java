@@ -72,9 +72,8 @@ public class Memory {
     }
 
     // getters for the PPU
-    public LCDC getLcdc(){
-        return lcdc;
-    }
+    public Stat getStat(){return stat;}
+    public LCDC getLcdc(){return lcdc;}
 
     public OAM getOam(){
         return oam;
@@ -282,12 +281,13 @@ public class Memory {
          * Bit 4: BG Tile Map Display Select
          * Bit 5: BG & Window Tile Data Select
          * Bit 6: Window Display Enable
-         * Bit 7: WIndow Tile Map Display Select
+         * Bit 7: Window Tile Map Display Select
          * Bit 8: LCD Display Enable
          */
     }
 
-    private class Stat extends MemRegisters {
+
+    public class Stat extends MemRegisters {
         public Stat() {
             location = 0xFF41;
         }
@@ -301,6 +301,13 @@ public class Memory {
             this.setBit(1, value);
             memory[location] = this.getByte();
         }
+
+        public void setMF3(boolean value) {
+            this.setBit(1, true);
+            this.setBit(2, true);
+            memory[location] = this.getByte();
+        }
+
 
         public void setCoincidenceFlag(boolean value) {
             this.setBit(2, value);
@@ -442,7 +449,7 @@ public class Memory {
         }
     }
 
-    private class OAM
+    public class OAM
     {
         byte[] data;
         private int location;

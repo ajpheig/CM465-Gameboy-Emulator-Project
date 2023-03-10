@@ -41,6 +41,7 @@ public class ReadGBFC {
         mb = new JMenuBar();
         m = new JMenu("File");
         fc = new JFileChooser("C:/Users/ajphe/Documents/Homework/CM465 CIS Capston/GBVStest/blargg/cpu_instrs");
+        //fc = new JFileChooser("/Users/brettkulp/Desktop/Capstone/CM465-Gameboy-Emulator-Project/dmg_boot.bin");
         KeyHandler kh = new KeyHandler();// to step thru cpu instructions
         frame.addKeyListener(kh);
         debugPanel();
@@ -74,7 +75,8 @@ public class ReadGBFC {
                     // printROMData();
                     // printOpcodes();
                     mem = new Memory(romData);
-                    cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
+                    // possible need to change the next two linces since they both need an instance of each other
+                    cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this, ppu);
                     ppu = new PPU(romData, cpu, ram, interruptManager);
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for

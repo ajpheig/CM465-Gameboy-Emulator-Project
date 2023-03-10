@@ -1,5 +1,5 @@
 package CPU;
-
+import GPU.PPU;
 import Memory.Memory;
 import gameboy.*;
 
@@ -19,15 +19,17 @@ public class CPU {
     private boolean interrupted = false;
     int interruptType;
     ReadGBFC parent;
+    PPU ppu;
     boolean running = false;
     PrintWriter out;
     int ticks = 1;
 
     public CPU(byte[] romData, Registers regs,
-            InterruptManager interruptManager, Memory mem, ReadGBFC parent) {
+            InterruptManager interruptManager, Memory mem, ReadGBFC parent, PPU ppu) {
         this.romData = romData;
         this.regs = regs;
         this.mem = mem;
+        this.ppu = ppu;
         this.interruptManager = interruptManager;
         mem.setCPU(this, interruptManager);
         operations = new Opcodes(regs, romData, interruptManager, mem, this);
@@ -82,6 +84,8 @@ public class CPU {
         out.println(s);
         // System.out.println(mem.readByte(0x8190));
         // System.out.println(regs.getPC());
+        // call ppu method before each opcode is ran to keep it going through the correct modes
+        ppu.updateModeAndCycles();
         operation.run();
         timer.handleTimer(ticks);
         serviceInterrupts();
