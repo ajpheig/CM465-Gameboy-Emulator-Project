@@ -6,6 +6,7 @@ import Memory.Memory.OAM;
 import Memory.Memory.BGP;
 import Memory.Memory.Stat;
 import Memory.Memory.VRAM;
+import GPU.Sprite;
 
 
 public class PPU {
@@ -23,6 +24,7 @@ public class PPU {
     Stat stat;
     VRAM vram;
     Display display;
+    Sprite sprite;
     // OuterClass.InnerClass innerObject = outerObject.new InnerClass();
 
 
@@ -70,11 +72,6 @@ public class PPU {
          * Bit 7: LYC=LY Coincidence Interrupt Enable
          * Bit 8 is unused
          */
-
-        // filler variable to keep track of ticks from timer for now
-        int tick = 0;
-        // OAM read mode, scanline active
-
     }
 
     // called every cycle from the CPU before an opcode is ran to cycle through modes. Every cycle counts as one tick.
@@ -87,16 +84,31 @@ public class PPU {
                     // OAM search begins at cycle 80 and lasts for 20 cycles
                     // determine which sprites are on this line
                     // check sprite size
-                    int spriteHeight = ((lcdc.getByte() >> 2) & 0x1) ==1  ? 16 : 8;
+                    int spriteHeight = ((lcdc.getByte() >> 2) & 0x1) == 1 ? 16 : 8;
                     int spritesFound = 0;
                     for (int i = 0; i < 40; i++) {
-                        // get Y cord of the sprite from OAM. Each sprite is 4 bytes so * the index by 4 to get offset
-                        // then subtract 16 because the top of the screen is y=16
                         int spriteY = oam.readByte((i * 4) - 16);
-                        // check if the sprite processed is on the current scanline being processed by PPU
                         if (spriteY <= line && spriteY + spriteHeight > line) {
-                            // sprite is on this line, add to list because only 10 sprites can appear on one scanline
-                            // TODO check if more than 10 sprites were found then handle the overflow and handle that
+                            // Sprite is on this line, add to list
+                            // Increment the counter variable for this scanline
+                            spritesFound++;
+                            if (spritesFound > 10) {
+                                if (stat.isM2OAMEnabled()) {
+                                    // set sprite overflow flag if enabled
+                                    stat.setM2OAM(true);
+                                }
+                            }
+                            // Get sprite information
+                            int spriteX = oam.readByte((i * 4) - 8);
+                            int tileNumber = oam.readByte(i * 4 + 2);
+                            boolean flipX = ((oam.readByte(i * 4 + 3) >> 5) & 0x1) == 1;
+                            boolean flipY = ((oam.readByte(i * 4 + 3) >> 6) & 0x1) == 1;
+                            int paletteNumber = ((oam.readByte(i * 4 + 3) >> 4) & 0x1) == 1 ? 1 : 0;
+
+                            // Create a new SpriteObject instance and add it to the list of sprites so it is easier to deal
+                            // with sprite information in that class rather than in here
+                            Sprite spriteObj = new Sprite(spriteX, spriteY, tileNumber, flipX, flipY, paletteNumber);
+                            sprite.getAllSprites().add(spriteObj);
                         }
                     }
 
@@ -108,7 +120,7 @@ public class PPU {
                         System.out.println("Request LCDSTAT interrupt");
                     }
                     // OAM mode ends after 20 ticks
-                } else if (modeTicks ==20) {
+                } else if (modeTicks == 20) {
                     // end of OAM search
                     // enter VRAM read mode
                     mode = VRAM_READ;
@@ -118,7 +130,7 @@ public class PPU {
                     // move to VRAM_READ
                 }
                 break;
-            case 3: // VRAM read
+            case 3: // VRAM read also known as pixel transfer mode
                 // read background tile data and attributes
                 int scrollX = memory.readByte(0xFF43);
                 int scrollY = memory.readByte(0xFF42);

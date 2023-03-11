@@ -330,6 +330,10 @@ public class Memory {
             memory[location] = this.getByte();
         }
 
+        public boolean isM2OAMEnabled() {
+            return ((getByte() >> 5) & 0x1) == 1;
+        }
+
         public void setMF3(boolean value) {
             this.setBit(1, true);
             this.setBit(2, true);
