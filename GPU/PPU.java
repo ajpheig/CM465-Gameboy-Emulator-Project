@@ -5,6 +5,7 @@ import Memory.Memory.LCDC;
 import Memory.Memory.OAM;
 import Memory.Memory.BGP;
 import Memory.Memory.Stat;
+import Memory.Memory.VRAM;
 
 
 public class PPU {
@@ -20,6 +21,8 @@ public class PPU {
     OAM oam;
     BGP bgp;
     Stat stat;
+    VRAM vram;
+    Display display;
     // OuterClass.InnerClass innerObject = outerObject.new InnerClass();
 
 
@@ -44,7 +47,7 @@ public class PPU {
 
     // LCDC, background, and dma are public classes inside Memory class
     // We can do everything in VRAM with get/setByte in the Memory from PPU, or we can make a VRAM class
-    public PPU(byte[] romData, CPU cpu, Ram ram, InterruptManager interruptManager) {
+    public PPU(byte[] romData, CPU cpu, Ram ram, InterruptManager interruptManager, Display display) {
         this.romData = romData;
         this.cpu = cpu;
         this.memory = new Memory(romData);
@@ -54,6 +57,7 @@ public class PPU {
         this.oam = memory.getOam();
         this.bgp = memory.getBgp();
         this.stat = memory.getStat();
+        this.vram = memory.getVram();
 
         /*
          * STAT (LCD Status): This register provides information about the current LCD
@@ -76,7 +80,8 @@ public class PPU {
     // called every cycle from the CPU before an opcode is ran to cycle through modes. Every cycle counts as one tick.
     public void updateModeAndCycles() {
         switch (mode) {
-            case 2:
+            case 2: // OAM read
+                // get sprites if it is the first tick of OAM read otherwise
                 // move to VRAM READ if it is not the first cycle in OAM read
                 if (modeTicks == 0) {
                     // OAM search begins at cycle 80 and lasts for 20 cycles
@@ -90,9 +95,8 @@ public class PPU {
                         int spriteY = oam.readByte((i * 4) - 16);
                         // check if the sprite processed is on the current scanline being processed by PPU
                         if (spriteY <= line && spriteY + spriteHeight > line) {
-                            // sprite is on this line, add to list because only 10 sprites can apprear on one scanline
-                            // ,so we may need to hide some
-                            spritesFound++;
+                            // sprite is on this line, add to list because only 10 sprites can appear on one scanline
+                            // TODO check if more than 10 sprites were found then handle the overflow and handle that
                         }
                     }
 
@@ -101,9 +105,10 @@ public class PPU {
                     // check if OAM interrupt is enabled in the stat register
                     if (((stat.getByte() >> 5) & 0x1) == 1) {
                         //interruptManager.requestInterrupt(LCD_STAT);
-                        System.out.println("Request LCD STAT interrupt");
+                        System.out.println("Request LCDSTAT interrupt");
                     }
-                } else if (modeTicks == 20) {
+                    // OAM mode ends after 20 ticks
+                } else if (modeTicks ==20) {
                     // end of OAM search
                     // enter VRAM read mode
                     mode = VRAM_READ;
@@ -111,18 +116,41 @@ public class PPU {
                     // update STAT register
                     stat.setMF3(true);
                     // move to VRAM_READ
-                } else if (modeTicks >= 80) {
-                    modeTicks = 0;
-                    mode = VRAM_READ;
                 }
                 break;
-            case 3:
-                if (modeTicks >= 172) {
+            case 3: // VRAM read
+                // read background tile data and attributes
+                int scrollX = memory.readByte(0xFF43);
+                int scrollY = memory.readByte(0xFF42);
+                int backgroundTileIndex = memory.readByte(0x9800 + 32 * (line + memory.readByte(0xFF42)) / 8 + (memory.readByte(0xFF43) / 8));
+                int backgroundTileAttributes = memory.readByte(0x9800 + 32 * (line + scrollY) / 8 + (scrollX / 8) + 0x2000);
+                // read corresponding tile data from either 0x9000 or 0x8000 depending on LCDC bit 4
+                int tileDataAddress = ((lcdc.getByte() >> 4) & 0x1) == 1 ? 0x8000 : 0x9000;
+                int tileDataIndex = memory.readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2);
+                int tileDataAttributes = memory.readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2 + 1);
+                // update background color palette based on attributes
+                int backgroundPalette = (backgroundTileAttributes >> ((scrollX / 8) % 2 == 0 ? 0 : 4)) & 0x3;
+                int colorPaletteIndex = (tileDataAttributes >> ((scrollX / 8) % 2 == 0 ? 0 : 4)) & 0x3;
+                int backgroundColor = bgp.getColor(backgroundPalette, colorPaletteIndex);
+                // write the pixel to the screen buffer
+                display.setPixel(modeTicks, line, backgroundColor);
+                if (modeTicks >= 160) {
+                    // end of scanline
                     modeTicks = 0;
-                    mode = HBLANK;
+                    line++;
+                    if (line >= 144) {
+                        // end of visible screen area, enter VBLANK
+                        mode = VBLANK;
+                        //interruptManager.requestInterrupt(InterruptManager.INTERRUPT_VBLANK);
+                        System.out.println("request VBLANK INTERRUPT");
+                    } else {
+                        // start next scanline
+                        mode = OAM_READ;
+                    }
                 }
                 break;
-            case 0:
+
+            case 0: // HBLANK
                 if (modeTicks >= 204) {
                     modeTicks = 0;
                     line++;
@@ -134,7 +162,7 @@ public class PPU {
                     }
                 }
                 break;
-            case 1:
+            case 1: // VBLANK mode
                 if (modeTicks >= 456) {
                     modeTicks = 0;
                     line++;

@@ -2,6 +2,8 @@ package gameboy;
 
 import java.io.*;
 import javax.swing.*;
+
+import GPU.Display;
 import Memory.*;
 import CPU.CPU;
 import CPU.InterruptManager;
@@ -31,6 +33,7 @@ public class ReadGBFC {
     Registers regs = new Registers();
     CPU cpu;
     Memory mem;
+    Display display;
     Ram ram;
     InterruptManager interruptManager = new InterruptManager();
     PPU ppu;
@@ -77,7 +80,7 @@ public class ReadGBFC {
                     mem = new Memory(romData);
                     // possible need to change the next two linces since they both need an instance of each other
                     cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this, ppu);
-                    ppu = new PPU(romData, cpu, ram, interruptManager);
+                    ppu = new PPU(romData, cpu, ram, interruptManager, display);
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to

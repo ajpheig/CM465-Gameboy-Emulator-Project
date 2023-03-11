@@ -32,6 +32,7 @@ public class Memory {
     TMA tma = new TMA();
     TAC tac = new TAC();
     OAM oam = new OAM();
+    VRAM vram;
 
     public Memory(byte[] romData) {
         memory = new byte[0x10000];// This should initialize memory size to 64 kb
@@ -74,14 +75,13 @@ public class Memory {
     // getters for the PPU
     public Stat getStat(){return stat;}
     public LCDC getLcdc(){return lcdc;}
-
     public OAM getOam(){
         return oam;
     }
-
     public BGP getBgp(){
         return bgp;
     }
+    public VRAM getVram(){return vram;}
 
     public void setCPU(CPU cpu, InterruptManager intMan) {
         this.cpu = cpu;
@@ -228,6 +228,34 @@ public class Memory {
          */
     }
 
+    // video ram
+    public class VRAM extends MemRegisters {
+        private byte[] space;
+
+        // starting address of VRAM in the memory map
+        private int offset;
+
+        public VRAM(int offset) {
+            this.offset = offset;
+            this.space = new byte[0x2000]; // 8KB
+        }
+
+        // returns true if the address passed in is in the range of memory address assigned to VRAM
+        public boolean accepts(int address) {
+            return (address >= offset && address < offset + 8192);
+        }
+
+        // writes specified byte value to the address passed in by subtracting offset from the address to get the index of
+        // the space array where the byte should be written
+        public void setByte(int address, int value) {
+            space[address - offset] = (byte)value;
+        }
+
+        // reads byte from memory at address passed in by subtracting the offset value from the address
+        public int getByte(int address) {
+            return space[address - offset] & 0xFF;
+        }
+    }
     public class LCDC extends MemRegisters {
         public LCDC() {
             location = 0xFF40;
@@ -421,7 +449,24 @@ public class Memory {
             this.setBit(7, value);
             memory[location] = this.getByte();
         }
+
+        public int getColor(int palette, int index) {
+            int color = (this.getByte() >> (palette * 2)) & 0x3;
+            switch (color) {
+                case 0:
+                    return 0xFFFFFF; // white
+                case 1:
+                    return 0xAAAAAA; // light gray
+                case 2:
+                    return 0x555555; // dark gray
+                case 3:
+                    return 0x000000; // black
+                default:
+                    return 0x000000; // should never happen
+            }
+        }
     }
+
 
     private class LY extends MemRegisters {
         public LY() {
