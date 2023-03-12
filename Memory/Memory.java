@@ -73,15 +73,25 @@ public class Memory {
     }
 
     // getters for the PPU
-    public Stat getStat(){return stat;}
-    public LCDC getLcdc(){return lcdc;}
-    public OAM getOam(){
+    public Stat getStat() {
+        return stat;
+    }
+
+    public LCDC getLcdc() {
+        return lcdc;
+    }
+
+    public OAM getOam() {
         return oam;
     }
-    public BGP getBgp(){
+
+    public BGP getBgp() {
         return bgp;
     }
-    public VRAM getVram(){return vram;}
+
+    public VRAM getVram() {
+        return vram;
+    }
 
     public void setCPU(CPU cpu, InterruptManager intMan) {
         this.cpu = cpu;
@@ -93,10 +103,31 @@ public class Memory {
             // System.out.println("| read: " + Integer.toHexString(bootRom[address]) + "|");
             return ((int) bootRom[address] & 0xff);
         }
-        if(address >= 0xFE00 & address < 0xFEA0)
+        if (address == 0xff04) {// any value written set DIV to zero
+            return memory[address];
+        }
+        if (address == 0xff40) {
+            return lcdc.getByte();
+        }
+        if (address == 0xff42) {
+            return scy.getByte();
+        }
+        if (address == 0xff43) {
+            return scx.getByte();
+        }
+        if (address == 0xff45) {
+            return lyc.getByte();
+        }
+        if (address == 0xff4a) {
+            return wy.getByte();
+        }
+        if (address == 0xff4b) {
+            return wx.getByte();
+        }
+        if (address >= 0xFE00 & address < 0xFEA0)
             return oam.readByte(address);
         else
-            return (int)memory[address] & 0xff;
+            return (int) memory[address] & 0xff;
     }
 
     public void writeByte(int address, int value) {
@@ -112,11 +143,32 @@ public class Memory {
             if (interrupted)
                 return;// interrupted=whether the IME and a IE flag are on
         }
+        if (address == 0xff00) {// gamepad
+            // do something
+        }
         if (address == 0xff04) {// any value written set DIV to zero
             memory[0xff04] = 0;
             return;
         }
-        if(address >= 0xFE00 && address < 0xFEA0)
+        if (address == 0xff40) {
+            lcdc.setByte((byte) value);
+        }
+        if (address == 0xff42) {
+            scy.setByte((byte) value);
+        }
+        if (address == 0xff43) {
+            scx.setByte((byte) value);
+        }
+        if (address == 0xff45) {
+            lyc.setByte((byte) value);
+        }
+        if (address == 0xff4a) {
+            wy.setByte((byte) value);
+        }
+        if (address == 0xff4b) {
+            wx.setByte((byte) value);
+        }
+        if (address >= 0xFE00 && address < 0xFEA0)
             oam.writeByte(address, (byte) value);
         else
             memory[address & 0xffff] = (byte) value;
@@ -240,22 +292,26 @@ public class Memory {
             this.space = new byte[0x2000]; // 8KB
         }
 
-        // returns true if the address passed in is in the range of memory address assigned to VRAM
+        // returns true if the address passed in is in the range of memory address
+        // assigned to VRAM
         public boolean accepts(int address) {
             return (address >= offset && address < offset + 8192);
         }
 
-        // writes specified byte value to the address passed in by subtracting offset from the address to get the index of
+        // writes specified byte value to the address passed in by subtracting offset
+        // from the address to get the index of
         // the space array where the byte should be written
         public void setByte(int address, int value) {
-            space[address - offset] = (byte)value;
+            space[address - offset] = (byte) value;
         }
 
-        // reads byte from memory at address passed in by subtracting the offset value from the address
+        // reads byte from memory at address passed in by subtracting the offset value
+        // from the address
         public int getByte(int address) {
             return space[address - offset] & 0xFF;
         }
     }
+
     public class LCDC extends MemRegisters {
         public LCDC() {
             location = 0xFF40;
@@ -314,7 +370,6 @@ public class Memory {
          */
     }
 
-
     public class Stat extends MemRegisters {
         public Stat() {
             location = 0xFF41;
@@ -339,7 +394,6 @@ public class Memory {
             this.setBit(2, true);
             memory[location] = this.getByte();
         }
-
 
         public void setCoincidenceFlag(boolean value) {
             this.setBit(2, value);
@@ -471,7 +525,6 @@ public class Memory {
         }
     }
 
-
     private class LY extends MemRegisters {
         public LY() {
             location = 0xFF44;
@@ -498,8 +551,7 @@ public class Memory {
         }
     }
 
-    public class OAM
-    {
+    public class OAM {
         byte[] data;
         private int location;
         private final int OAM_SIZE = 0xA0;
@@ -509,77 +561,77 @@ public class Memory {
         private final int ATTR_FLIP_H = 0x20;
         private final int ATTR_FLIP_V = 0x40;
         private final int ATTR_PRIORITY = 0x80;
-        public OAM()
-        {
+
+        public OAM() {
             this.data = new byte[0xA0];
             this.location = 0xFE00;
-            //located between 0xFE00 and 0xFE9F
+            // located between 0xFE00 and 0xFE9F
         }
-        public byte readByte(int address)
-        {
+
+        public byte readByte(int address) {
             return data[address - location];
         }
-        public void writeByte(int address, byte value)
-        {
+
+        public void writeByte(int address, byte value) {
             data[address - location] = value;
             memory[address] = value;
         }
-        public byte[] getSpriteData(int spriteIndex)
-        {
+
+        public byte[] getSpriteData(int spriteIndex) {
             byte[] spriteData = new byte[SPRITE_SIZE];
             int spriteStartAddress = spriteIndex * SPRITE_SIZE;
-            for(int i = 0; i < SPRITE_SIZE; i++)
-            {
+            for (int i = 0; i < SPRITE_SIZE; i++) {
                 spriteData[i] = data[spriteStartAddress + 1];
             }
             return spriteData;
-            //given one of the 40 sprites in OAM, returns details about it with
-            //byte 1 being y location
-            //byte 2 being x location
-            //byte 3 being tile number
-            //byte 4 being flags
+            // given one of the 40 sprites in OAM, returns details about it with
+            // byte 1 being y location
+            // byte 2 being x location
+            // byte 3 being tile number
+            // byte 4 being flags
         }
-        public boolean isSpriteEnabled(int spriteIndex)
-        {
+
+        public boolean isSpriteEnabled(int spriteIndex) {
             int spriteStartAddress = spriteIndex * SPRITE_SIZE;
             return data[spriteStartAddress] != 0;
         }
-        public int getSpriteX(int spriteIndex)
-        {
+
+        public int getSpriteX(int spriteIndex) {
             int spriteStartAddress = spriteIndex * SPRITE_SIZE;
             return Byte.toUnsignedInt(data[spriteStartAddress + 1]) - 8;
         }
-        public int getSpriteY(int spriteIndex)
-        {
+
+        public int getSpriteY(int spriteIndex) {
             int spriteStartAddress = spriteIndex * SPRITE_SIZE;
             return Byte.toUnsignedInt(data[spriteStartAddress]) - 16;
         }
-        public int getSpriteFlags(int spriteIndex)
-        {
+
+        public int getSpriteFlags(int spriteIndex) {
             int spriteStartAddress = spriteIndex * SPRITE_SIZE;
             return Byte.toUnsignedInt(data[spriteStartAddress + 3]);
         }
-        public int getSpritePalette(int spriteIndex)
-        {
+
+        public int getSpritePalette(int spriteIndex) {
             int attributes = getSpriteFlags(spriteIndex);
             return (attributes & ATTR_PALETTE) == 0 ? 0 : 1;
-        }   
-        public boolean isSpriteFlippedHorizontally(int spriteIndex)
-        {
+        }
+
+        public boolean isSpriteFlippedHorizontally(int spriteIndex) {
             int attributes = getSpriteFlags(spriteIndex);
             return (attributes & ATTR_FLIP_H) != 0;
         }
-        public boolean isSpriteFlippedVertically(int spriteIndex)
-        {
+
+        public boolean isSpriteFlippedVertically(int spriteIndex) {
             int attributes = getSpriteFlags(spriteIndex);
             return (attributes & ATTR_FLIP_V) != 0;
         }
-        public boolean hasSpritePriority(int spriteIndex)
-        {
+
+        public boolean hasSpritePriority(int spriteIndex) {
             int attributes = getSpriteFlags(spriteIndex);
             return (attributes & ATTR_PRIORITY) == 0;
         }
     }
+
     private class OBP0 extends MemRegisters {
         public OBP0() {
             location = 0xFF48;
