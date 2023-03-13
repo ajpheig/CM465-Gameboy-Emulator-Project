@@ -57,12 +57,13 @@ public class PPU {
         this.memory = mem;
         this.ram = ram;
         this.interruptManager = interruptManager;
+        this.display = display;
         this.lcdc = memory.getLcdc();
         this.oam = memory.getOam();
         this.bgp = memory.getBgp();
         this.stat = memory.getStat();
         this.vram = memory.getVram();
-
+        cpu.setPPU(this);
         /*
          * STAT (LCD Status): This register provides information about the current LCD
          * state and controls behavior of LCD interrupt
