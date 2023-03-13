@@ -581,7 +581,7 @@ public class Memory {
             byte[] spriteData = new byte[SPRITE_SIZE];
             int spriteStartAddress = spriteIndex * SPRITE_SIZE;
             for (int i = 0; i < SPRITE_SIZE; i++) {
-                spriteData[i] = data[spriteStartAddress + 1];
+                spriteData[i] = data[spriteStartAddress + i];
             }
             return spriteData;
             // given one of the 40 sprites in OAM, returns details about it with
