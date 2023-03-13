@@ -11,7 +11,6 @@ import CPU.Registers;
 import Memory.Memory;
 import GPU.PPU;
 
-
 import java.awt.*;
 import java.awt.event.*;
 
@@ -33,10 +32,10 @@ public class ReadGBFC {
     Registers regs = new Registers();
     CPU cpu;
     Memory mem;
-    Display display;
-    Ram ram;
+    Ram ram = new Ram(0x8000);// 2KiB Vram
     InterruptManager interruptManager = new InterruptManager();
     PPU ppu;
+    Display display = new Display(160, 144);
 
     public ReadGBFC() {
         frame = new JFrame("GameBoy");
@@ -44,7 +43,6 @@ public class ReadGBFC {
         mb = new JMenuBar();
         m = new JMenu("File");
         fc = new JFileChooser("C:/Users/ajphe/Documents/Homework/CM465 CIS Capston/GBVStest/blargg/cpu_instrs");
-        //fc = new JFileChooser("/Users/brettkulp/Desktop/Capstone/CM465-Gameboy-Emulator-Project/dmg_boot.bin");
         KeyHandler kh = new KeyHandler();// to step thru cpu instructions
         frame.addKeyListener(kh);
         debugPanel();
@@ -78,9 +76,8 @@ public class ReadGBFC {
                     // printROMData();
                     // printOpcodes();
                     mem = new Memory(romData);
-                    // possible need to change the next two linces since they both need an instance of each other
-                    cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this, ppu);
-                    ppu = new PPU(romData, cpu, ram, interruptManager, display);
+                    cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
+                    ppu = new PPU(romData, cpu, ram, interruptManager, display, mem);
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to
@@ -165,8 +162,8 @@ public class ReadGBFC {
             }
             if (ke.getKeyCode() == KeyEvent.VK_SPACE) {
                 cpu.setRun();
-                cpu.runUntil(0x210);//
-            }
+                cpu.runUntil(0x100);// 8010=F0 8020=3C @ 2E
+            } // opcode ldi 0x22 sets bootrom VRAM
         }
     }
 
