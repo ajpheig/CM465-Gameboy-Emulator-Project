@@ -1,8 +1,8 @@
 package CPU;
-import GPU.PPU;
+
 import Memory.Memory;
 import gameboy.*;
-
+import GPU.*;
 import javax.swing.*;
 
 import java.io.*;
@@ -19,25 +19,26 @@ public class CPU {
     private boolean interrupted = false;
     int interruptType;
     ReadGBFC parent;
-    PPU ppu;
     boolean running = false;
     PrintWriter out;
     int ticks = 1;
+    PPU ppu;
 
     public CPU(byte[] romData, Registers regs,
-            InterruptManager interruptManager, Memory mem, ReadGBFC parent, PPU ppu) {
+            InterruptManager interruptManager, Memory mem, ReadGBFC parent) {
         this.romData = romData;
         this.regs = regs;
         this.mem = mem;
-        this.ppu = ppu;
         this.interruptManager = interruptManager;
         mem.setCPU(this, interruptManager);
         operations = new Opcodes(regs, romData, interruptManager, mem, this);
-        regs.setPC(0x100);// sets it to 0x100 in ROM to start testing opcode
+        regs.setPC(0x00);// sets it to 0x100 in ROM to start testing opcode
         interruptManager.setCPU(this);
         this.parent = parent;
         timer = new Timer(this, mem);
-        hardSetRegs();
+        // hardSetRegs();
+        mem.writeByte(0xff44, 0x90);// hardset for bootROM for now
+        // mem.writeByte();
         try {
             out = new PrintWriter(new File("output.txt"));
         } catch (FileNotFoundException fne) {
@@ -61,6 +62,10 @@ public class CPU {
         return this;
     }
 
+    public void setPPU(PPU ppu) {
+        this.ppu = ppu;
+    }
+
     public void step() {// takes 1 (fetch/decode/execute)cycle in execution
         if (halted) {
             timer.handleTimer(4);
@@ -82,12 +87,11 @@ public class CPU {
                 mem.readByte(currentPC), mem.readByte(currentPC + 1), mem.readByte(currentPC + 2),
                 mem.readByte(currentPC + 3));
         out.println(s);
-        // System.out.println(mem.readByte(0x8190));
+        // System.out.println(Integer.toHexString(mem.readByte(0x80a0)));
         // System.out.println(regs.getPC());
-        // call ppu method before each opcode is ran to keep it going through the correct modes
-        ppu.updateModeAndCycles();
         operation.run();
         timer.handleTimer(ticks);
+        ppu.updateModeAndCycles();
         serviceInterrupts();
         ticks = 0;
 
@@ -110,8 +114,8 @@ public class CPU {
     public void runUntil(int pc) {
         while (regs.getPC() != pc) {
             step();
-            if ((char) (mem.readByte(0xff01)) == 'f')
-                break;
+            // if ((mem.readByte(0x8020)) == 0xC3)//checking VRAM
+            // break;
         }
         out.close();
     }
@@ -145,39 +149,4 @@ public class CPU {
             }
         }
     }
-
-    /*
-     * public void handleTimer(int ticks) {
-     * divCount += (ticks / 4);// inc DIV register
-     * if (divCount >= 256) {
-     * divCount -= 256;
-     * mem.writeByte(0xff04, mem.readByte(0xff04) + 1);
-     * }
-     * // is timer enabled?
-     * if (((mem.readByte(0xff07) >> 2) & 0x1) == 1) {// grab the 2nd bit
-     * timerCounter += ticks;
-     * int freq = 4096;// base freq Hz
-     * if ((mem.readByte(0xff07) & 0b11) == 1) {
-     * freq = 262144;// 0x01 frequency
-     * } else if ((mem.readByte(0xff07) & 0b11) == 2)
-     * freq = 65536;// 0x10 frequency
-     * else if ((mem.readByte(0xff07) & 0b11) == 3)
-     * freq = 16834;// 0x11 frequency
-     * while (timerCounter >= (4194304 / freq)) {// while so that it can be ++ twice
-     * during one cycle
-     * // increase TIMA register
-     * // System.out.printf("| %d |", mem.readByte(0xff05));
-     * mem.writeByte(0xff05, mem.readByte(0xff05) + 1);
-     * // did TIMA overflow? ==0?
-     * if (mem.readByte(0xff05) == 0) {
-     * mem.writeByte(0xff0f, mem.readByte(0xff0f) | 0b100);// set Timer interrupt in
-     * // IF
-     * // System.out.println("TIMA overflow, set int");
-     * mem.writeByte(0xff05, mem.readByte(0xff06));// reset TIMA to value in TMA
-     * }
-     * timerCounter = 0;// -= (4194304 / freq);
-     * }
-     * }
-     * }
-     */
 }
