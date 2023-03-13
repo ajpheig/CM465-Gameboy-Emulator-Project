@@ -1,4 +1,5 @@
 package GPU;
+
 import CPU.*;
 import Memory.*;
 import Memory.Memory.LCDC;
@@ -8,10 +9,8 @@ import Memory.Memory.Stat;
 import Memory.Memory.VRAM;
 import GPU.Sprite;
 
-
 public class PPU {
     byte[] romData;
-
 
     CPU cpu;
     Memory memory;
@@ -27,15 +26,18 @@ public class PPU {
     Sprite sprite;
     // OuterClass.InnerClass innerObject = outerObject.new InnerClass();
 
-
-    // dma to transfer sections of memory from one area to another without involving cpu
+    // dma to transfer sections of memory from one area to another without involving
+    // cpu
 
     // modes
-    // 0 H-Blank - default mode. PPU is active during horizontal blanking period of each scanline and is used to render
-    //      the background and window tiles
+    // 0 H-Blank - default mode. PPU is active during horizontal blanking period of
+    // each scanline and is used to render
+    // the background and window tiles
     // 1 V-Blank - renders sprites and updates background and window tiles
-    // 2 OAM Read - reads data from OAM to determine which sprites to render during the first 80 cycles of each scanline
-    // 3 VRAM Read - during the last 172 cycles of each scanline reads from VRAM to get background and window tiles
+    // 2 OAM Read - reads data from OAM to determine which sprites to render during
+    // the first 80 cycles of each scanline
+    // 3 VRAM Read - during the last 172 cycles of each scanline reads from VRAM to
+    // get background and window tiles
     public static final int HBLANK = 0;
     public static final int VBLANK = 1;
     public static final int OAM_READ = 2;
@@ -46,13 +48,13 @@ public class PPU {
     // current scanline that the PPU is drawing
     int line = 0;
 
-
     // LCDC, background, and dma are public classes inside Memory class
-    // We can do everything in VRAM with get/setByte in the Memory from PPU, or we can make a VRAM class
-    public PPU(byte[] romData, CPU cpu, Ram ram, InterruptManager interruptManager, Display display) {
+    // We can do everything in VRAM with get/setByte in the Memory from PPU, or we
+    // can make a VRAM class
+    public PPU(byte[] romData, CPU cpu, Ram ram, InterruptManager interruptManager, Display display, Memory mem) {
         this.romData = romData;
         this.cpu = cpu;
-        this.memory = new Memory(romData);
+        this.memory = mem;
         this.ram = ram;
         this.interruptManager = interruptManager;
         this.lcdc = memory.getLcdc();
@@ -74,7 +76,8 @@ public class PPU {
          */
     }
 
-    // called every cycle from the CPU before an opcode is ran to cycle through modes. Every cycle counts as one tick.
+    // called every cycle from the CPU before an opcode is ran to cycle through
+    // modes. Every cycle counts as one tick.
     public void updateModeAndCycles() {
         switch (mode) {
             case 2: // OAM read
@@ -105,10 +108,11 @@ public class PPU {
                             boolean flipY = ((oam.readByte(i * 4 + 3) >> 6) & 0x1) == 1;
                             int paletteNumber = ((oam.readByte(i * 4 + 3) >> 4) & 0x1) == 1 ? 1 : 0;
 
-                            // Create a new SpriteObject instance and add it to the list of sprites so it is easier to deal
+                            // Create a new SpriteObject instance and add it to the list of sprites so it is
+                            // easier to deal
                             // with sprite information in that class rather than in here
                             Sprite spriteObj = new Sprite(spriteX, spriteY, tileNumber, flipX, flipY, paletteNumber);
-                            sprite.getAllSprites().add(spriteObj);
+                            // sprite.getAllSprites().add(spriteObj);
                         }
                     }
 
@@ -116,7 +120,7 @@ public class PPU {
                     stat.setMF2(true);
                     // check if OAM interrupt is enabled in the stat register
                     if (((stat.getByte() >> 5) & 0x1) == 1) {
-                        //interruptManager.requestInterrupt(LCD_STAT);
+                        memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
                         System.out.println("Request LCDSTAT interrupt");
                     }
                     // OAM mode ends after 20 ticks
@@ -134,12 +138,17 @@ public class PPU {
                 // read background tile data and attributes
                 int scrollX = memory.readByte(0xFF43);
                 int scrollY = memory.readByte(0xFF42);
-                int backgroundTileIndex = memory.readByte(0x9800 + 32 * (line + memory.readByte(0xFF42)) / 8 + (memory.readByte(0xFF43) / 8));
-                int backgroundTileAttributes = memory.readByte(0x9800 + 32 * (line + scrollY) / 8 + (scrollX / 8) + 0x2000);
-                // read corresponding tile data from either 0x9000 or 0x8000 depending on LCDC bit 4
+                int backgroundTileIndex = memory
+                        .readByte(0x9800 + 32 * (line + memory.readByte(0xFF42)) / 8 + (memory.readByte(0xFF43) / 8));
+                int backgroundTileAttributes = memory
+                        .readByte(0x9800 + 32 * (line + scrollY) / 8 + (scrollX / 8) + 0x2000);
+                // read corresponding tile data from either 0x9000 or 0x8000 depending on LCDC
+                // bit 4
                 int tileDataAddress = ((lcdc.getByte() >> 4) & 0x1) == 1 ? 0x8000 : 0x9000;
-                int tileDataIndex = memory.readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2);
-                int tileDataAttributes = memory.readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2 + 1);
+                int tileDataIndex = memory
+                        .readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2);
+                int tileDataAttributes = memory
+                        .readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2 + 1);
                 // update background color palette based on attributes
                 int backgroundPalette = (backgroundTileAttributes >> ((scrollX / 8) % 2 == 0 ? 0 : 4)) & 0x3;
                 int colorPaletteIndex = (tileDataAttributes >> ((scrollX / 8) % 2 == 0 ? 0 : 4)) & 0x3;
@@ -153,7 +162,7 @@ public class PPU {
                     if (line >= 144) {
                         // end of visible screen area, enter VBLANK
                         mode = VBLANK;
-                        //interruptManager.requestInterrupt(InterruptManager.INTERRUPT_VBLANK);
+                        memory.writeByte(0xff0f, 0b1);// writs 1st bit to ff0f, mem sends interrupt
                         System.out.println("request VBLANK INTERRUPT");
                     } else {
                         // start next scanline
@@ -189,7 +198,8 @@ public class PPU {
         modeTicks++;
     }
 
-
-    public PPU getPPU(){return this;}
+    public PPU getPPU() {
+        return this;
+    }
 
 }
