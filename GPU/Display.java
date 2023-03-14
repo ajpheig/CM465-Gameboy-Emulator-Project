@@ -25,8 +25,11 @@ public class Display {
 
     // set the color of specific pixel passed in at (x,y) to the color passed in
     public void setPixel(int x, int y, int color) {
-        screenBuffer[x % 160 + y * 160] = color;
-        // or do you want to setRGB
-        image.setRGB(x, y, color);
+        if (x >= 0 && x < screenWidth && y >= 0 && y < screenHeight) {
+            screenBuffer[x % 160 + y * 160] = color;
+            // or do you want to setRGB
+            image.setRGB(x, y, color);
+        }
     }
+
 }

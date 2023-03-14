@@ -59,8 +59,8 @@ public class PPU {
         this.stat = memory.getStat();
         this.vram = memory.getVram();
         this.display = display;
-        this.obp1 = obp1;
-        this.obp0 = obp0;
+        this.obp1 = memory.getObp1();
+        this.obp0 = memory.getObp0();
 
 
         cpu.setPPU(this);
@@ -226,6 +226,7 @@ public class PPU {
                         int spritePaletteIndex = (spritePalette == 0) ? obp0.getByte() : obp1.getByte();
                         int spriteColorIndex = (spritePaletteIndex >> (spriteColorPaletteIndex * 2)) & 0x3;
                         int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
+                        // update the screen buffer with the sprite info with setPixel method
                         display.setPixel(modeTicks, line, spriteColor);
                     }
                 }
@@ -235,6 +236,22 @@ public class PPU {
                     modeTicks = 0;
                     line++;
 
+                    // Check if LYC=LY
+                    if (line == memory.readByte(0xFF41)) {
+                        // Set the LYC=LY flag in STAT register
+                        stat.setCoincidenceFlag(true);
+
+                        // Check if LYC=LY interrupt is enabled
+                        if ((memory.readByte(0xFF41) & 0x40) == 0x40) {
+                        } else {
+                            // Request STAT/mode2 interrupt
+                            System.out.println("STAT interupt");
+                        }
+                    } else {
+                        // Clear the LYC=LY flag in STAT register
+                        stat.setCoincidenceFlag(false);
+                    }
+
                     if (line == 143) {
                         mode = VBLANK;
                     } else {
@@ -242,14 +259,32 @@ public class PPU {
                     }
                 }
                 break;
-            case 1: // VBLANK mode
+            case 1: // VBLANK
                 if (modeTicks >= 456) {
                     modeTicks = 0;
                     line++;
 
-                    if (line > 153) {
+                    if (line >= 154) {
                         mode = OAM_READ;
                         line = 0;
+
+                        // Set the coincidence flag if LYC=LY
+                        if (line == memory.readByte(0xFF45)) {
+                            stat.setCoincidenceFlag(true);
+                        } else {
+                            stat.setCoincidenceFlag(false);
+                        }
+
+                        // Check if LYC=LY interrupt is enabled
+                        if ((memory.readByte(0xFF41) & 0x40) == 0x40 && line == memory.readByte(0xFF45)) {
+                            // Request the LYC=LY interrupt
+                            System.out.println("STAT interupt");
+                        }
+
+                        // Request VBLANK interrupt
+                        memory.writeByte(0xff0f, 0b1);
+                    } else {
+                        mode = VBLANK;
                     }
                 }
                 break;
