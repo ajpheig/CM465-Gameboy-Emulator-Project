@@ -80,6 +80,8 @@ public class Memory {
     public LCDC getLcdc() {
         return lcdc;
     }
+    public OBP0 getObp0(){return obp0;}
+    public OBP1 getObp1(){return obp1;}
 
     public OAM getOam() {
         return oam;
@@ -611,6 +613,19 @@ public class Memory {
             return Byte.toUnsignedInt(data[spriteStartAddress + 3]);
         }
 
+        public int getSpriteHeight(int spriteIndex) {
+            byte[] spriteData = getSpriteData(spriteIndex);
+            int tileHeight = 8;
+            int height = 0;
+            for (int i = 0; i < tileHeight; i++) {
+                int tileRowOffset = i * 2;
+                if ((spriteData[tileRowOffset] | spriteData[tileRowOffset + 1]) != 0) {
+                    height = (i + 1) * tileHeight;
+                }
+            }
+            return height;
+        }
+
         public int getSpritePalette(int spriteIndex) {
             int attributes = getSpriteFlags(spriteIndex);
             return (attributes & ATTR_PALETTE) == 0 ? 0 : 1;
@@ -632,7 +647,7 @@ public class Memory {
         }
     }
 
-    private class OBP0 extends MemRegisters {
+    public class OBP0 extends MemRegisters {
         public OBP0() {
             location = 0xFF48;
         }
@@ -661,9 +676,13 @@ public class Memory {
             this.setBit(7, value);
             memory[location] = this.getByte();
         }
+        public byte getByte() {
+            return memory[location];
+        }
+
     }
 
-    private class OBP1 extends MemRegisters {
+    public class OBP1 extends MemRegisters {
         public OBP1() {
             location = 0xFF49;
         }
@@ -691,6 +710,10 @@ public class Memory {
             this.setBit(7, value);
             memory[location] = this.getByte();
         }
+        public byte getByte() {
+            return memory[location];
+        }
+
     }
 
     private class DIV extends MemRegisters {
