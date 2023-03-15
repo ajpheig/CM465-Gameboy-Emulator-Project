@@ -131,7 +131,7 @@ public class PPU {
                 int backgroundTileIndex = memory.readByte(0x9800 + 32 * (line + memory.readByte(0xFF42)) / 8 + (memory.readByte(0xFF43) / 8) / 8);
                 int backgroundTileAttributes = memory.readByte(0x9800 + 32 * (line + scrollY) / 8 + (scrollX / 8) + 0x2000);
                 // read corresponding tile data from either 0x9000 or 0x8000 depending on LCDC bit 4
-                int tileDataAddress = ((lcdc.getByte() >> 4) & 0x1) == 1 ? 0x8000 : 0x9000;
+                int tileDataAddress = lcdc.getBGTileDataSelect() ? 0x8000 : 0x9000;
                 int tileDataIndex = memory.readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2);
                 int tileDataAttributes = memory.readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2 + 1);
                 // update background color palette based on attributes
@@ -265,6 +265,8 @@ public class PPU {
                     line++;
 
                     if (line >= 154) {
+                        // update the display with the pixel buffer
+                        display.render();
                         mode = OAM_READ;
                         line = 0;
 
