@@ -358,6 +358,10 @@ public class Memory {
             this.setBit(7, value);
             memory[location] = this.getByte();
         }
+
+        public boolean getBGTileDataSelect() {
+            return this.getBit(4);
+        }
         /*
          * LCDC (LCD Control) Register: This 8-bit register controls the display and the
          * behavior of the graphics system
