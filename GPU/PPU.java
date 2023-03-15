@@ -204,22 +204,7 @@ public class PPU {
                         int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
                         display.setPixel(modeTicks, line, spriteColor);
                     }
-                    if (modeTicks >= 160) {
-                        // end of scanline
-                        modeTicks = 0;
-                        line++;
-                        if (line >= 144) {
-                            // end of visible screen area, enter VBLANK
-                            mode = VBLANK;
-                            //interruptManager.requestInterrupt(InterruptManager.INTERRUPT_VBLANK);
-                            memory.writeByte(0xff0f, 0b1);// writs 1st bit to ff0f, mem sends interrupt
-                            System.out.println("request VBLANK INTERRUPT");
-                        } else {
-                            // start next scanline
-                            mode = OAM_READ;
-                        }
 
-                    }
                     // update the display with the sprite data
                     if (spriteTileDataIndex != 0) {
                         // need to do something different on this line
@@ -228,6 +213,21 @@ public class PPU {
                         int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
                         // update the screen buffer with the sprite info with setPixel method
                         display.setPixel(modeTicks, line, spriteColor);
+                    }
+                } // sprite for
+                if (modeTicks >= 160) {
+                    // end of scanline
+                    modeTicks = 0;
+                    line++;
+                    if (line >= 144) {
+                        // end of visible screen area, enter VBLANK
+                        mode = VBLANK;
+                        //interruptManager.requestInterrupt(InterruptManager.INTERRUPT_VBLANK);
+                        memory.writeByte(0xff0f, 0b1);// writs 1st bit to ff0f, mem sends interrupt
+                        System.out.println("request VBLANK INTERRUPT");
+                    } else {
+                        // start next scanline
+                        mode = OAM_READ;
                     }
                 }
                 break;
