@@ -32,6 +32,7 @@ public class Display {
             }
         }
         frame.getGraphics().drawImage(image, 0, 0, null);
+        frame.repaint();
     }
 
     // set the color of specific pixel passed in at (x,y) to the color passed in
