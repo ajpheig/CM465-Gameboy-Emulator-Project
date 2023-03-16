@@ -15,12 +15,23 @@ public class Display {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         screenBuffer = new int[screenHeight * screenWidth];
+        frame = new JFrame();
+        frame.add(new JLabel(new ImageIcon(image)));
+        frame.pack();
+        frame.setVisible(true);
+
     }
 
     // update the display with new pixels passed in
     public void render() {
-        // draw image to frame, dont know if setRGB updates frame immediately
-        // could loop through screeBuffer and image.setRGB here for every pixel
+        System.out.println("render");
+        for (int y = 0; y < screenHeight; y++) {
+            for (int x = 0; x < screenWidth; x++) {
+                int color = screenBuffer[x + y * screenWidth];
+                image.setRGB(x, y, color);
+            }
+        }
+        frame.getGraphics().drawImage(image, 0, 0, null);
     }
 
     // set the color of specific pixel passed in at (x,y) to the color passed in

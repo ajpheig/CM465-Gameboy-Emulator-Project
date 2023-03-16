@@ -48,19 +48,6 @@ public class PPU {
     // LCDC, background, and dma are public classes inside Memory class
     // We can do everything in VRAM with get/setByte in the Memory from PPU, or we can make a VRAM class
     public PPU(byte[] romData, CPU cpu, Ram ram, InterruptManager interruptManager, Display display) {
-        this.romData = romData;
-        this.cpu = cpu;
-        this.memory = new Memory(romData);
-        this.ram = ram;
-        this.interruptManager = interruptManager;
-        this.lcdc = memory.getLcdc();
-        this.oam = memory.getOam();
-        this.bgp = memory.getBgp();
-        this.stat = memory.getStat();
-        this.vram = memory.getVram();
-        this.display = display;
-        this.obp1 = memory.getObp1();
-        this.obp0 = memory.getObp0();
 
 
         cpu.setPPU(this);
@@ -80,7 +67,10 @@ public class PPU {
     // called every cycle from the CPU before an opcode is ran to cycle through modes. Every cycle counts as one tick.
     public void updateModeAndCycles() {
         List<Integer> spriteIndexesOnLine = new ArrayList<>();
-
+        System.out.println("PPU tick");
+        System.out.println("mode ticks " + modeTicks);
+        System.out.println("mode " + mode);
+        System.out.println("line " + line);
 
         switch (mode) {
             case 2: // OAM read

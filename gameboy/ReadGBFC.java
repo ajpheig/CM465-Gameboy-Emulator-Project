@@ -77,7 +77,7 @@ public class ReadGBFC {
                     // printOpcodes();
                     mem = new Memory(romData);
                     cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
-                    ppu = new PPU(romData, cpu, ram, interruptManager, display, mem);
+                    ppu = new PPU(romData, cpu, ram, interruptManager, display);
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to
