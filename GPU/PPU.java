@@ -48,7 +48,20 @@ public class PPU {
     // LCDC, background, and dma are public classes inside Memory class
     // We can do everything in VRAM with get/setByte in the Memory from PPU, or we can make a VRAM class
     public PPU(byte[] romData, CPU cpu, Ram ram, InterruptManager interruptManager, Display display) {
-
+        this.romData = romData;
+        this.cpu = cpu;
+        this.memory = new Memory(romData);
+        this.ram = ram;
+        this.interruptManager = interruptManager;
+        this.lcdc = memory.getLcdc();
+        this.oam = memory.getOam();
+        this.bgp = memory.getBgp();
+        this.stat = memory.getStat();
+        this.vram = memory.getVram();
+        this.display = display;
+        this.obp1 = memory.getObp1();
+        this.obp0 = memory.getObp0();
+        cpu.setPPU(this);
 
         cpu.setPPU(this);
         /*
