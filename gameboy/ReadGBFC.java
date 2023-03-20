@@ -53,6 +53,7 @@ public class ReadGBFC {
         // frame.add(gameInfo);
         // frame.add(BorderLayout.NORTH, gameInfoHead);
         frame.setJMenuBar(mb);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(500, 500);
         frame.setVisible(true);
     }
@@ -77,7 +78,7 @@ public class ReadGBFC {
                     // printOpcodes();
                     mem = new Memory(romData);
                     cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
-                    ppu = new PPU(romData, cpu, ram, interruptManager, display);
+                    ppu = new PPU(romData, cpu, ram, interruptManager, display,mem);
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to
@@ -94,7 +95,7 @@ public class ReadGBFC {
     public void printROMData() {
         for (int i = 0; i < romData.length; i++) {
             if (i % 10 == 0 && i != 0) {
-                System.out.println();
+                //System.out.println();
             }
             System.out.print(String.format("%02X ", romData[i] & 0xFF));
             // System.out.print(romData[i]);
@@ -162,8 +163,8 @@ public class ReadGBFC {
             }
             if (ke.getKeyCode() == KeyEvent.VK_SPACE) {
                 cpu.setRun();
-                cpu.runUntil(0x100);// 8010=F0 8020=3C @ 2E
-            } // opcode ldi 0x22 sets bootrom VRAM
+                cpu.runUntil(0-1);// insert PC you want to stop at
+            } //
         }
     }
 
