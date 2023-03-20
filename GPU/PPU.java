@@ -2,6 +2,8 @@ package GPU;
 import CPU.*;
 import Memory.*;
 import Memory.Memory.LCDC;
+import Memory.Memory.LYC;
+import Memory.Memory.LY;
 import Memory.Memory.OAM;
 import Memory.Memory.BGP;
 import Memory.Memory.Stat;
@@ -19,7 +21,7 @@ public class PPU {
     Memory memory;
     Ram ram;
     InterruptManager interruptManager;
-    private int mode;
+    private int mode=2;
     LCDC lcdc;
     OBP0 obp0;
     OBP1 obp1;
@@ -27,7 +29,12 @@ public class PPU {
     BGP bgp;
     Stat stat;
     VRAM vram;
+    LYC lyc;
+    LY ly;
     Display display;
+    Tile[] tileSet;
+    int curX;
+    int curY;
     // modes
     // 0 H-Blank - default mode. PPU is active during horizontal blanking period of each scanline and is used to render
     //      the background and window tiles
@@ -43,14 +50,17 @@ public class PPU {
     int modeTicks = 0;
     // current scanline that the PPU is drawing
     int line = 0;
+    int scrollX;
+    int scrollY;
+    private TileMap map;
 
 
     // LCDC, background, and dma are public classes inside Memory class
     // We can do everything in VRAM with get/setByte in the Memory from PPU, or we can make a VRAM class
-    public PPU(byte[] romData, CPU cpu, Ram ram, InterruptManager interruptManager, Display display) {
+    public PPU(byte[] romData, CPU cpu, Ram ram, InterruptManager interruptManager, Display display,Memory mem) {
         this.romData = romData;
         this.cpu = cpu;
-        this.memory = new Memory(romData);
+        this.memory = mem;
         this.ram = ram;
         this.interruptManager = interruptManager;
         this.lcdc = memory.getLcdc();
@@ -61,8 +71,11 @@ public class PPU {
         this.display = display;
         this.obp1 = memory.getObp1();
         this.obp0 = memory.getObp0();
-        cpu.setPPU(this);
-
+        this.lyc=memory.getLYC();
+        this.ly=memory.getLY();
+        display.setMemInDisplay(mem);
+        curX=0;
+        curY=0;
         cpu.setPPU(this);
         /*
          * STAT (LCD Status): This register provides information about the current LCD
@@ -76,22 +89,19 @@ public class PPU {
          * Bit 8 is unused
          */
     }
-
     // called every cycle from the CPU before an opcode is ran to cycle through modes. Every cycle counts as one tick.
     public void updateModeAndCycles() {
         List<Integer> spriteIndexesOnLine = new ArrayList<>();
-        System.out.println("PPU tick");
-        System.out.println("mode ticks " + modeTicks);
-        System.out.println("mode " + mode);
-        System.out.println("line " + line);
-
+        //System.out.println(curY+" "+mode);
+        //ly.setLY((byte)curY);
         switch (mode) {
             case 2: // OAM read
+                tileSet=vram.getTileSet();//readies tile set for PPU
                 // get sprites if it is the first tick of OAM read otherwise
                 // move to VRAM READ if it is not the first cycle in OAM read
                 // clear sprites from last scanline
                 spriteIndexesOnLine.clear();
-                if (modeTicks == 0) {
+                if (modeTicks <=1) {//changed to 1 because it is modeTicks is ++ after setting it to zero
                     // OAM search begins at cycle 80 and lasts for 20 cycles
                     // determine which sprites are on this line
                     // check sprite size
@@ -113,14 +123,23 @@ public class PPU {
                     }
 
                     // update STAT register
+                    ly.setLY((byte)curY);
                     stat.setMF2(true);
                     if (((stat.getByte() >> 5) & 0x1) == 1) {
                         memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
                         System.out.println("Request LCDSTAT interrupt");
                     }
-                } else if (modeTicks == 20) {
+                    curX=0;
+                    scrollX = memory.readByte(0xFF43);
+                    scrollY = memory.readByte(0xFF42);
+                    boolean useTileSet0 = lcdc.getBit(4);
+                    boolean useBackgroundMap0 = ((lcdc.getByte())&0b1000)==1;
+                    this.loadMap(useTileSet0, useBackgroundMap0);
+                    //printRAM();//for debugging RAM/Tile/Map values
+                } else if (modeTicks >= 20) {
                     // end of OAM search
                     // enter VRAM read mode
+                    modeTicks=0;
                     mode = VRAM_READ;
 
                     // update STAT register
@@ -129,21 +148,20 @@ public class PPU {
                 break;
             case 3: // VRAM read also known as pixel transfer mode
                 // read background tile data and attributes
-                int scrollX = memory.readByte(0xFF43);
-                int scrollY = memory.readByte(0xFF42);
-                int backgroundTileIndex = memory.readByte(0x9800 + 32 * (line + memory.readByte(0xFF42)) / 8 + (memory.readByte(0xFF43) / 8) / 8);
-                int backgroundTileAttributes = memory.readByte(0x9800 + 32 * (line + scrollY) / 8 + (scrollX / 8) + 0x2000);
-                // read corresponding tile data from either 0x9000 or 0x8000 depending on LCDC bit 4
-                int tileDataAddress = lcdc.getBGTileDataSelect() ? 0x8000 : 0x9000;
-                int tileDataIndex = memory.readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2);
-                int tileDataAttributes = memory.readByte(tileDataAddress + (backgroundTileIndex * 16) + ((line + scrollY) % 8) * 2 + 1);
-                // update background color palette based on attributes
-                int backgroundPalette = (backgroundTileAttributes >> ((scrollX / 8) % 2 == 0 ? 0 : 4)) & 0x3;
-                int colorPaletteIndex = (tileDataAttributes >> ((scrollX / 8) % 2 == 0 ? 0 : 4)) & 0x3;
-                int backgroundColor = bgp.getColor(backgroundPalette, colorPaletteIndex);
+                if(modeTicks<=1){int status = memory.readByte(0xFF41) & 0x3F;
+                    memory.writeByte(0xFF41, status | 0xC0);}
+                tileSet=vram.getTileSet();
+                int xPos=scrollX+curX;
+                int yPos=scrollY+curY;
+                Tile currtile;
+                int pixel;
+                int bgTileIndex = map.getTile(xPos/8,yPos/8);
+                currtile = tileSet[bgTileIndex];
+                pixel = currtile.getVal(yPos % 8, xPos % 8);
+                int backgroundColor = bgp.getColor(pixel,2);
                 // write the pixel to the screen buffer
-                display.setPixel(modeTicks, line, backgroundColor);
-
+                display.setPixel(xPos, yPos, backgroundColor);
+                curX++;
                 // loop through the sprites on this line and display them if they overlap with the current pixel
                 for (int i = 0; i < spriteIndexesOnLine.size(); i++) {
                     if (spriteIndexesOnLine.size() > 10) {
@@ -222,25 +240,25 @@ public class PPU {
                     // end of scanline
                     modeTicks = 0;
                     line++;
-                    if (line >= 144) {
+                    curY++;
+                    if (line >= 145&&curY >= 145) {
                         // end of visible screen area, enter VBLANK
                         mode = VBLANK;
-                        //interruptManager.requestInterrupt(InterruptManager.INTERRUPT_VBLANK);
-                        memory.writeByte(0xff0f, 0b1);// writs 1st bit to ff0f, mem sends interrupt
-                        System.out.println("request VBLANK INTERRUPT");
+                         memory.writeByte(0xff0f, 0b1);// writs 1st bit to ff0f, mem sends interrupt
+                        //System.out.println("request VBLANK INTERRUPT");
                     } else {
                         // start next scanline
-                        mode = OAM_READ;
+                        mode = HBLANK;
                     }
                 }
                 break;
             case 0: // HBLANK
                 if (modeTicks >= 204) {
                     modeTicks = 0;
-                    line++;
-
+                    curX=0;
                     // Check if LYC=LY
-                    if (line == memory.readByte(0xFF41)) {
+                    if (curY == memory.readByte(0xFF45)) {
+                        System.out.println("LYC=LY");
                         // Set the LYC=LY flag in STAT register
                         stat.setCoincidenceFlag(true);
 
@@ -255,9 +273,10 @@ public class PPU {
                         stat.setCoincidenceFlag(false);
                     }
 
-                    if (line == 143) {
+                    if (line > 144&&curY>144) {
                         mode = VBLANK;
                     } else {
+                        modeTicks=0;
                         mode = OAM_READ;
                     }
                 }
@@ -266,29 +285,32 @@ public class PPU {
                 if (modeTicks >= 456) {
                     modeTicks = 0;
                     line++;
-
-                    if (line >= 154) {
+                    curY++;
+                    //ly.setLY((byte)curY);
+                    if (line >= 154&&curY>=154) {
                         // update the display with the pixel buffer
                         display.render();
                         mode = OAM_READ;
                         line = 0;
-
+                        curY=0;
                         // Set the coincidence flag if LYC=LY
-                        if (line == memory.readByte(0xFF45)) {
+                        if (line == (int)lyc.getByte()) {
                             stat.setCoincidenceFlag(true);
                         } else {
                             stat.setCoincidenceFlag(false);
                         }
 
                         // Check if LYC=LY interrupt is enabled
-                        if ((memory.readByte(0xFF41) & 0x40) == 0x40 && line == memory.readByte(0xFF45)) {
+                        if ((memory.readByte(0xFF41) & 0x40) == 0x40 && curY == memory.readByte(0xFF45)) {
                             // Request the LYC=LY interrupt
                             System.out.println("STAT interupt");
+                            int ifreg= memory.readByte(0xff0f);
+                            memory.writeByte(0xff0f,ifreg|02);
                         }
 
                         // Request VBLANK interrupt
-                        memory.writeByte(0xff0f, 0b1);
                     } else {
+                        memory.writeByte(0xff0f, 0b1);
                         mode = VBLANK;
                     }
                 }
@@ -343,6 +365,27 @@ public class PPU {
         return row;
     }
 
+    public void loadMap(boolean useTileSet0, boolean useMap1) {
+        int ts = useTileSet0 ? 0 : 1;
+        int address = useMap1 ? 0x9c00 : 0x9800;
+        this.map = new TileMap(memory, address, ts);
+    }
+    public void printRAM() {//Proof of RAM working
+        /*for(int i=0;i<0x1800;i++) {//print ram hex values
+            if(i%16==0)System.out.println();
+            if((i&0xf)==0)System.out.print(" "+Integer.toHexString(0x8000+i));
+            if(i%8==0)System.out.print(" | ");
+            System.out.print(" "+Integer.toHexString(memory.readByte(0x8000+i))+" ");
+         }
+        for(int y=0;y<8;y++) {//print a tile's values from set
+            for(int x=0;x<8;x++) {
+
+                System.out.print(" "+tileSet[map.getTile(0x0d,0x09)].getVal(y,x)+" ");
+                if(x==7)System.out.println();
+            }
+            if(y==7)System.out.println("-------------"+map.getTile(0x0d,0x09));
+        }*/
+    }
 
 
     public PPU getPPU(){
