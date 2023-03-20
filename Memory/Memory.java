@@ -3,17 +3,18 @@ package Memory;
 import java.io.*;
 import java.io.File.*;
 import CPU.*;
+import GPU.Tile;
 
 public class Memory {
 
     private byte[] memory;
     private byte[] romData;
-    private boolean bootRomEnabled = false;
-    private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465 CIS Capstone/GBVStest/dmg_boot.bin");
+    private boolean bootRomEnabled = true;
+    private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
     private byte[] bootRom = new byte[(int) bootFile.length()];
     CPU cpu;
     InterruptManager intMan;
-
+    Tile[] tileSet =new Tile[384];
     IFRegister IF = new IFRegister();
     IERegister IR = new IERegister();
     LCDC lcdc = new LCDC();
@@ -32,7 +33,7 @@ public class Memory {
     TMA tma = new TMA();
     TAC tac = new TAC();
     OAM oam = new OAM();
-    VRAM vram;
+    VRAM vram = new VRAM(0x8000);
 
     public Memory(byte[] romData) {
         memory = new byte[0x10000];// This should initialize memory size to 64 kb
@@ -90,9 +91,10 @@ public class Memory {
     public BGP getBgp() {
         return bgp;
     }
-
+    public LYC getLYC() {return lyc;}
+    public LY getLY() {return ly;}
     public VRAM getVram() {
-        return vram;
+        return this.vram;
     }
 
     public void setCPU(CPU cpu, InterruptManager intMan) {
@@ -104,6 +106,9 @@ public class Memory {
         if (bootRomEnabled == true && address < bootRom.length) {
             // System.out.println("| read: " + Integer.toHexString(bootRom[address]) + "|");
             return ((int) bootRom[address] & 0xff);
+        }
+        if(address>=0x8000&&address<=0x97ff) {
+            return vram.getByte(address);
         }
         if (address == 0xff04) {// any value written set DIV to zero
             return memory[address];
@@ -120,6 +125,9 @@ public class Memory {
         if (address == 0xff45) {
             return lyc.getByte();
         }
+        if (address == 0xff47) {
+            return bgp.getByte();
+        }
         if (address == 0xff4a) {
             return wy.getByte();
         }
@@ -129,7 +137,7 @@ public class Memory {
         if (address >= 0xFE00 & address < 0xFEA0)
             return oam.readByte(address);
         else
-            return (int) memory[address] & 0xff;
+            return  Byte.toUnsignedInt(memory[address]) & 0xff;
     }
 
     public void writeByte(int address, int value) {
@@ -145,15 +153,23 @@ public class Memory {
             if (interrupted)
                 return;// interrupted=whether the IME and a IE flag are on
         }
+        if (address == 0xff44) {// LY
+            ly.setLY((byte)value);
+            return;
+        }
         if (address == 0xff00) {// gamepad
             // do something
+        }
+        if(address>=0x8000&&address<=0x97ff) {
+            vram.setByte(address,value);
+            //System.out.print(Integer.toHexString(address)+" ");
         }
         if (address == 0xff04) {// any value written set DIV to zero
             memory[0xff04] = 0;
             return;
         }
         if (address == 0xff40) {
-            lcdc.setByte((byte) value);
+            lcdc.setByte((byte)value);
         }
         if (address == 0xff42) {
             scy.setByte((byte) value);
@@ -163,6 +179,9 @@ public class Memory {
         }
         if (address == 0xff45) {
             lyc.setByte((byte) value);
+        }
+        if (address == 0xff47) {
+            bgp.setByte((byte)value);
         }
         if (address == 0xff4a) {
             wy.setByte((byte) value);
@@ -196,27 +215,27 @@ public class Memory {
 
         public void setVBlank(boolean value) {
             this.setBit(0, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setLCDStat(boolean value) {
             this.setBit(1, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setTimer(boolean value) {
             this.setBit(2, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setSerial(boolean value) {
             this.setBit(3, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setJoypad(boolean value) {
             this.setBit(4, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
         /*
          * IE Register - Controls which interrupts are enabled, an 8-bit register at
@@ -241,34 +260,34 @@ public class Memory {
 
         public void setVBlank(boolean value) {
             this.setBit(0, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setLCDStat(boolean value) {
             this.setBit(1, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setTimer(boolean value) {
             this.setBit(2, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setSerial(boolean value) {
             this.setBit(3, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setJoypad(boolean value) {
             this.setBit(4, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setIME(boolean value) {
             if (value)
-                this.setBits(this.getByte(), true, 0, 4);
+                this.setBits((byte)this.getByte(), true, 0, 4);
             else
-                this.setBits(this.getByte(), false, 5, 7);
+                this.setBits((byte)this.getByte(), false, 5, 7);
         }
         /*
          * IF Register - Requests interrupts from different sources in the gameboy by
@@ -292,6 +311,9 @@ public class Memory {
         public VRAM(int offset) {
             this.offset = offset;
             this.space = new byte[0x2000]; // 8KB
+            for(int i=0;i<tileSet.length;i++) {
+                tileSet[i]=new Tile();
+            }
         }
 
         // returns true if the address passed in is in the range of memory address
@@ -304,13 +326,37 @@ public class Memory {
         // from the address to get the index of
         // the space array where the byte should be written
         public void setByte(int address, int value) {
-            space[address - offset] = (byte) value;
+            int index=address-offset;
+            space[index] = (byte) value;
+            int normIndex=index&0xfffe;
+            int byte1=space[normIndex]&0xff;
+            int byte2=space[normIndex+1]&0xff;
+            int tileIndex=index/16;
+            int rowIndex=(index%16)/2;
+            for (int i=0;i<8;i++) {
+                int mask=1<<(7-i);
+                int lsb=(byte1&0xff)&mask;
+                int msb=(byte2&0xff)&mask;
+                int val=-1;
+                if((msb!=0)&&(lsb!=0)) val=3;
+                if((msb!=0)&&(lsb==0)) val=2;
+                if((msb==0)&&(lsb!=0)) val=1;
+                if((msb==0)&&(lsb==0)) val=0;
+                //System.out.println(Integer.toHexString(tileIndex)+" b1:"+Integer.toHexString(byte1)+" b2:"+Integer.toHexString(byte2)
+                  //  +" val:"+val+" @row:"+rowIndex+", col:"+i+" MSB:"+msb+" LSB:"+lsb);
+                tileSet[tileIndex].setVal(rowIndex,i,val);
+                //NOTE: i= pixelindex, x, col#
+
+            }
         }
 
         // reads byte from memory at address passed in by subtracting the offset value
         // from the address
         public int getByte(int address) {
             return space[address - offset] & 0xFF;
+        }
+        public Tile[] getTileSet() {
+            return tileSet;
         }
     }
 
@@ -321,46 +367,49 @@ public class Memory {
 
         public void setBGDisplay(boolean value) {
             this.setBit(0, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setObjDisplay(boolean value) {
             this.setBit(1, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setObjSize(boolean value) {
             this.setBit(2, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setBGTileMap(boolean value) {
             this.setBit(3, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setBGWinSel(boolean value) {
             this.setBit(4, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setWinDisplay(boolean value) {
             this.setBit(5, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setWinTileSel(boolean value) {
             this.setBit(6, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setLCDDisplay(boolean value) {
             this.setBit(7, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public boolean getBGTileDataSelect() {
             return this.getBit(4);
+        }
+        public boolean getWinTileSelect() {
+            return this.getBit(6);
         }
         /*
          * LCDC (LCD Control) Register: This 8-bit register controls the display and the
@@ -383,12 +432,12 @@ public class Memory {
 
         public void setMF1(boolean value) {
             this.setBit(0, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setMF2(boolean value) {
             this.setBit(1, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public boolean isM2OAMEnabled() {
@@ -398,32 +447,32 @@ public class Memory {
         public void setMF3(boolean value) {
             this.setBit(1, true);
             this.setBit(2, true);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setCoincidenceFlag(boolean value) {
             this.setBit(2, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setM0HBlank(boolean value) {
             this.setBit(3, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setM1VBlank(boolean value) {
             this.setBit(4, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setM2OAM(boolean value) {
             this.setBit(5, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setLYCCoincidenceInt(boolean value) {
             this.setBit(6, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         /*
@@ -446,7 +495,7 @@ public class Memory {
 
         public void setWX(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
         // should range from 0 to 166
     }
@@ -458,7 +507,7 @@ public class Memory {
 
         public void setWY(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
         // should range from 0 to 143
     }
@@ -470,7 +519,7 @@ public class Memory {
 
         public void setSCX(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
@@ -481,7 +530,7 @@ public class Memory {
 
         public void setSCY(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
@@ -493,25 +542,25 @@ public class Memory {
         public void setWhite(boolean value) {
             this.setBit(0, value);
             this.setBit(1, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setLightGray(boolean value) {
             this.setBit(2, value);
             this.setBit(3, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setDarkGray(boolean value) {
             this.setBit(4, value);
             this.setBit(5, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setBlack(boolean value) {
             this.setBit(6, value);
             this.setBit(7, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public int getColor(int palette, int index) {
@@ -531,25 +580,25 @@ public class Memory {
         }
     }
 
-    private class LY extends MemRegisters {
+    public class LY extends MemRegisters {
         public LY() {
             location = 0xFF44;
         }
 
         public void setLY(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
-    private class LYC extends MemRegisters {
+    public class LYC extends MemRegisters {
         public LYC() {
             location = 0xFF45;
         }
 
         public void setLYC(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public boolean compareLY(byte ly) {
@@ -575,7 +624,7 @@ public class Memory {
         }
 
         public byte readByte(int address) {
-            return data[address - location];
+            return data[address];
         }
 
         public void writeByte(int address, byte value) {
@@ -660,27 +709,27 @@ public class Memory {
         public void setWhite(boolean value) {
             this.setBit(0, value);
             this.setBit(1, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setLightGray(boolean value) {
             this.setBit(2, value);
             this.setBit(3, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setDarkGray(boolean value) {
             this.setBit(4, value);
             this.setBit(5, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setBlack(boolean value) {
             this.setBit(6, value);
             this.setBit(7, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
-        public byte getByte() {
+        public int getByte() {
             return memory[location];
         }
 
@@ -694,27 +743,27 @@ public class Memory {
         public void setWhite(boolean value) {
             this.setBit(0, value);
             this.setBit(1, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setLightGray(boolean value) {
             this.setBit(2, value);
             this.setBit(3, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setDarkGray(boolean value) {
             this.setBit(4, value);
             this.setBit(5, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setBlack(boolean value) {
             this.setBit(6, value);
             this.setBit(7, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
-        public byte getByte() {
+        public int getByte() {
             return memory[location];
         }
 
@@ -727,7 +776,7 @@ public class Memory {
 
         public void setDIV(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
@@ -738,7 +787,7 @@ public class Memory {
 
         public void setTIMA(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
@@ -749,7 +798,7 @@ public class Memory {
 
         public void setTMA(byte value) {
             this.setByte(value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
@@ -761,35 +810,35 @@ public class Memory {
         public void TimerStop(boolean value) {
             // 0 stop, 1 go
             this.setBit(2, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void set00() {
             // 4096Hz
             this.setBit(0, false);
             this.setBit(1, false);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void set01() {
             // 262144Hz
             this.setBit(0, true);
             this.setBit(1, false);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void set10() {
             // 65536Hz
             this.setBit(0, false);
             this.setBit(1, true);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void set11() {
             // 16384Hz
             this.setBit(0, true);
             this.setBit(1, true);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
@@ -801,18 +850,18 @@ public class Memory {
 
         public void setSweepChange(boolean value) {
             this.setBit(3, value);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setSweepShift(byte shift) {
             value &= 0xF8;
             value |= shift;
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setSweepTime(byte sweepTime) {
             value = (byte) ((value & 0xF) | (sweepTime << 4));
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
@@ -825,13 +874,13 @@ public class Memory {
             value <<= 6;
             value &= 0xC0;
             setByte((byte) ((getByte() & 0x3F) | value));
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setSoundLength(byte length) {
             value &= 0x3F;
             setByte((byte) ((getByte() & 0xC0) | value));
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
     }
 
@@ -842,17 +891,17 @@ public class Memory {
 
         public void setInitialVolume(int volume) {
             this.setByte((byte) ((this.getByte() & 0x0F) | ((volume << 4) & 0xF0)));
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setEnvelopeDirection(boolean bit) {
             this.setBit(3, bit);
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public void setEnvelopeSweep(byte period) {
             this.setByte((byte) ((this.getByte() & 0xF8) | (period & 0x07)));
-            memory[location] = this.getByte();
+            memory[location] = (byte)this.getByte();
         }
 
         public boolean isOn() {

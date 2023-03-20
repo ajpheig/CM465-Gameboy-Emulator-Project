@@ -21,7 +21,7 @@ public class MemRegisters {
         return value&0xff;
     }
 
-    public void setByte(byte value) {
+    public void setByte(int value) {
         this.value = value;
     }
 
