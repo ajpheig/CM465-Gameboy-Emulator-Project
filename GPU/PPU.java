@@ -101,7 +101,7 @@ public class PPU {
                 // move to VRAM READ if it is not the first cycle in OAM read
                 // clear sprites from last scanline
                 spriteIndexesOnLine.clear();
-                if (modeTicks <=1) {//changed to 1 because it is modeTicks is ++ after setting it to zero
+                if (modeTicks <=20) {//changed to 1 because it is modeTicks is ++ after setting it to zero
                     // OAM search begins at cycle 80 and lasts for 20 cycles
                     // determine which sprites are on this line
                     // check sprite size
@@ -109,7 +109,7 @@ public class PPU {
                     int spritesFound = 0;
                     // i is the sprite index in the OAM class
                     for (int i = 0; i < 40; i++) {
-                        int spriteY = oam.readByte(i * 4);
+                        int spriteY = oam.readByte((i * 4));
                         if (spriteY <= line && spriteY + spriteHeight > line) {
                             // Sprite is on this line, add its index to the list
                             spriteIndexesOnLine.add(i);
@@ -141,9 +141,12 @@ public class PPU {
                     // enter VRAM read mode
                     modeTicks=0;
                     mode = VRAM_READ;
+                    stat.setMF1(true);
+                    stat.setMF2(true);
+                    memory.writeByte(0xff0f,0b10);//set IF LCD flag
 
                     // update STAT register
-                    stat.setMF3(true);
+                    //stat.setMF3(true);---What this do?-------------------------
                 }
                 break;
             case 3: // VRAM read also known as pixel transfer mode
@@ -160,7 +163,7 @@ public class PPU {
                 pixel = currtile.getVal(yPos % 8, xPos % 8);
                 int backgroundColor = bgp.getColor(pixel,2);
                 // write the pixel to the screen buffer
-                display.setPixel(xPos, yPos, backgroundColor);
+                display.setPixel(curX, curY, backgroundColor);
                 curX++;
                 // loop through the sprites on this line and display them if they overlap with the current pixel
                 for (int i = 0; i < spriteIndexesOnLine.size(); i++) {
@@ -236,7 +239,7 @@ public class PPU {
                         display.setPixel(modeTicks, line, spriteColor);
                     }
                 } // sprite for
-                if (modeTicks >= 160) {
+                if (modeTicks >= 160&&curX>=160) {
                     // end of scanline
                     modeTicks = 0;
                     line++;
@@ -244,11 +247,17 @@ public class PPU {
                     if (line >= 145&&curY >= 145) {
                         // end of visible screen area, enter VBLANK
                         mode = VBLANK;
+                        stat.setM1VBlank(true);
+                        stat.setMF1(true);
+                        stat.setMF2(false);
                          memory.writeByte(0xff0f, 0b1);// writs 1st bit to ff0f, mem sends interrupt
                         //System.out.println("request VBLANK INTERRUPT");
                     } else {
                         // start next scanline
                         mode = HBLANK;
+                        stat.setMF1(false);
+                        stat.setMF2(false);
+                        memory.writeByte(0xff0f,0b10);//set IF LCD flag
                     }
                 }
                 break;
@@ -261,11 +270,13 @@ public class PPU {
                         System.out.println("LYC=LY");
                         // Set the LYC=LY flag in STAT register
                         stat.setCoincidenceFlag(true);
+                        System.out.println("STAT interupt");
 
                         // Check if LYC=LY interrupt is enabled
                         if ((memory.readByte(0xFF41) & 0x40) == 0x40) {
                         } else {
                             // Request STAT/mode2 interrupt
+                            stat.setBit(2,true);
                             System.out.println("STAT interupt");
                         }
                     } else {
@@ -275,9 +286,16 @@ public class PPU {
 
                     if (line > 144&&curY>144) {
                         mode = VBLANK;
+                        stat.setMF1(true);
+                        stat.setMF2(false);
+                        memory.writeByte(0xff0f, 0b1);//vblank interruptS
+                        memory.writeByte(0xff0f,0b10);//set IF LCD flag
                     } else {
                         modeTicks=0;
                         mode = OAM_READ;
+                        stat.setMF1(false);
+                        stat.setMF2(true);
+                        memory.writeByte(0xff0f,0b10);//set IF LCD flag
                     }
                 }
                 break;
@@ -286,11 +304,14 @@ public class PPU {
                     modeTicks = 0;
                     line++;
                     curY++;
-                    //ly.setLY((byte)curY);
+                    ly.setLY((byte)curY);
                     if (line >= 154&&curY>=154) {
                         // update the display with the pixel buffer
                         display.render();
                         mode = OAM_READ;
+                        stat.setMF1(false);
+                        stat.setMF2(true);
+                        memory.writeByte(0xff0f,0b10);//set IF LCD flag
                         line = 0;
                         curY=0;
                         // Set the coincidence flag if LYC=LY
@@ -305,12 +326,12 @@ public class PPU {
                             // Request the LYC=LY interrupt
                             System.out.println("STAT interupt");
                             int ifreg= memory.readByte(0xff0f);
+                            stat.setBit(2,true);
                             memory.writeByte(0xff0f,ifreg|02);
                         }
 
                         // Request VBLANK interrupt
                     } else {
-                        memory.writeByte(0xff0f, 0b1);
                         mode = VBLANK;
                     }
                 }
