@@ -109,7 +109,7 @@ public class PPU {
                     int spritesFound = 0;
                     // i is the sprite index in the OAM class
                     for (int i = 0; i < 40; i++) {
-                        int spriteY = oam.readByte((i * 4) - 16);
+                        int spriteY = oam.readByte(i * 4);
                         if (spriteY <= line && spriteY + spriteHeight > line) {
                             // Sprite is on this line, add its index to the list
                             spriteIndexesOnLine.add(i);
