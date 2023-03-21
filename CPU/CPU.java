@@ -70,10 +70,11 @@ public class CPU {
 
     public void step() {// takes 1 (fetch/decode/execute)cycle in execution
         if (halted) {
-            timer.handleTimer(4);
+            this.ticks=4;
+            timer.handleTimer(ticks);
+
+                ppu.updateModeAndCycles();
             serviceInterrupts();
-            // do stuff;
-            this.ticks = 0;
             // System.out.println("halted...");
             return;// end step, service interrupts should turn halt to false
         }
@@ -88,13 +89,13 @@ public class CPU {
                 regs.getPC(),
                 mem.readByte(currentPC), mem.readByte(currentPC + 1), mem.readByte(currentPC + 2),
                 mem.readByte(currentPC + 3),mem.readByte(0xff44));
-        out.println(s);
+        //out.println(s);
         // System.out.println(Integer.toHexString(mem.readByte(0x80a0)));
         //System.out.println(s);
         operation.run();
         timer.handleTimer(this.ticks);
         for(int o=0;o<ticks;o++){
-            ppu.updateModeAndCycles();}
+               ppu.updateModeAndCycles();}
         serviceInterrupts();
         ticks = 0;
         if (mem.readByte(0xff02) == 0x81) {// prints blarrg test results
