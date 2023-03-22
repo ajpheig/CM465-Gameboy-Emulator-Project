@@ -182,29 +182,6 @@ public class PPU {
                 curX++;
                 // loop through the sprites on this line and display them if they overlap with the current pixel
 
-                byte[] spriteDataAr;
-
-               // System.out.println("spriteDataLoop");
-//               for (int i = 0; i < 40; i++) {
-//                      oam.getSpriteData(i);
-//                    System.out.println("Sprite " + i + " data:");
-//                    System.out.println("Y location: " + spriteDataAr[0]);
-//                    System.out.println("X location: " + spriteDataAr[1]);
-//                    System.out.println("Tile number: " + spriteDataAr[2]);
-//                    System.out.println("Flags: " + spriteDataAr[3]);
-
-//                    int spriteStartAddress = 0xFE00 + (i * 4);
-//                    byte spriteYl = (byte) memory.readByte(spriteStartAddress);
-//                    byte spriteXl = (byte) memory.readByte(spriteStartAddress + 1);
-//                    byte spriteTileNumberl = (byte) memory.readByte(spriteStartAddress + 2);
-//                    byte spriteFlagsl = (byte) memory.readByte(spriteStartAddress + 3);
-//                    System.out.println("*****");
-//                    System.out.println(spriteYl);
-//                    System.out.println(spriteXl);
-//                    System.out.println(spriteTileNumberl);
-//                    System.out.println(spriteFlagsl);
-//                }
-
                 for (int i = 0; i < spriteIndexesOnLine.size(); i++) {
                     if (spriteIndexesOnLine.size() > 10) {
                         // Sort the sprite indexes by priority
@@ -448,7 +425,7 @@ public class PPU {
 
 
     public void printRAM() {//Proof of RAM working
-        for(int i=0;i<0x1800;i++) {//print ram hex values
+        /*for(int i=0;i<0x1800;i++) {//print ram hex values
             if(i%16==0)System.out.println();
             if((i&0xf)==0)System.out.print(" "+Integer.toHexString(0x8000+i));
             if(i%8==0)System.out.print(" | ");
@@ -461,7 +438,7 @@ public class PPU {
                 if(x==7)System.out.println();
             }
             if(y==7)System.out.println("-------------"+map.getTile(0x0d,0x09));
-        }
+        }*/
     }
 
 
