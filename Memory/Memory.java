@@ -2,6 +2,7 @@ package Memory;
 
 import java.io.*;
 import java.io.File.*;
+import java.util.Arrays;
 import CPU.*;
 import GPU.Tile;
 
@@ -10,7 +11,8 @@ public class Memory {
     private byte[] memory;
     private byte[] romData;
     private boolean bootRomEnabled = true;
-    private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
+    //private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
+    private File bootFile = new File("/Users/brettkulp/Desktop/Capstone/wuGB/dmg_boot.bin");
     private byte[] bootRom = new byte[(int) bootFile.length()];
     CPU cpu;
     InterruptManager intMan;
@@ -103,6 +105,7 @@ public class Memory {
     }
 
     public int readByte(int address) {
+        //System.out.println("readByte method in mem " + address);
         if (bootRomEnabled == true && address < bootRom.length) {
             // System.out.println("| read: " + Integer.toHexString(bootRom[address]) + "|");
             return ((int) bootRom[address] & 0xff);
@@ -134,8 +137,8 @@ public class Memory {
         if (address == 0xff4b) {
             return wx.getByte();
         }
-        if (address >= 0xFE00 & address < 0xFEA0)
-            return oam.readByte(address);
+//        if (address >= 0xFE00 & address < 0xFEA0)
+//            return Byte.toUnsignedInt(memory[address]) & 0xff;
         else
             return  Byte.toUnsignedInt(memory[address]) & 0xff;
     }
@@ -349,6 +352,7 @@ public class Memory {
 
             }
         }
+
 
         // reads byte from memory at address passed in by subtracting the offset value
         // from the address
@@ -618,9 +622,16 @@ public class Memory {
         private final int ATTR_PRIORITY = 0x80;
 
         public OAM() {
-            this.data = new byte[0xA0];
+            this.data = new byte[160];
             this.location = 0xFE00;
             // located between 0xFE00 and 0xFE9F
+        }
+
+
+
+        public void setSpriteData(byte[] data) {
+            this.data = data;
+           // System.out.println(Arrays.toString(this.data));
         }
 
         public byte readByte(int address) {
@@ -698,7 +709,7 @@ public class Memory {
             int attributes = getSpriteFlags(spriteIndex);
             return (attributes & ATTR_PRIORITY) == 0;
         }
-    }
+    } // end oam
 
     public class OBP0 extends MemRegisters {
         public OBP0() {

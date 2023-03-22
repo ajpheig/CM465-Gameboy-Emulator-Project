@@ -12,6 +12,7 @@ import Memory.Memory.OBP0;
 import Memory.Memory.OBP1;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -74,9 +75,16 @@ public class PPU {
         this.lyc=memory.getLYC();
         this.ly=memory.getLY();
         display.setMemInDisplay(mem);
+        //oam.loadSprites(getSpriteData());
+
         curX=0;
         curY=0;
         cpu.setPPU(this);
+        lcdc.setLCDDisplay(true);
+       // printRAM();
+        // getSpritesData();
+        initOAM();
+
         /*
          * STAT (LCD Status): This register provides information about the current LCD
          * state and controls behavior of LCD interrupt
@@ -91,9 +99,13 @@ public class PPU {
     }
     // called every cycle from the CPU before an opcode is ran to cycle through modes. Every cycle counts as one tick.
     public void updateModeAndCycles() {
+        //getSpritesData();
+        //oam.printSpriteData();
         List<Integer> spriteIndexesOnLine = new ArrayList<>();
         //System.out.println(curY+" "+mode);
         //ly.setLY((byte)curY);
+        //System.out.println(mode);
+        //printRAM();
         switch (mode) {
             case 2: // OAM read
                 tileSet=vram.getTileSet();//readies tile set for PPU
@@ -106,10 +118,13 @@ public class PPU {
                     // determine which sprites are on this line
                     // check sprite size
                     int spriteHeight = ((memory.readByte(0xFF40) >> 2) & 0x1) == 1 ? 16 : 8;
+                    //System.out.println("Sprite Height " + spriteHeight);
                     int spritesFound = 0;
                     // i is the sprite index in the OAM class
+                    //System.out.println("entering sprite loop");
                     for (int i = 0; i < 40; i++) {
                         int spriteY = oam.readByte((i * 4));
+                        //System.out.println("YYYYY" + spriteY);
                         if (spriteY <= line && spriteY + spriteHeight > line) {
                             // Sprite is on this line, add its index to the list
                             spriteIndexesOnLine.add(i);
@@ -127,7 +142,7 @@ public class PPU {
                     stat.setMF2(true);
                     if (((stat.getByte() >> 5) & 0x1) == 1) {
                         memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
-                        System.out.println("Request LCDSTAT interrupt");
+                        //System.out.println("Request LCDSTAT interrupt");
                     }
                     curX=0;
                     scrollX = memory.readByte(0xFF43);
@@ -166,6 +181,30 @@ public class PPU {
                 display.setPixel(curX, curY, backgroundColor);
                 curX++;
                 // loop through the sprites on this line and display them if they overlap with the current pixel
+
+                byte[] spriteDataAr;
+
+               // System.out.println("spriteDataLoop");
+//               for (int i = 0; i < 40; i++) {
+//                      oam.getSpriteData(i);
+//                    System.out.println("Sprite " + i + " data:");
+//                    System.out.println("Y location: " + spriteDataAr[0]);
+//                    System.out.println("X location: " + spriteDataAr[1]);
+//                    System.out.println("Tile number: " + spriteDataAr[2]);
+//                    System.out.println("Flags: " + spriteDataAr[3]);
+
+//                    int spriteStartAddress = 0xFE00 + (i * 4);
+//                    byte spriteYl = (byte) memory.readByte(spriteStartAddress);
+//                    byte spriteXl = (byte) memory.readByte(spriteStartAddress + 1);
+//                    byte spriteTileNumberl = (byte) memory.readByte(spriteStartAddress + 2);
+//                    byte spriteFlagsl = (byte) memory.readByte(spriteStartAddress + 3);
+//                    System.out.println("*****");
+//                    System.out.println(spriteYl);
+//                    System.out.println(spriteXl);
+//                    System.out.println(spriteTileNumberl);
+//                    System.out.println(spriteFlagsl);
+//                }
+
                 for (int i = 0; i < spriteIndexesOnLine.size(); i++) {
                     if (spriteIndexesOnLine.size() > 10) {
                         // Sort the sprite indexes by priority
@@ -329,9 +368,10 @@ public class PPU {
                             stat.setBit(2,true);
                             memory.writeByte(0xff0f,ifreg|02);
                         }
-
+                        ly.setLY((byte) curY);
                         // Request VBLANK interrupt
                     } else {
+                        memory.writeByte(0xff0f, 0b1);
                         mode = VBLANK;
                     }
                 }
@@ -386,13 +426,29 @@ public class PPU {
         return row;
     }
 
+    // intialize the oam with the data from memory
+    public void initOAM() {
+        byte[] bytes = new byte[160];
+        for (int i = 0xFE00; i <= 0xFE9F; i++) {
+            //System.out.println("spriteBite value " + memory.readByte(i));
+            bytes[i - 0xFE00] = (byte) memory.readByte(i);
+        }
+        // set the data array in oam to the bytes array here
+        oam.setSpriteData(bytes);
+    }
+
+
+
     public void loadMap(boolean useTileSet0, boolean useMap1) {
         int ts = useTileSet0 ? 0 : 1;
         int address = useMap1 ? 0x9c00 : 0x9800;
         this.map = new TileMap(memory, address, ts);
     }
+
+
+
     public void printRAM() {//Proof of RAM working
-        /*for(int i=0;i<0x1800;i++) {//print ram hex values
+        for(int i=0;i<0x1800;i++) {//print ram hex values
             if(i%16==0)System.out.println();
             if((i&0xf)==0)System.out.print(" "+Integer.toHexString(0x8000+i));
             if(i%8==0)System.out.print(" | ");
@@ -405,7 +461,7 @@ public class PPU {
                 if(x==7)System.out.println();
             }
             if(y==7)System.out.println("-------------"+map.getTile(0x0d,0x09));
-        }*/
+        }
     }
 
 
