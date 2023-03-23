@@ -40,10 +40,10 @@ public class CPU {
         // hardSetRegs();
         //mem.writeByte(0xff44, 0x90);// hardset for bootROM for now
         // mem.writeByte();
-        try {
-            out = new PrintWriter(new File("output.txt"));
-        } catch (FileNotFoundException fne) {
-        }
+       // try {
+            //out = new PrintWriter(new File("output.txt"));
+        //} catch (FileNotFoundException fne) {
+        //}
     }
 
     public void hardSetRegs() {
@@ -72,8 +72,7 @@ public class CPU {
         if (halted) {
             this.ticks=4;
             timer.handleTimer(ticks);
-
-                ppu.updateModeAndCycles();
+            {  ppu.updateModeAndCycles();}
             serviceInterrupts();
             // System.out.println("halted...");
             return;// end step, service interrupts should turn halt to false
@@ -82,13 +81,13 @@ public class CPU {
         int opcode = mem.readByte(currentPC);//
         Runnable operation = operations.opcodeHandlers.get(opcode & 0xff);
         // print
-        String s = String.format(
+        /*String s = String.format(
                 "A:%1$02X F:%2$02X B:%3$02X C:%4$02X D:%5$02X E:%6$02X H:%7$02X L:%8$02X SP:%9$04X PC:%10$04X PCMEM:%11$02X,%12$02X,%13$02X,%14$02X LY:%15$02X",
                 regs.getA(), regs.fByte.getFByte(),
                 regs.getB(), regs.getC(), regs.getD(), regs.getE(), regs.getH(), regs.getL(), regs.getSP(),
                 regs.getPC(),
                 mem.readByte(currentPC), mem.readByte(currentPC + 1), mem.readByte(currentPC + 2),
-                mem.readByte(currentPC + 3),mem.readByte(0xff44));
+                mem.readByte(currentPC + 3),mem.readByte(0xff44));*/
         //out.println(s);
         // System.out.println(Integer.toHexString(mem.readByte(0x80a0)));
         //System.out.println(s);
@@ -113,11 +112,9 @@ public class CPU {
     public void runUntil(int pc) {
         while (regs.getPC() != pc) {
             step();
-            // if ((mem.readByte(0x8020)) == 0xC3)//checking VRAM
-            // break;
-
+            //if(regs.getPC()>0xcb00)ppu.printRAM();
         }
-        out.close();
+        //out.close();
     }
 
     public void setRun() {
