@@ -20,17 +20,13 @@ public class Display {
     public Display(int screenWidth, int screenHeight) {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
-        screenBuffer = new int[screenHeight * screenWidth*3];//3bytes
-        screenBuffer = new int[screenHeight * screenWidth*4];//4bytes(extraAlpha)
+        screenBuffer = new int[screenHeight * screenWidth];
         frame = new JFrame();
         frame.add(new JLabel(new ImageIcon(image)));
-        frame.pack();
+        frame.setSize(200,200);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        for(int x=0;x<160;x++) {//sets pixels to white to start
-            for (int y=0;y<144;y++){
-                setPixel(x, y, 0xffffff);
-            }
-        }
+        clearFrame();
         frame.getGraphics().drawImage(image, 0, 0, frame);
         frame.repaint();
     }
@@ -41,31 +37,32 @@ public class Display {
         for (int y = 0; y < screenHeight; y++) {
             for (int x = 0; x < screenWidth; x++) {
                 int color = screenBuffer[x + y * screenWidth];
-                image.setRGB(x, y, color);
+                this.image.setRGB(x, y, color);
             }
         }
-        frame.getGraphics().drawImage(image, 0, 0, frame);
+        clearFrame();
+        frame.getGraphics().drawImage(image, 20, 39, frame);//offset to get all of Frame on screen
         frame.repaint();
     }
 
     // set the color of specific pixel passed in at (x,y) to the color passed in
     public void setPixel(int x, int y, int color) {
         if (x >= 0 && x < screenWidth && y >= 0 && y < screenHeight) {
-            screenBuffer[x % 160 + y * 160] = color;
-            // or do you want to setRGB
-            //image.setRGB(x, y, color);
+            screenBuffer[x + y * 160] = color;//write values to buffer
         }
     }
 
-    public void setMemInDisplay(Memory mem){
+    public void setMemInDisplay(Memory mem){//for debugging tilesets
         this.mem=mem;
         vram=mem.getVram();
         tileSet=vram.getTileSet();
     }
-    public void drawTiles(int x, int y, int color) {
-        int[] colors=new int[4];
-        colors[0]=0;
-        colors[3]=0xffffff;
-        image.setRGB(x, y, colors[color]);
+
+    public void clearFrame() {
+        for(int x=0;x<160;x++) {//sets pixels to white to start
+            for (int y=0;y<144;y++){
+                setPixel(x, y, 0xffffff);
+            }
+        }
     }
 }
