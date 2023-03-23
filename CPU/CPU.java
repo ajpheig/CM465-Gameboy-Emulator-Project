@@ -23,6 +23,7 @@ public class CPU {
     boolean running = false;
     PrintWriter out;
     int ticks = 1;
+    int totalT=0;
     PPU ppu;
 
     public CPU(byte[] romData, Registers regs,
@@ -69,6 +70,7 @@ public class CPU {
     }
 
     public void step() {// takes 1 (fetch/decode/execute)cycle in execution
+        ticks = 0;
         if (halted) {
             this.ticks=4;
             timer.handleTimer(ticks);
@@ -96,13 +98,12 @@ public class CPU {
         for(int o=0;o<ticks;o++){
                ppu.updateModeAndCycles();}
         serviceInterrupts();
-        ticks = 0;
         if (mem.readByte(0xff02) == 0x81) {// prints blarrg test results
             char c = (char) mem.readByte(0xff01);
             System.out.printf("%c", c);
             mem.writeByte(0xff02, 0x0);
         }
-        parent.refreshPanel();
+        //parent.refreshPanel();
     }
 
     public void setCycle(int i) {
@@ -111,7 +112,15 @@ public class CPU {
 
     public void runUntil(int pc) {
         while (regs.getPC() != pc) {
+            long timeStart= System.currentTimeMillis();
             step();
+            totalT+=this.ticks;
+            if (totalT>=17476){
+                totalT=0;
+                while(System.currentTimeMillis()-timeStart<4.67) {
+                    //wait loop
+                }
+            }
             //if(regs.getPC()>0xcb00)ppu.printRAM();
         }
         //out.close();
