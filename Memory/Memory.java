@@ -710,6 +710,15 @@ public class Memory {
             return (attributes & ATTR_PRIORITY) == 0;
         }
     } // end oam
+    
+    public void performDMA(byte value)
+    {
+        int baseAddress = value << 8;
+        for (int i = 0; i < 0xA0; i++)
+        {
+            memory[0xFE00 + i] = memory[baseAddress + i];
+        }
+    }
 
     public class OBP0 extends MemRegisters {
         public OBP0() {
