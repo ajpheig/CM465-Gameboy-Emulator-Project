@@ -716,7 +716,7 @@ public class Memory {
 
     public void performDMA(byte value)
     {
-        int baseAddress = value << 8;
+        int baseAddress = (value << 8)&0xffff;
         for (int i = 0; i < 0xA0; i++)
         {
             memory[0xFE00 + i] = memory[baseAddress + i];
