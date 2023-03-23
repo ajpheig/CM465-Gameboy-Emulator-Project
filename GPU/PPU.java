@@ -76,15 +76,13 @@ public class PPU {
         this.ly=memory.getLY();
         display.setMemInDisplay(mem);
         //oam.loadSprites(getSpriteData());
-
         curX=0;
         curY=0;
         cpu.setPPU(this);
         lcdc.setLCDDisplay(true);
-       // printRAM();
+        // printRAM();
         // getSpritesData();
         initOAM();
-
         /*
          * STAT (LCD Status): This register provides information about the current LCD
          * state and controls behavior of LCD interrupt
@@ -102,18 +100,22 @@ public class PPU {
         //getSpritesData();
         //oam.printSpriteData();
         List<Integer> spriteIndexesOnLine = new ArrayList<>();
-        //System.out.println(curY+" "+mode);
-        //ly.setLY((byte)curY);
-        //System.out.println(mode);
-        //printRAM();
+        if(modeTicks==1)
+            ly.setLY((byte)curY);
         switch (mode) {
             case 2: // OAM read
-                tileSet=vram.getTileSet();//readies tile set for PPU
+                //tileSet=vram.getTileSet();//readies tile set for PPU
                 // get sprites if it is the first tick of OAM read otherwise
                 // move to VRAM READ if it is not the first cycle in OAM read
                 // clear sprites from last scanline
                 spriteIndexesOnLine.clear();
-                if (modeTicks <=20) {//changed to 1 because it is modeTicks is ++ after setting it to zero
+                if (modeTicks ==1) {//changed to 1 because it is modeTicks is ++ after setting it to zero
+                    boolean useTileSet0 = lcdc.getBit(4);
+                    boolean useBackgroundMap0 = ((lcdc.getByte())&0b1000)==1;
+                    //load tile map
+                    this.loadMap(useTileSet0, useBackgroundMap0);
+                    //System.out.println(memory.readByte(0x8027));
+                    tileSet=vram.getTileSet();//readies tile set for PPU
                     // OAM search begins at cycle 80 and lasts for 20 cycles
                     // determine which sprites are on this line
                     // check sprite size
@@ -123,7 +125,7 @@ public class PPU {
                     // i is the sprite index in the OAM class
                     //System.out.println("entering sprite loop");
                     for (int i = 0; i < 40; i++) {
-                        int spriteY = oam.readByte((i * 4));
+                        int spriteY = oam.readByte((i * 4))&0xff;
                         //System.out.println("YYYYY" + spriteY);
                         if (spriteY <= line && spriteY + spriteHeight > line) {
                             // Sprite is on this line, add its index to the list
@@ -136,9 +138,8 @@ public class PPU {
                             }
                         }
                     }
-
                     // update STAT register
-                    ly.setLY((byte)curY);
+                    //ly.setLY((byte)curY); //trying out setting LY at start if modeTick==1
                     stat.setMF2(true);
                     if (((stat.getByte() >> 5) & 0x1) == 1) {
                         memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
@@ -147,9 +148,6 @@ public class PPU {
                     curX=0;
                     scrollX = memory.readByte(0xFF43);
                     scrollY = memory.readByte(0xFF42);
-                    boolean useTileSet0 = lcdc.getBit(4);
-                    boolean useBackgroundMap0 = ((lcdc.getByte())&0b1000)==1;
-                    this.loadMap(useTileSet0, useBackgroundMap0);
                     //printRAM();//for debugging RAM/Tile/Map values
                 } else if (modeTicks >= 20) {
                     // end of OAM search
@@ -168,7 +166,6 @@ public class PPU {
                 // read background tile data and attributes
                 if(modeTicks<=1){int status = memory.readByte(0xFF41) & 0x3F;
                     memory.writeByte(0xFF41, status | 0xC0);}
-                tileSet=vram.getTileSet();
                 int xPos=scrollX+curX;
                 int yPos=scrollY+curY;
                 Tile currtile;
@@ -178,6 +175,7 @@ public class PPU {
                 pixel = currtile.getVal(yPos % 8, xPos % 8);
                 int backgroundColor = bgp.getColor(pixel,2);
                 // write the pixel to the screen buffer
+                //System.out.println("curx:"+curX+" cury:"+curY+" xPos:"+xPos+" yPos:"+yPos+"tileIndex:"+Integer.toHexString(bgTileIndex));
                 display.setPixel(curX, curY, backgroundColor);
                 curX++;
                 // loop through the sprites on this line and display them if they overlap with the current pixel
@@ -242,7 +240,7 @@ public class PPU {
                         int spritePaletteIndex = (spritePalette == 0) ? obp0.getByte() : obp1.getByte();
                         int spriteColorIndex = (spritePaletteIndex >> (spriteColorPaletteIndex * 2)) & 0x3;
                         int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
-                        display.setPixel(modeTicks, line, spriteColor);
+                       // display.setPixel(modeTicks, line, spriteColor);
                     }
 
                     // update the display with the sprite data
@@ -252,7 +250,7 @@ public class PPU {
                         int spriteColorIndex = (spritePaletteIndex >> (spriteColorPaletteIndex * 2)) & 0x3;
                         int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
                         // update the screen buffer with the sprite info with setPixel method
-                        display.setPixel(modeTicks, line, spriteColor);
+                       // display.setPixel(modeTicks, line, spriteColor);
                     }
                 } // sprite for
                 if (modeTicks >= 160&&curX>=160) {
@@ -260,9 +258,10 @@ public class PPU {
                     modeTicks = 0;
                     line++;
                     curY++;
-                    if (line >= 145&&curY >= 145) {
+                    if (line > 143&&curY > 143) {
                         // end of visible screen area, enter VBLANK
                         mode = VBLANK;
+                        //ly.setLY((byte)curY);
                         stat.setM1VBlank(true);
                         stat.setMF1(true);
                         stat.setMF2(false);
@@ -300,13 +299,13 @@ public class PPU {
                         stat.setCoincidenceFlag(false);
                     }
 
-                    if (line > 144&&curY>144) {
+                    /*if (line > 144&&curY>144) {
                         mode = VBLANK;
                         stat.setMF1(true);
                         stat.setMF2(false);
                         memory.writeByte(0xff0f, 0b1);//vblank interruptS
-                        memory.writeByte(0xff0f,0b10);//set IF LCD flag
-                    } else {
+                        //memory.writeByte(0xff0f,0b10);//set IF LCD flag
+                    } else */{
                         modeTicks=0;
                         mode = OAM_READ;
                         stat.setMF1(false);
@@ -320,8 +319,8 @@ public class PPU {
                     modeTicks = 0;
                     line++;
                     curY++;
-                    ly.setLY((byte)curY);
-                    if (line >= 154&&curY>=154) {
+                    //ly.setLY((byte)curY);
+                    if (line >= 153&&curY>=153) {
                         // update the display with the pixel buffer
                         display.render();
                         mode = OAM_READ;
@@ -345,10 +344,9 @@ public class PPU {
                             stat.setBit(2,true);
                             memory.writeByte(0xff0f,ifreg|02);
                         }
-                        ly.setLY((byte) curY);
+
                         // Request VBLANK interrupt
                     } else {
-                        memory.writeByte(0xff0f, 0b1);
                         mode = VBLANK;
                     }
                 }
@@ -413,31 +411,37 @@ public class PPU {
         // set the data array in oam to the bytes array here
         oam.setSpriteData(bytes);
     }
-
-
-
     public void loadMap(boolean useTileSet0, boolean useMap1) {
         int ts = useTileSet0 ? 0 : 1;
         int address = useMap1 ? 0x9c00 : 0x9800;
         this.map = new TileMap(memory, address, ts);
     }
-
-
-
     public void printRAM() {//Proof of RAM working
-        /*for(int i=0;i<0x1800;i++) {//print ram hex values
+        for(int i=0;i<0x1000;i++) {//print ram hex values
             if(i%16==0)System.out.println();
-            if((i&0xf)==0)System.out.print(" "+Integer.toHexString(0x8000+i));
+            if((i&0xf)==0)System.out.print(" "+Integer.toHexString(0xc000+i));//maybe offset by location
             if(i%8==0)System.out.print(" | ");
-            System.out.print(" "+Integer.toHexString(memory.readByte(0x8000+i))+" ");
+            System.out.print(" "+Integer.toHexString(memory.readByte(0xc000+i))+" ");
          }
-        for(int y=0;y<8;y++) {//print a tile's values from set
+        /*for(int y=0;y<8;y++) {//print a tile's values from set
             for(int x=0;x<8;x++) {
-
-                System.out.print(" "+tileSet[map.getTile(0x0d,0x09)].getVal(y,x)+" ");
+                        //Can use map: map.getTile(X,Y) OR regular tile Index
+                System.out.print(" "+tileSet[map.getTile(0x08,0x02)].getVal(y,x)+" ");
                 if(x==7)System.out.println();
             }
-            if(y==7)System.out.println("-------------"+map.getTile(0x0d,0x09));
+            boolean useTileSet0 = lcdc.getBit(4);
+            boolean useBackgroundMap0 = ((lcdc.getByte())&0b1000)==1;
+            boolean isStat3 = (stat.getBit(1)&&stat.getBit(0));
+             if(y==7)System.out.println("-------------"+map.getTile(0x08,0x02)+" set:"+useTileSet0+" map:"+useBackgroundMap0
+                +" statMode3? "+isStat3);
+        }*
+        System.out.println();
+        for(int i=0;i<32;i++) {
+            for (int j=0;j<32;j++) {
+                if(j==0)System.out.print(i+":" );
+                    System.out.print(" "+Integer.toHexString(map.getTile(j,i))+" ");
+                if(j==31)System.out.println();
+            }
         }*/
     }
 
