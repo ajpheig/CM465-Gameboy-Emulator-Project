@@ -1,5 +1,6 @@
 package Memory;
 
+import java.awt.*;
 import java.io.*;
 import java.io.File.*;
 import java.util.Arrays;
@@ -573,19 +574,49 @@ public class Memory {
             memory[location] = (byte)this.getByte();
         }
 
-        public int getColor(int palette, int index) {
+        public int getColor(int palette, int colorMode) {
             int color = (this.getByte() >> (palette * 2)) & 0x3;
-            switch (color) {
-                case 0:
-                    return 0xFFFFFF; // white
-                case 1:
-                    return 0xAAAAAA; // light gray
-                case 2:
-                    return 0x555555; // dark gray
-                case 3:
-                    return 0x000000; // black
-                default:
-                    return 0x000000; // should never happen
+            if(colorMode==0) {
+                switch (color) {
+                    case 0:
+                        return 0xFFFFFF; // white
+                    case 1:
+                        return 0xAAAAAA; // light gray
+                    case 2:
+                        return 0x555555; // dark gray
+                    case 3:
+                        return 0x000000; // black
+                    default:
+                        return 0x000000; // should never happen
+                }
+            }
+            else if(colorMode==1) {
+                switch (color) {
+                    case 0:
+                        return 0x9bbc0f; // Almost green
+                    case 1:
+                        return 0x8bac0f; // Kinda Green
+                    case 2:
+                        return 0x306230; // Dark Green
+                    case 3:
+                        return 0x0f380f; // Darkest green
+                    default:
+                        return 0x000000; // should never happen
+                }
+            }
+            else {
+                switch (color) {
+                    case 0:
+                        return 0xbbe9cd; // Almost green
+                    case 1:
+                        return 0x3fd87b; // Kinda Green
+                    case 2:
+                        return 0x10863f; // Dark Green
+                    case 3:
+                        return 0x043b19; // Darkest green
+                    default:
+                        return 0x000000; // should never happen
+                }
             }
         }
     }
