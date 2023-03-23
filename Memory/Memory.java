@@ -11,8 +11,7 @@ public class Memory {
     private byte[] memory;
     private byte[] romData;
     private boolean bootRomEnabled = true;
-    //private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
-    private File bootFile = new File("/Users/brettkulp/Desktop/Capstone/wuGB/dmg_boot.bin");
+    private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
     private byte[] bootRom = new byte[(int) bootFile.length()];
     CPU cpu;
     InterruptManager intMan;
@@ -105,7 +104,6 @@ public class Memory {
     }
 
     public int readByte(int address) {
-        //System.out.println("readByte method in mem " + address);
         if (bootRomEnabled == true && address < bootRom.length) {
             // System.out.println("| read: " + Integer.toHexString(bootRom[address]) + "|");
             return ((int) bootRom[address] & 0xff);
@@ -113,8 +111,14 @@ public class Memory {
         if(address>=0x8000&&address<=0x97ff) {
             return vram.getByte(address);
         }
+        if (address == 0xff00) {// any value written set DIV to zero
+            return 0xff;
+        }
         if (address == 0xff04) {// any value written set DIV to zero
             return memory[address];
+        }
+        if (address == 0xff0f) {
+            return (memory[address]|0xE0);
         }
         if (address == 0xff40) {
             return lcdc.getByte();
@@ -137,8 +141,8 @@ public class Memory {
         if (address == 0xff4b) {
             return wx.getByte();
         }
-//        if (address >= 0xFE00 & address < 0xFEA0)
-//            return Byte.toUnsignedInt(memory[address]) & 0xff;
+        //if (address >= 0xFE00 & address < 0xFEA0)
+        //    return oam.readByte(address);
         else
             return  Byte.toUnsignedInt(memory[address]) & 0xff;
     }
@@ -151,7 +155,7 @@ public class Memory {
         if (address == 0xffff) {
             intMan.intEnableHandler(value);
         }
-        if (address == 0xff0f) {
+        if (address == 0xff0f) {//IF Flag
             boolean interrupted = intMan.intFlagHandler(value);
             if (interrupted)
                 return;// interrupted=whether the IME and a IE flag are on
@@ -160,8 +164,11 @@ public class Memory {
             ly.setLY((byte)value);
             return;
         }
-        if (address == 0xff00) {// gamepad
-            // do something
+        if(address == 0xff46) { //DMA transfer register
+            performDMA((byte)value);
+        }
+        if (address == 0xff00) {// joypad
+            return;//Prevent cpu from writing to joypad
         }
         if(address>=0x8000&&address<=0x97ff) {
             vram.setByte(address,value);
@@ -349,10 +356,8 @@ public class Memory {
                   //  +" val:"+val+" @row:"+rowIndex+", col:"+i+" MSB:"+msb+" LSB:"+lsb);
                 tileSet[tileIndex].setVal(rowIndex,i,val);
                 //NOTE: i= pixelindex, x, col#
-
             }
         }
-
 
         // reads byte from memory at address passed in by subtracting the offset value
         // from the address
@@ -432,6 +437,7 @@ public class Memory {
     public class Stat extends MemRegisters {
         public Stat() {
             location = 0xFF41;
+            setBit(7,true);//read as on but does nothing
         }
 
         public void setMF1(boolean value) {
@@ -457,7 +463,7 @@ public class Memory {
         public void setCoincidenceFlag(boolean value) {
             this.setBit(2, value);
             memory[location] = (byte)this.getByte();
-        }
+       }
 
         public void setM0HBlank(boolean value) {
             this.setBit(3, value);
@@ -622,18 +628,15 @@ public class Memory {
         private final int ATTR_PRIORITY = 0x80;
 
         public OAM() {
-            this.data = new byte[160];
+            this.data = new byte[0xA0];//0xA0 = 160 spaces
             this.location = 0xFE00;
             // located between 0xFE00 and 0xFE9F
         }
 
-
-
         public void setSpriteData(byte[] data) {
             this.data = data;
-           // System.out.println(Arrays.toString(this.data));
+            // System.out.println(Arrays.toString(this.data));
         }
-
         public byte readByte(int address) {
             return data[address];
         }
@@ -709,8 +712,8 @@ public class Memory {
             int attributes = getSpriteFlags(spriteIndex);
             return (attributes & ATTR_PRIORITY) == 0;
         }
-    } // end oam
-    
+    }//
+
     public void performDMA(byte value)
     {
         int baseAddress = value << 8;
