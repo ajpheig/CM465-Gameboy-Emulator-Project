@@ -177,7 +177,81 @@ public class PPU {
                 //System.out.println("curx:"+curX+" cury:"+curY+" xPos:"+xPos+" yPos:"+yPos+"tileIndex:"+Integer.toHexString(bgTileIndex));
                 display.setPixel(curX, curY, backgroundColor);
                 curX++;
+                // loop through the sprites on this line and display them if they overlap with the current pixel
 
+//                for (int i = 0; i < spriteIndexesOnLine.size(); i++) {
+//                    if (spriteIndexesOnLine.size() > 10) {
+//                        // Sort the sprite indexes by priority
+//                        spriteIndexesOnLine.sort((a, b) -> {
+//                            boolean aPriority = oam.hasSpritePriority(a);
+//                            boolean bPriority = oam.hasSpritePriority(b);
+//                            if (aPriority && !bPriority) {
+//                                return -1;
+//                            } else if (!aPriority && bPriority) {
+//                                return 1;
+//                            } else {
+//                                return 0;
+//                            }
+//                        });
+//                    }
+//                    // Remove any sprites that are not in the top 10 highest priority
+//                    while (spriteIndexesOnLine.size() > 10) {
+//                        spriteIndexesOnLine.remove(10);
+//                    }
+//                    // offest of the sprite in OAM spriteIndexesOnLine.get(i)
+//                    byte[] spriteData = oam.getSpriteData(spriteIndexesOnLine.get(i));
+//                    int spriteTileIndex = Byte.toUnsignedInt(spriteData[2]);
+//                    int spriteTileAttributes = spriteData[3];
+//                    int spritePalette = (spriteTileAttributes >> 4) & 0x1;
+//                    int spriteXFlip = (spriteTileAttributes >> 5) & 0x1;
+//                    int spriteYFlip = (spriteTileAttributes >> 6) & 0x1;
+//                    int spriteX = spriteData[1];
+//                    int spriteY = spriteData[0];
+//                    int spriteHeight = oam.getSpriteHeight(spriteIndexesOnLine.get(i));
+//
+//                    // adjust sprite coordinates for any flipping
+//                    if (oam.isSpriteFlippedHorizontally(spriteIndexesOnLine.get(i))) {
+//                        spriteX = 7 - spriteX;
+//                    }
+//                    if (oam.isSpriteFlippedVertically(spriteIndexesOnLine.get(i))) {
+//                        spriteY = spriteHeight - spriteY - 1;
+//                    }
+//
+//                    // read the appropriate tile data from VRAM
+//                    int spriteTileDataAddress = ((lcdc.getByte() & 0x4) == 0) ? 0x8000 : 0x8800;
+//                    int spriteTileDataIndex = memory.readByte(spriteTileDataAddress + (spriteTileIndex * 16) + ((line - spriteY) % spriteHeight) * 2);
+//                    int spriteTileDataAttributes = memory.readByte(spriteTileDataAddress + (spriteTileIndex * 16) + ((line - spriteY) % spriteHeight) * 2 + 1);
+//
+//                    // apply any necessary flipping
+//                    if (spriteXFlip == 1) {
+//                        spriteTileDataIndex = reverseBits(spriteTileDataIndex);
+//                    }
+//                    if (spriteYFlip == 1) {
+//                        spriteTileDataIndex = flipVertical(spriteTileDataIndex, spriteHeight);
+//                    }
+//
+//                    // get the color palette index for the current pixel
+//                    int spriteColorPaletteIndex = (spriteTileDataAttributes >> 3) & 0x7;
+//
+//                    // if the sprite pixel is not transparent, display it on the screen
+//                    if (spriteTileDataIndex != 0) {
+//                        // need to do something different on this line
+//                        int spritePaletteIndex = (spritePalette == 0) ? obp0.getByte() : obp1.getByte();
+//                        int spriteColorIndex = (spritePaletteIndex >> (spriteColorPaletteIndex * 2)) & 0x3;
+//                        int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
+//                       // display.setPixel(modeTicks, line, spriteColor);
+//                    }
+//
+//                    // update the display with the sprite data
+//                    if (spriteTileDataIndex != 0) {
+//                        // need to do something different on this line
+//                        int spritePaletteIndex = (spritePalette == 0) ? obp0.getByte() : obp1.getByte();
+//                        int spriteColorIndex = (spritePaletteIndex >> (spriteColorPaletteIndex * 2)) & 0x3;
+//                        int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
+//                        // update the screen buffer with the sprite info with setPixel method
+//                       // display.setPixel(modeTicks, line, spriteColor);
+//                    }
+//                } // sprite for
                 if (modeTicks >= 160&&curX>=160) {
                     // end of scanline
                     modeTicks = 0;
@@ -207,17 +281,17 @@ public class PPU {
                     curX=0;
                     // Check if LYC=LY
                     if (curY == memory.readByte(0xFF45)) {
-                        System.out.println("LYC=LY");
+                        //System.out.println("LYC=LY");
                         // Set the LYC=LY flag in STAT register
                         stat.setCoincidenceFlag(true);
-                        System.out.println("STAT interupt");
+                        //System.out.println("STAT interupt");
 
                         // Check if LYC=LY interrupt is enabled
                         if ((memory.readByte(0xFF41) & 0x40) == 0x40) {
                         } else {
                             // Request STAT/mode2 interrupt
                             stat.setBit(2,true);
-                            System.out.println("STAT interupt");
+                            //System.out.println("STAT interupt");
                         }
                     } else {
                         // Clear the LYC=LY flag in STAT register
@@ -264,7 +338,7 @@ public class PPU {
                         // Check if LYC=LY interrupt is enabled
                         if ((memory.readByte(0xFF41) & 0x40) == 0x40 && curY == memory.readByte(0xFF45)) {
                             // Request the LYC=LY interrupt
-                            System.out.println("STAT interupt");
+                            //System.out.println("STAT interupt");
                             int ifreg= memory.readByte(0xff0f);
                             stat.setBit(2,true);
                             memory.writeByte(0xff0f,ifreg|02);
