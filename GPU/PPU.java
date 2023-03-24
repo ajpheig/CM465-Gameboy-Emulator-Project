@@ -116,28 +116,27 @@ public class PPU {
                     this.loadMap(useTileSet0, useBackgroundMap0);
                     //System.out.println(memory.readByte(0x8027));
                     tileSet=vram.getTileSet();//readies tile set for PPU
-                    // OAM search begins at cycle 80 and lasts for 20 cycles
+
+                    // clear sprite array of previously rendered sprites
+                    Sprite.clearSprites();
+                    // get data of sprites on screen from mem/ perform dma transfer unofficially
+                    initOAM();
                     // determine which sprites are on this line
-                    // check sprite size
-                    int spriteHeight = ((memory.readByte(0xFF40) >> 2) & 0x1) == 1 ? 16 : 8;
-                    //System.out.println("Sprite Height " + spriteHeight);
-                    int spritesFound = 0;
-                    // i is the sprite index in the OAM class
-                    //System.out.println("entering sprite loop");
-                    for (int i = 0; i < 40; i++) {
-                        int spriteY = oam.readByte((i * 4))&0xff;
-                        //System.out.println("YYYYY" + spriteY);
-                        if (spriteY <= line && spriteY + spriteHeight > line) {
-                            // Sprite is on this line, add its index to the list
-                            spriteIndexesOnLine.add(i);
-                            spritesFound++;
-                            if (spritesFound > 10) {
-                                if (stat.isM2OAMEnabled()) {
-                                    stat.setM2OAM(true);
-                                }
-                            }
-                        }
+                   // System.out.println("curY " + curY);
+                    // read the sprite size from the lcdc
+                    int spriteSize = memory.readByte(0xFF40) & 0b100;
+                    int spriteHeight = spriteSize == 0 ? 8 : 16;
+                    //System.out.println("sprite size " + spriteHeight);
+                    oam.checkSpriteY(curY, spriteHeight);
+                    if(Sprite.getSpriteCount() > 10) {
+                        //System.out.println("getAll sprites size " + Sprite.getAllSprites().size());
+                        //System.out.println("OVER 10 sprites on a line");
+                        //int j = 9 / 0;
+                        Sprite.sortSprites();
+                        stat.setM2OAM(true);
+                        //System.out.println("getAll sprites size " + Sprite.getAllSprites().size());
                     }
+
                     // update STAT register
                     //ly.setLY((byte)curY); //trying out setting LY at start if modeTick==1
                     stat.setMF2(true);
@@ -178,81 +177,7 @@ public class PPU {
                 //System.out.println("curx:"+curX+" cury:"+curY+" xPos:"+xPos+" yPos:"+yPos+"tileIndex:"+Integer.toHexString(bgTileIndex));
                 display.setPixel(curX, curY, backgroundColor);
                 curX++;
-                // loop through the sprites on this line and display them if they overlap with the current pixel
 
-                for (int i = 0; i < spriteIndexesOnLine.size(); i++) {
-                    if (spriteIndexesOnLine.size() > 10) {
-                        // Sort the sprite indexes by priority
-                        spriteIndexesOnLine.sort((a, b) -> {
-                            boolean aPriority = oam.hasSpritePriority(a);
-                            boolean bPriority = oam.hasSpritePriority(b);
-                            if (aPriority && !bPriority) {
-                                return -1;
-                            } else if (!aPriority && bPriority) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                    }
-                    // Remove any sprites that are not in the top 10 highest priority
-                    while (spriteIndexesOnLine.size() > 10) {
-                        spriteIndexesOnLine.remove(10);
-                    }
-                    // offest of the sprite in OAM spriteIndexesOnLine.get(i)
-                    byte[] spriteData = oam.getSpriteData(spriteIndexesOnLine.get(i));
-                    int spriteTileIndex = Byte.toUnsignedInt(spriteData[2]);
-                    int spriteTileAttributes = spriteData[3];
-                    int spritePalette = (spriteTileAttributes >> 4) & 0x1;
-                    int spriteXFlip = (spriteTileAttributes >> 5) & 0x1;
-                    int spriteYFlip = (spriteTileAttributes >> 6) & 0x1;
-                    int spriteX = spriteData[1];
-                    int spriteY = spriteData[0];
-                    int spriteHeight = oam.getSpriteHeight(spriteIndexesOnLine.get(i));
-
-                    // adjust sprite coordinates for any flipping
-                    if (oam.isSpriteFlippedHorizontally(spriteIndexesOnLine.get(i))) {
-                        spriteX = 7 - spriteX;
-                    }
-                    if (oam.isSpriteFlippedVertically(spriteIndexesOnLine.get(i))) {
-                        spriteY = spriteHeight - spriteY - 1;
-                    }
-
-                    // read the appropriate tile data from VRAM
-                    int spriteTileDataAddress = ((lcdc.getByte() & 0x4) == 0) ? 0x8000 : 0x8800;
-                    int spriteTileDataIndex = memory.readByte(spriteTileDataAddress + (spriteTileIndex * 16) + ((line - spriteY) % spriteHeight) * 2);
-                    int spriteTileDataAttributes = memory.readByte(spriteTileDataAddress + (spriteTileIndex * 16) + ((line - spriteY) % spriteHeight) * 2 + 1);
-
-                    // apply any necessary flipping
-                    if (spriteXFlip == 1) {
-                        spriteTileDataIndex = reverseBits(spriteTileDataIndex);
-                    }
-                    if (spriteYFlip == 1) {
-                        spriteTileDataIndex = flipVertical(spriteTileDataIndex, spriteHeight);
-                    }
-
-                    // get the color palette index for the current pixel
-                    int spriteColorPaletteIndex = (spriteTileDataAttributes >> 3) & 0x7;
-
-                    // if the sprite pixel is not transparent, display it on the screen
-                    if (spriteTileDataIndex != 0) {
-                        // need to do something different on this line
-                        int spritePaletteIndex = (spritePalette == 0) ? obp0.getByte() : obp1.getByte();
-                        int spriteColorIndex = (spritePaletteIndex >> (spriteColorPaletteIndex * 2)) & 0x3;
-                        int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
-                       // display.setPixel(modeTicks, line, spriteColor);
-                    }
-
-                    // update the display with the sprite data
-                    if (spriteTileDataIndex != 0) {
-                        // need to do something different on this line
-                        int spritePaletteIndex = (spritePalette == 0) ? obp0.getByte() : obp1.getByte();
-                        int spriteColorIndex = (spritePaletteIndex >> (spriteColorPaletteIndex * 2)) & 0x3;
-                        int spriteColor = oam.getSpritePalette(spriteIndexesOnLine.get(i));
-                        // update the screen buffer with the sprite info with setPixel method
-                       // display.setPixel(modeTicks, line, spriteColor);
-                    }
-                } // sprite for
                 if (modeTicks >= 160&&curX>=160) {
                     // end of scanline
                     modeTicks = 0;
