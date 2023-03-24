@@ -6,6 +6,7 @@ import java.io.File.*;
 import java.util.Arrays;
 import CPU.*;
 import GPU.Tile;
+import GPU.Sprite;
 
 public class Memory {
 
@@ -647,7 +648,7 @@ public class Memory {
         }
     }
 
-    public class OAM {
+ public class OAM {
         byte[] data;
         private int location;
         private final int OAM_SIZE = 0xA0;
@@ -689,6 +690,53 @@ public class Memory {
             // byte 2 being x location
             // byte 3 being tile number
             // byte 4 being flags
+        }
+
+        // makes sprite address objects and adds them to  array in sprite class if they are on
+        // the current scanline to be used during VRAM read. curY is the current scanline.
+        public void checkSpriteY(int curY, int spriteSize){
+            for (int i = 0; i < 40; i++)
+            {
+                //                                  sprite y cord
+                if (between(curY - spriteSize, this.data[i * 4] & 0xff, curY))
+                {
+                //if(this.data[i * 4] == curY){
+                    // the sprite overlaps with the current scanline, so we make a sprite object and add it to the array
+                    // have to add an extra check for the case where the sprites y cord is 0 and the current scanline is
+                    // 0, so it doesn't think an empty oam has every sprite on the first line
+                    // cant check if they are != 0 because of how they bytes can be read as negative signed ints
+                    // System.out.println("SPRITE OVERLAPPING WITH SCNALINE");
+                    if ((this.data[i] == (byte)0) && (this.data[i + 1] == (byte)0) && (this.data[i + 2] == (byte)0) && (this.data[i + 4] == (byte)0) && (this.data[i + 3] != (byte)0 || curY != 0)){
+                        //do nothing
+                        //System.out.println("all 0 vals");
+                    }
+                    else{
+                        //System.out.println("MAKING SPRITE OBJ");
+                        Sprite sprite = new Sprite(this.data[i], this.data[i + 1], this.data[i + 2], this.data[i + 3]);
+                        // print in decimal but matches the hex value
+                        //System.out.print("Y val " + sprite.getY() + " X value " + sprite.getX() + " tile # " + sprite.getTileNumber() + " flages " + sprite.getFlags() + " on scanline " + curY);
+                        //System.out.println();
+                    }
+                }
+            }
+        }
+
+        private  boolean between(int from, int x, int to) {
+            boolean result;
+
+            result =  from <= x && x < to;
+            return result;
+        }
+
+        public void printSpriteData() {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < this.data.length; i++) {
+                sb.append(String.format("%02X ", this.data[i]));
+                if ((i + 1) % 4 == 0) {
+                    sb.append("| ");
+                }
+            }
+            System.out.println(sb.toString());
         }
 
         public boolean isSpriteEnabled(int spriteIndex) {
@@ -744,6 +792,7 @@ public class Memory {
             return (attributes & ATTR_PRIORITY) == 0;
         }
     }//
+
 
     public void performDMA(byte value)
     {
