@@ -15,6 +15,7 @@ public class Display {
     Tile[] tileSet;
     Memory mem;
     VRAM vram;
+    int scale=3;
     BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_3BYTE_BGR);;
 
     public Display(int screenWidth, int screenHeight) {
@@ -23,10 +24,11 @@ public class Display {
         screenBuffer = new int[screenHeight * screenWidth];
         frame = new JFrame();
         frame.add(new JLabel(new ImageIcon(image)));
-        frame.setSize(200,200);
+        frame.setSize(screenWidth * scale+20, screenHeight * scale+40);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
         clearFrame();
+        render();
         frame.getGraphics().drawImage(image, 0, 0, frame);
         frame.repaint();
     }
@@ -40,8 +42,9 @@ public class Display {
                 this.image.setRGB(x, y, color);
             }
         }
+        Image scaledImage = image.getScaledInstance(screenWidth * scale, screenHeight * scale, Image.SCALE_DEFAULT);
         clearFrame();
-        frame.getGraphics().drawImage(image, 20, 39, frame);//offset to get all of Frame on screen
+        frame.getGraphics().drawImage(scaledImage, 10, 32, frame);//offset to get all of Frame on screen
         frame.repaint();
     }
 
@@ -61,7 +64,7 @@ public class Display {
     public void clearFrame() {
         for(int x=0;x<160;x++) {//sets pixels to white to start
             for (int y=0;y<144;y++){
-                setPixel(x, y, 0xffffff);
+                setPixel(x, y, 0xeeeeee);
             }
         }
     }
