@@ -81,8 +81,7 @@ public class PPU {
         cpu.setPPU(this);
         lcdc.setLCDDisplay(true);
         // printRAM();
-        // getSpritesData();
-        initOAM();
+
         /*
          * STAT (LCD Status): This register provides information about the current LCD
          * state and controls behavior of LCD interrupt
