@@ -700,19 +700,30 @@ public class Memory {
                 //                                  sprite y cord
                 if (between(curY - spriteSize, this.data[i * 4] & 0xff, curY))
                 {
-                //if(this.data[i * 4] == curY){
+                // can make this more efficient by setting variables instead of using this.data[i + number] every time
                     // the sprite overlaps with the current scanline, so we make a sprite object and add it to the array
                     // have to add an extra check for the case where the sprites y cord is 0 and the current scanline is
                     // 0, so it doesn't think an empty oam has every sprite on the first line
                     // cant check if they are != 0 because of how they bytes can be read as negative signed ints
                     // System.out.println("SPRITE OVERLAPPING WITH SCNALINE");
-                    if ((this.data[i] == (byte)0) && (this.data[i + 1] == (byte)0) && (this.data[i + 2] == (byte)0) && (this.data[i + 4] == (byte)0) && (this.data[i + 3] != (byte)0 || curY != 0)){
+
+
+
+                    byte y = this.data[i];
+                    byte x = this.data[i + 1];
+                    byte tileNum = this.data[i + 2];
+                    byte flags = this.data[i + 3];
+                    if (((y == (byte)0) && (x == (byte)0) && (tileNum == (byte)0) && (flags == (byte)0) && (this.data[i + 3] != (byte)0 || curY != 0)) ){
                         //do nothing
                         //System.out.println("all 0 vals");
                     }
-                    else{
+                    // check if sprite's x cord is on the screen
+                    else if(x >= -8 && x <= 160){
                         //System.out.println("MAKING SPRITE OBJ");
+                        //System.out.println("making sprite " + x + " " + (y & 0xFF) + " " + tileNum +" " + flags  );
+                        //printSpriteData();
                         Sprite sprite = new Sprite(this.data[i], this.data[i + 1], this.data[i + 2], this.data[i + 3]);
+                        //Sprite sprite = new Sprite(this.data[i], (byte) (this.data[i + 1] - 8), (byte) (this.data[i + 2] - 16), this.data[i + 3]);
                         // print in decimal but matches the hex value
                         //System.out.print("Y val " + sprite.getY() + " X value " + sprite.getX() + " tile # " + sprite.getTileNumber() + " flages " + sprite.getFlags() + " on scanline " + curY);
                         //System.out.println();
@@ -730,10 +741,15 @@ public class Memory {
 
         public void printSpriteData() {
             StringBuilder sb = new StringBuilder();
+            int pipeCount = 0;
             for (int i = 0; i < this.data.length; i++) {
                 sb.append(String.format("%02X ", this.data[i]));
                 if ((i + 1) % 4 == 0) {
                     sb.append("| ");
+                    pipeCount++;
+                    if (pipeCount % 10 == 0) {
+                        sb.append("\n");
+                    }
                 }
             }
             System.out.println(sb.toString());
