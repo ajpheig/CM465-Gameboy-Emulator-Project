@@ -29,6 +29,7 @@ public class Memory {
     BGP bgp = new BGP();
     OBP0 obp0 = new OBP0();
     OBP1 obp1 = new OBP1();
+    Joypad joypad = new Joypad();
     LY ly = new LY();
     LYC lyc = new LYC();
     DIV div = new DIV();
@@ -113,8 +114,16 @@ public class Memory {
         if(address>=0x8000&&address<=0x97ff) {
             return vram.getByte(address);
         }
-        if (address == 0xff00) {// any value written set DIV to zero
-            return 0xff;
+        if (address == 0xff00) {// JOYPAD
+            if(joypad.getControlSelect()==1)//if button keys
+            {
+                return joypad.readButtons();
+            }
+            if(joypad.getControlSelect()==2)//if direction keys
+            {
+                return joypad.readButtons();
+            }
+            else return 0xff;
         }
         if (address == 0xff04) {// any value written set DIV to zero
             return memory[address];
@@ -134,8 +143,14 @@ public class Memory {
         if (address == 0xff45) {
             return lyc.getByte();
         }
-        if (address == 0xff47) {
+        if (address == 0xff47) {//bgp
             return bgp.getByte();
+        }
+        if (address == 0xff48) {//obp0
+            return obp0.getByte();
+        }
+        if (address == 0xff49) {//obp1
+            return obp1.getByte();
         }
         if (address == 0xff4a) {
             return wy.getByte();
@@ -150,11 +165,13 @@ public class Memory {
     }
 
     public void writeByte(int address, int value) {
+        if (address ==0x2000) return;
         if (address == 0xff50) {
             bootRomEnabled = false;
             System.out.println("boot rom disabled");
         }
-        if (address == 0xffff) {
+        if (address == 0xffff) {//IE register
+            System.out.println((value));
             intMan.intEnableHandler(value);
         }
         if (address == 0xff0f) {//IF Flag
@@ -170,6 +187,7 @@ public class Memory {
             performDMA((byte)value);
         }
         if (address == 0xff00) {// joypad
+           memory[0xff00]=(byte)value;
             return;//Prevent cpu from writing to joypad
         }
         if(address>=0x8000&&address<=0x97ff) {
@@ -194,6 +212,12 @@ public class Memory {
         }
         if (address == 0xff47) {
             bgp.setByte((byte)value);
+        }
+        if (address == 0xff48) {
+            obp0.setByte((byte)value);
+        }
+        if (address == 0xff49) {
+            obp1.setByte((byte)value);
         }
         if (address == 0xff4a) {
             wy.setByte((byte) value);
@@ -369,6 +393,9 @@ public class Memory {
         public Tile[] getTileSet() {
             return tileSet;
         }
+    }
+    public Joypad getJoypad() {
+        return joypad;
     }
 
     public class LCDC extends MemRegisters {
@@ -648,7 +675,7 @@ public class Memory {
         }
     }
 
- public class OAM {
+    public class OAM {
         byte[] data;
         private int location;
         private final int OAM_SIZE = 0xA0;
@@ -700,14 +727,14 @@ public class Memory {
                 //                                  sprite y cord
                 if (between(curY - spriteSize, this.data[i * 4] & 0xff, curY))
                 {
-                // can make this more efficient by setting variables instead of using this.data[i + number] every time
+                    //if(this.data[i * 4] == curY){
+                    // can make this more efficient by setting variables instead of using
+                    // this.data[i + number] every time
                     // the sprite overlaps with the current scanline, so we make a sprite object and add it to the array
                     // have to add an extra check for the case where the sprites y cord is 0 and the current scanline is
                     // 0, so it doesn't think an empty oam has every sprite on the first line
                     // cant check if they are != 0 because of how they bytes can be read as negative signed ints
                     // System.out.println("SPRITE OVERLAPPING WITH SCNALINE");
-
-
 
                     byte y = this.data[i];
                     byte x = this.data[i + 1];
@@ -720,10 +747,7 @@ public class Memory {
                     // check if sprite's x cord is on the screen
                     else if(x >= -8 && x <= 160){
                         //System.out.println("MAKING SPRITE OBJ");
-                        //System.out.println("making sprite " + x + " " + (y & 0xFF) + " " + tileNum +" " + flags  );
-                        //printSpriteData();
                         Sprite sprite = new Sprite(this.data[i], this.data[i + 1], this.data[i + 2], this.data[i + 3]);
-                        //Sprite sprite = new Sprite(this.data[i], (byte) (this.data[i + 1] - 8), (byte) (this.data[i + 2] - 16), this.data[i + 3]);
                         // print in decimal but matches the hex value
                         //System.out.print("Y val " + sprite.getY() + " X value " + sprite.getX() + " tile # " + sprite.getTileNumber() + " flages " + sprite.getFlags() + " on scanline " + curY);
                         //System.out.println();
@@ -754,7 +778,6 @@ public class Memory {
             }
             System.out.println(sb.toString());
         }
-
         public boolean isSpriteEnabled(int spriteIndex) {
             int spriteStartAddress = spriteIndex * SPRITE_SIZE;
             return data[spriteStartAddress] != 0;
@@ -808,7 +831,6 @@ public class Memory {
             return (attributes & ATTR_PRIORITY) == 0;
         }
     }//
-
 
     public void performDMA(byte value)
     {
