@@ -16,6 +16,7 @@ public class Memory {
     private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
     private byte[] bootRom = new byte[(int) bootFile.length()];
     CPU cpu;
+    Timer timer;
     InterruptManager intMan;
     Tile[] tileSet =new Tile[384];
     IFRegister IF = new IFRegister();
@@ -101,9 +102,10 @@ public class Memory {
         return this.vram;
     }
 
-    public void setCPU(CPU cpu, InterruptManager intMan) {
+    public void setCPU(CPU cpu, InterruptManager intMan, Timer timer) {
         this.cpu = cpu;
         this.intMan = intMan;
+        this.timer=timer;
     }
 
     public int readByte(int address) {
@@ -115,18 +117,19 @@ public class Memory {
             return vram.getByte(address);
         }
         if (address == 0xff00) {// JOYPAD
-            if(joypad.getControlSelect()==1)//if button keys
+            if(((memory[0xff00]>>5)&1)==0)//if button keys
             {
-                return joypad.readButtons();
+                return joypad.readActionButtons();
             }
-            if(joypad.getControlSelect()==2)//if direction keys
+            if(((memory[0xff00]>>4)&1)==0)//if direction keys
             {
-                return joypad.readButtons();
+                System.out.println(Integer.toBinaryString(joypad.readDirButtons()));
+                return joypad.readDirButtons();
             }
             else return 0xff;
         }
         if (address == 0xff04) {// any value written set DIV to zero
-            return memory[address];
+            return timer.getDiv();
         }
         if (address == 0xff0f) {
             return (memory[address]|0xE0);
@@ -171,7 +174,7 @@ public class Memory {
             System.out.println("boot rom disabled");
         }
         if (address == 0xffff) {//IE register
-            System.out.println((value));
+            //System.out.println((value));
             intMan.intEnableHandler(value);
         }
         if (address == 0xff0f) {//IF Flag
