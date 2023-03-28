@@ -35,6 +35,7 @@ public class ReadGBFC {
     Ram ram = new Ram(0x8000);// 2KiB Vram
     InterruptManager interruptManager = new InterruptManager();
     PPU ppu;
+    boolean running=false;
     Display display = new Display(160, 144);
 
     public ReadGBFC() {
@@ -56,6 +57,14 @@ public class ReadGBFC {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(500, 500);
         frame.setVisible(true);
+        while(true){
+            ;//do nothing until listener sets running
+            System.out.print("");
+            if(this.running==true) {
+                cpu.setRun();
+                cpu.runUntil(-1);
+            }
+        }
     }
 
     public class FCListener implements ActionListener {
@@ -79,6 +88,7 @@ public class ReadGBFC {
                     mem = new Memory(romData);
                     cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
                     ppu = new PPU(romData, cpu, ram, interruptManager, display,mem);
+                    ReadGBFC.this.running=true;
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to
@@ -154,12 +164,16 @@ public class ReadGBFC {
         debugP.add(flagsLabel);
         debugP.add(memRegsLabel);
         frame.add(BorderLayout.NORTH, debugP);
+        frame.repaint();
     }
 
     private class KeyHandler extends KeyAdapter {
         public void keyPressed(KeyEvent ke) {
             if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
                 cpu.step();
+            }
+            if (ke.getKeyCode() == KeyEvent.VK_RIGHT) {
+                System.out.println("right");
             }
             if (ke.getKeyCode() == KeyEvent.VK_SPACE) {
                 cpu.setRun();
