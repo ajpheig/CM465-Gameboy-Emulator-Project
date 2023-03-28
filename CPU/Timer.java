@@ -13,6 +13,9 @@ public class Timer {
         this.cpu = cpu;
         this.mem = mem;
     }
+    public int getDiv() {
+        return this.divCount;
+    }
 
     public void handleTimer(int ticks) {
         divCount += (ticks / 4);// inc DIV register
