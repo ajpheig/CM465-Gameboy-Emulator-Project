@@ -123,7 +123,7 @@ public class Memory {
             }
             if(((memory[0xff00]>>4)&1)==0)//if direction keys
             {
-                System.out.println(Integer.toBinaryString(joypad.readDirButtons()));
+                //System.out.println(Integer.toBinaryString(joypad.readDirButtons()));
                 return joypad.readDirButtons();
             }
             else return 0xff;
