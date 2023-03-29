@@ -1669,7 +1669,7 @@ public class Opcodes {
 
     // halt cpu temporarily?
     public void HALT() {
-        System.out.println("HALT");
+        //System.out.println("HALT");
         cpu.setHalt(true);
         regs.setPC(regs.getPC() + 1);
         cpu.setCycle(4);

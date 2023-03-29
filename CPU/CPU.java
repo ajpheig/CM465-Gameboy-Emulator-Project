@@ -32,19 +32,17 @@ public class CPU {
         this.regs = regs;
         this.mem = mem;
         this.interruptManager = interruptManager;
-        mem.setCPU(this, interruptManager);
+        timer = new Timer(this, mem);
+        mem.setCPU(this, interruptManager,timer);
         operations = new Opcodes(regs, romData, interruptManager, mem, this);
         regs.setPC(0x00);// sets it to 0x100 in ROM to start testing opcode
         interruptManager.setCPU(this);
         this.parent = parent;
-        timer = new Timer(this, mem);
         // hardSetRegs();
-        //mem.writeByte(0xff44, 0x90);// hardset for bootROM for now
-        // mem.writeByte();
-       // try {
-            //out = new PrintWriter(new File("output.txt"));
-        //} catch (FileNotFoundException fne) {
-        //}
+        try {
+            out = new PrintWriter(new File("output.txt"));
+        } catch (FileNotFoundException fne) {
+        }
     }
 
     public void hardSetRegs() {
@@ -83,13 +81,13 @@ public class CPU {
         int opcode = mem.readByte(currentPC);//
         Runnable operation = operations.opcodeHandlers.get(opcode & 0xff);
         // print
-        /*String s = String.format(
+        String s = String.format(
                 "A:%1$02X F:%2$02X B:%3$02X C:%4$02X D:%5$02X E:%6$02X H:%7$02X L:%8$02X SP:%9$04X PC:%10$04X PCMEM:%11$02X,%12$02X,%13$02X,%14$02X LY:%15$02X",
                 regs.getA(), regs.fByte.getFByte(),
                 regs.getB(), regs.getC(), regs.getD(), regs.getE(), regs.getH(), regs.getL(), regs.getSP(),
                 regs.getPC(),
                 mem.readByte(currentPC), mem.readByte(currentPC + 1), mem.readByte(currentPC + 2),
-                mem.readByte(currentPC + 3),mem.readByte(0xff44));*/
+                mem.readByte(currentPC + 3),mem.readByte(0xff44));
         //out.println(s);
         // System.out.println(Integer.toHexString(mem.readByte(0x80a0)));
         //System.out.println(s);
@@ -98,11 +96,6 @@ public class CPU {
         for(int o=0;o<ticks;o++){
                ppu.updateModeAndCycles();}
         serviceInterrupts();
-        if (mem.readByte(0xff02) == 0x81) {// prints blarrg test results
-            char c = (char) mem.readByte(0xff01);
-            System.out.printf("%c", c);
-            mem.writeByte(0xff02, 0x0);
-        }
         //parent.refreshPanel();
     }
 
@@ -117,9 +110,9 @@ public class CPU {
             totalT+=this.ticks;
             if (totalT>=17476){
                 totalT=0;
-                while(System.currentTimeMillis()-timeStart<4.67) {
+                //while(System.currentTimeMillis()-timeStart<.07) {
                     //wait loop
-                }
+                //}
             }
             //if(regs.getPC()>0xcb00)ppu.printRAM();
         }
