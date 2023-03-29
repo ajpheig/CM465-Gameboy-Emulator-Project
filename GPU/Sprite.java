@@ -86,8 +86,9 @@ public class Sprite {
             }
         });
         // Remove the extra sprites if there are more than 10
-        if (spriteList.size() > 10) {
-            spriteList = spriteList.subList(0, 10);
+        if (spriteList.size() > 10)
+        {
+         //   spriteList = spriteList.subList(0, 10);
         }
     }
 

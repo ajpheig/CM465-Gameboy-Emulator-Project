@@ -110,18 +110,18 @@ public class PPU {
                 // move to VRAM READ if it is not the first cycle in OAM read
                  if (modeTicks == 1) {//changed to 1 because it is modeTicks is ++ after setting it to zero
                     boolean useTileSet0 = lcdc.getBit(4);
-                    boolean useBackgroundMap0 = ((lcdc.getByte()) & 0b1000) == 1;
+                    boolean useBackgroundMap0 =(lcdc.getBit(3));
                     boolean useWindowMap0=((lcdc.getBit(6)));
                     if(windowY<=curY) displayWindow = lcdc.getBit(5);
                     //load tile map
-                    if(displayWindow) this.loadMap(useTileSet0, useBackgroundMap0);
+                    if(displayWindow) this.loadMap(useTileSet0, useWindowMap0);
                     else this.loadMap(useTileSet0, useBackgroundMap0);
                         //System.out.println(memory.readByte(0x8027));
                         tileSet = vram.getTileSet();//readies tile set for PPU
                     // OAM search begins at cycle 80 and lasts for 20 cycles
 
                     // clear sprite array of previously rendered sprites
-                    Sprite.clearSprites();
+                    //Sprite.clearSprites();
                     // get data of sprites on screen from mem/ perform dma transfer unofficially
                     initOAM();
                     // determine which sprites are on this line
@@ -129,16 +129,10 @@ public class PPU {
                     // read the sprite size from the lcdc
                     int spriteSize = memory.readByte(0xFF40) & 0b100;
                     int spriteHeight = spriteSize == 0 ? 8 : 16;
+                    if(lcdc.getBit(2)) spriteHeight=16;
+                        else spriteHeight=8;
                     //System.out.println("sprite size " + spriteHeight);
                     oam.checkSpriteY(curY, spriteHeight);
-                    if(Sprite.getSpriteCount() > 10) {
-                        //System.out.println("getAll sprites size " + Sprite.getAllSprites().size());
-                        //System.out.println("OVER 10 sprites on a line");
-                        //int j = 9 / 0;
-                        Sprite.sortSprites();
-                        stat.setM2OAM(true);
-                        //System.out.println("getAll sprites size " + Sprite.getAllSprites().size());
-                    }
                     // update STAT register
                     //ly.setLY((byte)curY); //trying out setting LY at start if modeTick==1
                     stat.setMF2(true);
@@ -184,7 +178,6 @@ public class PPU {
 
                 display.setPixel(curX, curY, backgroundColor);
                 curX++;
-
                 int sY;
                 int sX;
                 int sNum;
@@ -206,7 +199,7 @@ public class PPU {
                         for (int y = 0; y < 8; y++) {
                             for (int x = 0; x < 8; x++) {
                                 int sPixel = spriteTile.getVal(y, x);
-                                int color = bgp.getColor(sPixel, 2);
+                                int color = obp0.getColor(sPixel, 2);
 
                                 // calculate the pixel coordinates based on sprite position and current tile pixel position
                                 int xPosS = sX + x;
@@ -217,11 +210,8 @@ public class PPU {
                                 //display.setPixel(xPosS, yPosS, color);
                             }
                         }
-
-
-
-
                     }
+                    Sprite.clearSprites();
                 }
 
                 if (modeTicks >= 160&&curX>=160) {
@@ -252,7 +242,7 @@ public class PPU {
                     modeTicks = 0;
                     curX=0;
                     // Check if LYC=LY
-                    if (curY == memory.readByte(0xFF45)) {
+                    if (curY == memory.readByte(0xFF45)&!stat.getBit(2)) {
                         System.out.println("LYC=LY");
                         // Set the LYC=LY flag in STAT register
                         stat.setCoincidenceFlag(true);
@@ -269,19 +259,21 @@ public class PPU {
                         // Clear the LYC=LY flag in STAT register
                         stat.setCoincidenceFlag(false);
                     }
-
-                    /*if (line > 144&&curY>144) {
-                        mode = VBLANK;
-                        stat.setMF1(true);
-                        stat.setMF2(false);
-                        memory.writeByte(0xff0f, 0b1);//vblank interruptS
-                        //memory.writeByte(0xff0f,0b10);//set IF LCD flag
-                    } else */{
+                    {
                         modeTicks=0;
                         mode = OAM_READ;
                         stat.setMF1(false);
                         stat.setMF2(true);
                         memory.writeByte(0xff0f,0b10);//set IF LCD flag
+                    }
+                    if(Sprite.getSpriteCount() > 10)
+                    {
+                        //System.out.println("getAll sprites size " + Sprite.getAllSprites().size());
+                        //System.out.println("OVER 10 sprites on a line");
+                        //int j = 9 / 0;
+                        Sprite.sortSprites();
+                        stat.setM2OAM(true);
+                        //System.out.println("getAll sprites size " + Sprite.getAllSprites().size());
                     }
                 }
                 break;
@@ -301,7 +293,7 @@ public class PPU {
                         line = 0;
                         curY=0;
                         // Set the coincidence flag if LYC=LY
-                        if (line == (int)lyc.getByte()) {
+                        if (line == (int)lyc.getByte()&!stat.getBit(2)) {
                             stat.setCoincidenceFlag(true);
                         } else {
                             stat.setCoincidenceFlag(false);
