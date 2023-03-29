@@ -128,7 +128,7 @@ public class Memory {
             }
             else return 0xff;
         }
-        if (address == 0xff04) {// any value written set DIV to zero
+        if (address == 0xff04) {//DIV register
             return timer.getDiv();
         }
         if (address == 0xff0f) {
@@ -725,10 +725,10 @@ public class Memory {
         // makes sprite address objects and adds them to  array in sprite class if they are on
         // the current scanline to be used during VRAM read. curY is the current scanline.
         public void checkSpriteY(int curY, int spriteSize){
-            for (int i = 0; i < 40; i++)
+            for (int i = 0; i < 160; i+=4)
             {
-                //                                  sprite y cord
-                if (between(curY - spriteSize, this.data[i * 4] & 0xff, curY))
+                //System.out.println(curY);IS GOOD! ALL 144 cury
+                //if (between(curY - 16, this.data[i * 4] & 0xff, curY))
                 {
                     //if(this.data[i * 4] == curY){
                     // can make this more efficient by setting variables instead of using
@@ -743,14 +743,17 @@ public class Memory {
                     byte x = this.data[i + 1];
                     byte tileNum = this.data[i + 2];
                     byte flags = this.data[i + 3];
-                    if (((y == (byte)0) && (x == (byte)0) && (tileNum == (byte)0) && (flags == (byte)0) && (this.data[i + 3] != (byte)0 || curY != 0)) ){
+                   // if (((y == (byte)0) && (x == (byte)0) && (tileNum == (byte)0) && (flags == (byte)0) && (this.data[i + 3] != (byte)0 || curY != 16)) )
+                    {
                         //do nothing
                         //System.out.println("all 0 vals");
                     }
                     // check if sprite's x cord is on the screen
-                    else if(x >= -8 && x <= 160){
+                    if((x&0xff) >= 8 && (x&0xff) <= 168)
+                    {
                         //System.out.println("MAKING SPRITE OBJ");
                         Sprite sprite = new Sprite(this.data[i], this.data[i + 1], this.data[i + 2], this.data[i + 3]);
+                        //printSpriteData();
                         // print in decimal but matches the hex value
                         //System.out.print("Y val " + sprite.getY() + " X value " + sprite.getX() + " tile # " + sprite.getTileNumber() + " flages " + sprite.getFlags() + " on scanline " + curY);
                         //System.out.println();
@@ -774,7 +777,7 @@ public class Memory {
                 if ((i + 1) % 4 == 0) {
                     sb.append("| ");
                     pipeCount++;
-                    if (pipeCount % 10 == 0) {
+                    if (pipeCount % 8 == 0) {
                         sb.append("\n");
                     }
                 }
@@ -875,6 +878,51 @@ public class Memory {
         }
         public int getByte() {
             return memory[location];
+        }
+        public int getColor(int palette, int colorMode) {
+            int color = (this.getByte() >> (palette * 2)) & 0x3;
+            if(colorMode==0) {
+                switch (color) {
+                    case 0:
+                        return 0xFFFFFF; // white
+                    case 1:
+                        return 0xAAAAAA; // light gray
+                    case 2:
+                        return 0x555555; // dark gray
+                    case 3:
+                        return 0x000000; // black
+                    default:
+                        return 0x000000; // should never happen
+                }
+            }
+            else if(colorMode==1) {
+                switch (color) {
+                    case 0:
+                        return 0x9bbc0f; // Almost green
+                    case 1:
+                        return 0x8bac0f; // Kinda Green
+                    case 2:
+                        return 0x306230; // Dark Green
+                    case 3:
+                        return 0x0f380f; // Darkest green
+                    default:
+                        return 0x000000; // should never happen
+                }
+            }
+            else {
+                switch (color) {
+                    case 0:
+                        return 0xbbe9cd; // Almost green
+                    case 1:
+                        return 0x3fd87b; // Kinda Green
+                    case 2:
+                        return 0x10863f; // Dark Green
+                    case 3:
+                        return 0x043b19; // Darkest green
+                    default:
+                        return 0x000000; // should never happen
+                }
+            }
         }
 
     }
