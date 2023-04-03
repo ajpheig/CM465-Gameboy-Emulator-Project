@@ -22,6 +22,8 @@ public class PPU {
     Memory memory;
     Ram ram;
     InterruptManager interruptManager;
+    DebugPane bugPanel;
+
     private int mode=2;
     LCDC lcdc;
     OBP0 obp0;
@@ -77,6 +79,7 @@ public class PPU {
         this.obp0 = memory.getObp0();
         this.lyc=memory.getLYC();
         this.ly=memory.getLY();
+        bugPanel = new DebugPane(cpu,mem);
         display.setMemInDisplay(mem, interruptManager);
         //oam.loadSprites(getSpriteData());
         curX=0;
@@ -144,7 +147,6 @@ public class PPU {
                     scrollY = memory.readByte(0xFF42);
                     windowX = memory.readByte(0xFF4B)-7;
                     windowY = memory.readByte(0xFF4A);
-
                     //printRAM();//for debugging RAM/Tile/Map values
                 } else if (modeTicks >= 20) {
                     // end of OAM search
@@ -210,7 +212,7 @@ public class PPU {
                                     int yPosS = sY + (7 - y);
 
                                     // write the pixel to the screen buffer
-                                    if(sPixel!=0&&(sFlag&0x80)==0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                    if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
                                 }
                             }
                         }
@@ -230,7 +232,7 @@ public class PPU {
                                         int yPosS = sY + y;
 
                                         // write the pixel to the screen buffer
-                                        if(sPixel!=0&&(sFlag&0x80)==0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                             }
@@ -250,7 +252,7 @@ public class PPU {
                                         int yPosS = sY + (7 - y); // flip the y-coordinate
 
                                         // write the pixel to the screen buffer
-                                        if(sPixel!=0&&(sFlag&0x80)==0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                             }
@@ -272,7 +274,7 @@ public class PPU {
                                         int yPosS = sY + y;
                                         // write the pixel to the screen buffer
                                         //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                        if(sPixel!=0&&(sFlag&0x80)==0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
                                         //display.setPixel(xPosS, yPosS, color);
                                     }
                                 } // render sprite for
@@ -367,6 +369,7 @@ public class PPU {
                     //ly.setLY((byte)curY);
                     if (line >= 153&&curY>=153) {
                         // update the display with the pixel buffer
+                        bugPanel.updatePane(map,tileSet);
                         display.render();
                         mode = OAM_READ;
                         stat.setMF1(false);
