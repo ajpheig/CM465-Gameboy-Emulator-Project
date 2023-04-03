@@ -577,10 +577,20 @@ public class Memory {
     }
 
     public class BGP extends MemRegisters {
+        private int[] colorMap =new int[4];
         public BGP() {
             location = 0xFF47;
         }
-
+        @Override
+        public void setByte(int value) {
+            this.value = value&0xff;
+            int index = this.value&3;
+            for (int i = 0; i < 4 ; i++) {
+                index=(this.value>>(2*i))&3;
+                colorMap[i] = index;
+                //System.out.println("BGP"+Integer.toBinaryString(this.value)+" "+index);
+            }
+        }
         public void setWhite(boolean value) {
             this.setBit(0, value);
             this.setBit(1, value);
@@ -606,50 +616,11 @@ public class Memory {
         }
 
         public int getColor(int palette, int colorMode) {
-            int color = (this.getByte() >> (palette * 2)) & 0x3;
-            if(colorMode==0) {
-                switch (color) {
-                    case 0:
-                        return 0xFFFFFF; // white
-                    case 1:
-                        return 0xAAAAAA; // light gray
-                    case 2:
-                        return 0x555555; // dark gray
-                    case 3:
-                        return 0x000000; // black
-                    default:
-                        return 0x000000; // should never happen
-                }
-            }
-            else if(colorMode==1) {
-                switch (color) {
-                    case 0:
-                        return 0x9bbc0f; // Almost green
-                    case 1:
-                        return 0x8bac0f; // Kinda Green
-                    case 2:
-                        return 0x306230; // Dark Green
-                    case 3:
-                        return 0x0f380f; // Darkest green
-                    default:
-                        return 0x000000; // should never happen
-                }
-            }
-            else {
-                switch (color) {
-                    case 0:
-                        return 0xbbe9cd; // Almost green
-                    case 1:
-                        return 0x3fd87b; // Kinda Green
-                    case 2:
-                        return 0x10863f; // Dark Green
-                    case 3:
-                        return 0x043b19; // Darkest green
-                    default:
-                        return 0x000000; // should never happen
-                }
-            }
+            //int color = (this.getByte() >> (palette * 2)) & 0x3;
+            //System.out.println("pal"+palette+"actClr:"+getColorFromArray(colorMap[color]));
+            return getColorFromArray(colorMap[palette]);
         }
+
     }
 
     public class LY extends MemRegisters {
@@ -755,7 +726,7 @@ public class Memory {
                         Sprite sprite = new Sprite(this.data[i], this.data[i + 1], this.data[i + 2], this.data[i + 3]);
                         //printSpriteData();
                         // print in decimal but matches the hex value
-                        //System.out.print("Y val " + sprite.getY() + " X value " + sprite.getX() + " tile # " + sprite.getTileNumber() + " flages " + sprite.getFlags() + " on scanline " + curY);
+                        //System.out.println("Y val " + (sprite.getY()&0xff) + " X value " + (sprite.getX()&0xff) + " tile # " + (sprite.getTileNumber()&0xff) + " flages " + (sprite.getFlags()&0xff) + " on scanline " + curY);
                         //System.out.println();
                     }
                 }
@@ -848,9 +819,21 @@ public class Memory {
     }
 
     public class OBP0 extends MemRegisters {
+        private int[] colorMap =new int[4];
         public OBP0() {
             location = 0xFF48;
         }
+        @Override
+        public void setByte(int value) {
+            this.value = value&0xff;
+            int index = this.value&3;
+            for (int i = 0; i < 4 ; i++) {
+                index=(this.value>>(2*i))&3;
+                colorMap[i] = index;
+                //System.out.println("OBP0"+Integer.toBinaryString(this.value)+" "+index);
+            }
+        }
+
 
         // object palette data
         public void setWhite(boolean value) {
@@ -880,57 +863,29 @@ public class Memory {
             return memory[location];
         }
         public int getColor(int palette, int colorMode) {
-            int color = (this.getByte() >> (palette * 2)) & 0x3;
-            if(colorMode==0) {
-                switch (color) {
-                    case 0:
-                        return 0xFFFFFF; // white
-                    case 1:
-                        return 0xAAAAAA; // light gray
-                    case 2:
-                        return 0x555555; // dark gray
-                    case 3:
-                        return 0x000000; // black
-                    default:
-                        return 0x000000; // should never happen
-                }
-            }
-            else if(colorMode==1) {
-                switch (color) {
-                    case 0:
-                        return 0x9bbc0f; // Almost green
-                    case 1:
-                        return 0x8bac0f; // Kinda Green
-                    case 2:
-                        return 0x306230; // Dark Green
-                    case 3:
-                        return 0x0f380f; // Darkest green
-                    default:
-                        return 0x000000; // should never happen
-                }
-            }
-            else {
-                switch (color) {
-                    case 0:
-                        return 0xbbe9cd; // Almost green
-                    case 1:
-                        return 0x3fd87b; // Kinda Green
-                    case 2:
-                        return 0x10863f; // Dark Green
-                    case 3:
-                        return 0x043b19; // Darkest green
-                    default:
-                        return 0x000000; // should never happen
-                }
-            }
+            //int color = (this.getByte() >> (palette * 2)) & 0x3;
+            //System.out.println("pal"+palette+"actClr:"+getColorFromArray(colorMap[color]));
+            return getColorFromArray(colorMap[palette]);
         }
 
     }
 
     public class OBP1 extends MemRegisters {
+        private int[] colorMap =new int[4];
         public OBP1() {
             location = 0xFF49;
         }
+        @Override
+        public void setByte(int value) {
+            this.value = value&0xff;
+            int index = this.value&3;
+            for (int i = 0; i < 4 ; i++) {
+                index=(this.value>>(2*i))&3;
+                colorMap[i] = index;
+                //System.out.println("OBP1"+Integer.toBinaryString(this.value)+" "+index);
+            }
+        }
+
 
         public void setWhite(boolean value) {
             this.setBit(0, value);
@@ -959,6 +914,11 @@ public class Memory {
             return memory[location];
         }
 
+        public int getColor(int palette, int colorMode) {
+            //int color = (this.getByte() >> (palette * 2)) & 0x3;
+
+            return getColorFromArray(colorMap[palette]);
+        }
     }
 
     private class DIV extends MemRegisters {
@@ -1208,5 +1168,9 @@ public class Memory {
         public NR52() {
             location = 0xFF26;
         }
+    }
+    public int getColorFromArray(int index) {
+        int[] clrs= {0xbbe9cd, 0x3fd87b, 0x10863f,0x043b19};
+        return clrs[index];
     }
 }
