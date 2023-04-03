@@ -210,7 +210,7 @@ public class PPU {
                                     int yPosS = sY + (7 - y);
 
                                     // write the pixel to the screen buffer
-                                    if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                    if(sPixel!=0&&(sFlag&0x80)==0)display.setPixel(xPosS - 8, yPosS - 16, color);
                                 }
                             }
                         }
@@ -230,7 +230,7 @@ public class PPU {
                                         int yPosS = sY + y;
 
                                         // write the pixel to the screen buffer
-                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0&&(sFlag&0x80)==0)display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                             }
@@ -250,7 +250,7 @@ public class PPU {
                                         int yPosS = sY + (7 - y); // flip the y-coordinate
 
                                         // write the pixel to the screen buffer
-                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0&&(sFlag&0x80)==0)display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                             }
@@ -272,7 +272,7 @@ public class PPU {
                                         int yPosS = sY + y;
                                         // write the pixel to the screen buffer
                                         //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0&&(sFlag&0x80)==0)display.setPixel(xPosS - 8, yPosS - 16, color);
                                         //display.setPixel(xPosS, yPosS, color);
                                     }
                                 } // render sprite for
