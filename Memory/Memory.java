@@ -11,7 +11,6 @@ import GPU.Sprite;
 public class Memory {
 
     private byte[] memory;
-    private byte[] romData;
     private boolean bootRomEnabled = true;
     private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
     private byte[] bootRom = new byte[(int) bootFile.length()];
@@ -163,6 +162,7 @@ public class Memory {
         }
         //if (address >= 0xFE00 & address < 0xFEA0)
         //    return oam.readByte(address);
+        if(address>=65536) return 0xff;
         else
             return  Byte.toUnsignedInt(memory[address]) & 0xff;
     }
@@ -383,7 +383,7 @@ public class Memory {
                 if((msb==0)&&(lsb==0)) val=0;
                 //System.out.println(Integer.toHexString(tileIndex)+" b1:"+Integer.toHexString(byte1)+" b2:"+Integer.toHexString(byte2)
                   //  +" val:"+val+" @row:"+rowIndex+", col:"+i+" MSB:"+msb+" LSB:"+lsb);
-                tileSet[tileIndex].setVal(rowIndex,i,val);
+                if(tileSet[tileIndex]!=null)tileSet[tileIndex].setVal(rowIndex,i,val);
                 //NOTE: i= pixelindex, x, col#
             }
         }
