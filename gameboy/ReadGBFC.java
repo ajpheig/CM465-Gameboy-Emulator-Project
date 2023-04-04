@@ -36,28 +36,30 @@ public class ReadGBFC {
     InterruptManager interruptManager = new InterruptManager();
     PPU ppu;
     boolean running=false;
-    Display display = new Display(160, 144);
-
+    Display display;
+    Worker w;
     public ReadGBFC() {
         frame = new JFrame("GameBoy");
         FCListener fcl = new FCListener();
         mb = new JMenuBar();
         m = new JMenu("File");
         fc = new JFileChooser("C:/Users/ajphe/Documents/Homework/CM465 CIS Capston/GBVStest/blargg/cpu_instrs");
-        KeyHandler kh = new KeyHandler();// to step thru cpu instructions
-        frame.addKeyListener(kh);
-        debugPanel();
+        //KeyHandler kh = new KeyHandler();// to step thru cpu instructions
+        //frame.addKeyListener(kh);
+        //debugPanel();
         m1 = new JMenuItem("Load ROM");
         m.add(m1);
         m1.addActionListener(fcl);
         mb.add(m);
-        // frame.add(gameInfo);
-        // frame.add(BorderLayout.NORTH, gameInfoHead);
         frame.setJMenuBar(mb);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(500, 500);
+        display = new Display(160, 144, this);
+        display.setBackground(Color.LIGHT_GRAY);
+        display.setPreferredSize(new Dimension(500,500));
+        frame.add(display);
         frame.setVisible(true);
-        while(true){
+        while(!running){
             ;//do nothing until listener sets running
             System.out.print("");
             if(this.running==true) {
@@ -70,6 +72,7 @@ public class ReadGBFC {
     public class FCListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == m1) {
+
                 int ret = fc.showOpenDialog(frame);
                 if (ret == JFileChooser.APPROVE_OPTION) {
                     romFile = fc.getSelectedFile();
@@ -81,14 +84,18 @@ public class ReadGBFC {
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
                     }
-                    // call function to print the rom data
-                    pullCartHeader();
-                    // printROMData();
-                    // printOpcodes();
-                    mem = new Memory(romData);
-                    cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
-                    ppu = new PPU(romData, cpu, ram, interruptManager, display,mem);
-                    ReadGBFC.this.running=true;
+                    if(running==true) {
+                        synchronized (cpu){cpu.running=false;}
+                        if(w!=null)w.interrupt();
+                        w = new Worker();
+                        w.start();
+                    }//resetGameboy(romData);
+                    else {
+                        mem = new Memory(romData);
+                        cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
+                        ppu = new PPU(romData, cpu, ram, interruptManager, display, mem);
+                        ReadGBFC.this.running = true;
+                    }
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
                     // the opcodes currently the whole array of rom data is passed. We might want to
@@ -98,8 +105,6 @@ public class ReadGBFC {
                 }
             }
         }
-        // we can pass the array with the rom data like this
-        // methodName(romData)
     }
 
     public void printROMData() {
@@ -130,6 +135,9 @@ public class ReadGBFC {
         } catch (UnsupportedEncodingException uee) {
         }
     }
+    public JFrame getFrame() {
+        return this.frame;
+    }
 
     public void debugPanel() {
         debugP = new JPanel();
@@ -146,7 +154,7 @@ public class ReadGBFC {
         debugP.add(reg);
         debugP.add(flagsLabel);
         debugP.add(memRegsLabel);
-        frame.add(BorderLayout.NORTH, debugP);
+       // frame.add(BorderLayout.NORTH, debugP);
     }
 
     public void refreshPanel() {
@@ -179,6 +187,29 @@ public class ReadGBFC {
                 cpu.setRun();
                 cpu.runUntil(0-1);// insert PC you want to stop at
             } //
+        }
+    }
+    public void resetGameboy(byte[] romData) {
+        if(interruptManager!=null) interruptManager = new InterruptManager();;
+        if(regs!=null) regs = new Registers();
+        display.setBackground(Color.LIGHT_GRAY);
+        display.setPreferredSize(new Dimension(500,500));
+        frame.add(display);
+        ppu.bugPanel.dispose();//will duplicate if not here
+        mem = new Memory(romData);
+        cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
+        ppu = new PPU(romData, cpu, ram, interruptManager, display, mem);
+        ReadGBFC.this.running = true;
+        if(this.running==true) {
+            cpu.setRun();
+            cpu.runUntil(0xffff);
+        }
+
+    }
+    private class Worker extends Thread {
+
+        public void run() {
+            resetGameboy(romData);
         }
     }
 
