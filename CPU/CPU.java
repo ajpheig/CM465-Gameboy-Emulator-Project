@@ -20,7 +20,7 @@ public class CPU {
     private boolean interrupted = false;
     int interruptType;
     ReadGBFC parent;
-    boolean running = false;
+    public boolean running = true;
     PrintWriter out;
     int ticks = 1;
     int totalT=0;
@@ -33,6 +33,7 @@ public class CPU {
         this.mem = mem;
         this.interruptManager = interruptManager;
         timer = new Timer(this, mem);
+        running=true;
         mem.setCPU(this, interruptManager,timer);
         operations = new Opcodes(regs, romData, interruptManager, mem, this);
         regs.setPC(0x00);// sets it to 0x100 in ROM to start testing opcode
@@ -68,6 +69,7 @@ public class CPU {
     }
 
     public void step() {// takes 1 (fetch/decode/execute)cycle in execution
+        //if(!running) return;
         ticks = 0;
         if (halted) {
             this.ticks=4;
@@ -91,7 +93,7 @@ public class CPU {
         //out.println(s);
         // System.out.println(Integer.toHexString(mem.readByte(0x80a0)));
         //System.out.println(s);
-        operation.run();
+        if(operation!=null)operation.run();
         timer.handleTimer(this.ticks);
         for(int o=0;o<ticks;o++){
                ppu.updateModeAndCycles();}
@@ -104,15 +106,16 @@ public class CPU {
     }
 
     public void runUntil(int pc) {
-        while (regs.getPC() != pc) {
+        regs.setPC(0);
+        while (regs.getPC() != pc&&running) {
             long timeStart= System.currentTimeMillis();
             step();
             totalT+=this.ticks;
-            if (totalT>=17476){
+            if (totalT>=17476*4){
                 totalT=0;
-                //while(System.currentTimeMillis()-timeStart<.07) {
+                while(System.currentTimeMillis()-timeStart<.0010) {
                     //wait loop
-                //}
+                }
             }
             //if(regs.getPC()>0xcb00)ppu.printRAM();
         }
@@ -122,8 +125,7 @@ public class CPU {
     public void setRun() {
         if (running == false)
             running = true;
-        else
-            running = false;
+
     }
 
     public void setHalt(boolean state) {

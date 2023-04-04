@@ -37,8 +37,10 @@ public class InterruptManager {
             cpu.interrupt(-1);// break out of HALT with this
             return false; // If interrupt master is disabled return false
         }
-        if (!interruptTable.getOrDefault(interruptType, false))
+        if (!interruptTable.getOrDefault(interruptType, false)) {
             return false;// if interrupt is disabled, return false
+        }
+        if(interruptType==JOYPAD)System.out.println("joypad int posted");
         // Must be a interrupt enabled, give cpu interruptType to do something
         // System.out.println("flagged in IE");
         cpu.interrupt(interruptType);
@@ -49,12 +51,12 @@ public class InterruptManager {
     { // checks to see if any ifFlage is enabled, if so, then postInterrupt that calls
       // CPU method
         if ((ifFlag & 1) == 1) {
-            System.out.println("VBLANK interrupt");
+            // System.out.println("VBLANK interrupt");
             return postInterrupt(VBLANK);// if VBLANK bit is 1 return
         }
         ifFlag >>= 1;// shift bits to the right to get the next interrupt in the 0 slot
         if ((ifFlag & 1) == 1) {
-            System.out.println("LCDSTAT interrupt");
+            //System.out.println("LCDSTAT interrupt");
             return postInterrupt(LCDSTAT);
         }
         ifFlag >>= 1;// rinse repeat for other bit slots
@@ -87,4 +89,8 @@ public class InterruptManager {
         ieFlag >>= 1;
         setInterrupt(JOYPAD, (ieFlag & 1) == 1);
     }
+    public InterruptManager getIntMan() {
+        return this;
+    }
+
 }
