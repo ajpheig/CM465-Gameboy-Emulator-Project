@@ -22,8 +22,7 @@ public class PPU {
     Memory memory;
     Ram ram;
     InterruptManager interruptManager;
-    DebugPane bugPanel;
-
+    public DebugPane bugPanel;
     private int mode=2;
     LCDC lcdc;
     OBP0 obp0;
@@ -67,7 +66,7 @@ public class PPU {
         this.romData = romData;
         this.cpu = cpu;
         this.memory = mem;
-        this.ram = ram;
+        //this.ram = ram;
         this.interruptManager = interruptManager;
         this.lcdc = memory.getLcdc();
         this.oam = memory.getOam();
@@ -103,14 +102,14 @@ public class PPU {
     // called every cycle from the CPU before an opcode is ran to cycle through modes. Every cycle counts as one tick.
     public void updateModeAndCycles() {
         List<Integer> spriteIndexesOnLine = new ArrayList<>();
-        if(modeTicks==1)
+        if(modeTicks<=5)
             ly.setLY((byte)curY);
         switch (mode) {
             case 2: // OAM read
                 //tileSet=vram.getTileSet();//readies tile set for PPU
                 // get sprites if it is the first tick of OAM read otherwise
                 // move to VRAM READ if it is not the first cycle in OAM read
-                if (modeTicks == 1) {//changed to 1 because it is modeTicks is ++ after setting it to zero
+                if (modeTicks <= 5) {//changed to 1 because it is modeTicks is ++ after setting it to zero
                     boolean useTileSet0 = lcdc.getBit(4);
                     boolean useBackgroundMap0 =(lcdc.getBit(3));
                     boolean useWindowMap0=((lcdc.getBit(6)));
@@ -147,7 +146,7 @@ public class PPU {
                     scrollY = memory.readByte(0xFF42);
                     windowX = memory.readByte(0xFF4B)-7;
                     windowY = memory.readByte(0xFF4A);
-                    //printRAM();//for debugging RAM/Tile/Map values
+                    printRAM();//for debugging RAM/Tile/Map values
                 } else if (modeTicks >= 20) {
                     // end of OAM search
                     // enter VRAM read mode
@@ -167,10 +166,10 @@ public class PPU {
                 int xPos = scrollX + curX;
                 int yPos = scrollY + curY;
                 Tile currtile;
-                int pixel;
+                int pixel=0;
                 int bgTileIndex = map.getTile(xPos / 8, yPos / 8);
                 currtile = tileSet[bgTileIndex];
-                pixel = currtile.getVal(yPos % 8, xPos % 8);
+                if(currtile!=null)pixel = currtile.getVal(yPos % 8, xPos % 8);
                 int backgroundColor = bgp.getColor(pixel, 2);
                 int pixelColor=backgroundColor;
                 // write the pixel to the screen buffer
@@ -180,6 +179,14 @@ public class PPU {
 
                 display.setPixel(curX, curY, backgroundColor);
                 curX++;
+
+                int windowPixel=0;
+                if(displayWindow) {
+                    Tile windowTile = tileSet[map.getTile((curY - windowY) / 8, (curX - windowX) / 8)];
+                    windowPixel = windowTile.getVal((curY - windowY) % 8, (curX - windowX) % 8);
+                    display.setPixel(curX,curY,bgp.getColor(windowPixel,2));
+                }
+
                 int sY;
                 int sX;
                 int sNum;
@@ -212,7 +219,7 @@ public class PPU {
                                     int yPosS = sY + (7 - y);
 
                                     // write the pixel to the screen buffer
-                                    if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                    if(sPixel!=0&&((sFlag&0x80)==0||pixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
                                 }
                             }
                         }
@@ -232,7 +239,7 @@ public class PPU {
                                         int yPosS = sY + y;
 
                                         // write the pixel to the screen buffer
-                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0&&((sFlag&0x80)==0||pixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                             }
@@ -252,7 +259,7 @@ public class PPU {
                                         int yPosS = sY + (7 - y); // flip the y-coordinate
 
                                         // write the pixel to the screen buffer
-                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0&&((sFlag&0x80)==0||pixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                             }
@@ -274,7 +281,7 @@ public class PPU {
                                         int yPosS = sY + y;
                                         // write the pixel to the screen buffer
                                         //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                        if(sPixel!=0)display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0&&((sFlag&0x80)==0||pixel==0||windowPixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
                                         //display.setPixel(xPosS, yPosS, color);
                                     }
                                 } // render sprite for
@@ -452,12 +459,12 @@ public class PPU {
         this.map = new TileMap(memory, address, ts);
     }
     public void printRAM() {//Proof of RAM working
-        /*for(int i=0;i<0x1000;i++) {//print ram hex values
+        /*for(int i=0;i<0x180;i++) {//print ram hex values
             if(i%16==0)System.out.println();
-            if((i&0xf)==0)System.out.print(" "+Integer.toHexString(0xc000+i));//maybe offset by location
+            if((i&0xf)==0)System.out.print(" "+Integer.toHexString(0x8000+i));//maybe offset by location
             if(i%8==0)System.out.print(" | ");
-            System.out.print(" "+Integer.toHexString(memory.readByte(0xc000+i))+" ");
-        }*/
+            System.out.print(" "+Integer.toHexString(memory.readByte(0x8000+i))+" ");
+        }*//*
         for(int y=0;y<8;y++) {//print a tile's values from set
             for(int x=0;x<8;x++) {
                         //Can use map: map.getTile(X,Y) OR regular tile Index
@@ -469,7 +476,7 @@ public class PPU {
             boolean isStat3 = (stat.getBit(1)&&stat.getBit(0));
              if(y==7)System.out.println("-------------"+map.getTile(0x08,0x02)+" set:"+useTileSet0+" map:"+useBackgroundMap0
                 +" statMode3? "+isStat3);
-        }/*
+        }*//*
         System.out.println();
         for(int i=0;i<32;i++) {
             for (int j=0;j<32;j++) {
@@ -484,4 +491,5 @@ public class PPU {
     public PPU getPPU(){
         return this;
     }
+
 }
