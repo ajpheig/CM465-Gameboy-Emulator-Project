@@ -9,6 +9,21 @@ import GPU.Tile;
 import GPU.Sprite;
 
 public class Memory {
+    
+    private static final int ROM_BANK_SIZE = 0x4000;
+    private static final int RAM_BANK_SIZE = 0x2000;
+    private byte[][] romBanks;
+    private byte[][] ramBanks;
+    private byte[] mbc2Ram;
+    private boolean mbc1Enabled;
+    private boolean mbc2Enabled;
+    private boolean mbc3Enabled;
+    
+    
+    private int romBankNumber;
+    private int ramBankNumber;
+    private boolean ramEnabled;
+    private boolean romBankingMode;
 
     private byte[] memory;
     private boolean bootRomEnabled = true;
@@ -41,7 +56,34 @@ public class Memory {
 
     public Memory(byte[] romData) {
         memory = new byte[0x10000];// This should initialize memory size to 64 kb
-        writeBytes(0, romData);
+        int numRomBanks = romData.length / ROM_BANK_SIZE;
+    romBanks = new byte[numRomBanks][ROM_BANK_SIZE];
+    ramBanks = new byte[4][RAM_BANK_SIZE];
+    mbc2Ram = new byte[0x200];
+    for(int i = 0; i < numRomBanks; i++)
+    {
+        for(int j = 0; j < ROM_BANK_SIZE; j++)
+        {
+            romBanks[i][j] = romData[i * ROM_BANK_SIZE + j];
+        }
+    }
+    //init MBC1
+    mbc1Enabled = false;
+    mbc2Enabled = false;
+    mbc3Enabled = false;
+    romBankNumber = 1;
+    ramBankNumber = 0;
+    ramEnabled = false;
+    romBankingMode = true;
+    
+    mbc1Enabled = (memory[0x147] == 0x01 || memory[0x147] == 0x02 || memory[0x147] == 0x03);
+    mbc2Enabled = (memory[0x147] == 0x05 || memory[0x147] == 0x06);
+    mbc3Enabled = (memory[0x147] == 0x0F || memory[0x147] == 0x10 || memory[0x147] == 0x11 || memory[0x147] == 0x12 || memory[0x147] == 0x13);
+    
+    
+    writeBytes(0, romData, ROM_BANK_SIZE);
+    
+        //writeBytes(0, romData);
         try {
             FileInputStream is = new FileInputStream(bootFile);
             is.read(bootRom);
@@ -107,7 +149,7 @@ public class Memory {
         this.timer=timer;
     }
 
-    public int readByte(int address) {
+   public int readByte(int address) {
         if (bootRomEnabled == true && address < bootRom.length) {
             // System.out.println("| read: " + Integer.toHexString(bootRom[address]) + "|");
             return ((int) bootRom[address] & 0xff);
@@ -115,20 +157,11 @@ public class Memory {
         if(address>=0x8000&&address<=0x97ff) {
             return vram.getByte(address);
         }
-        if (address == 0xff00) {// JOYPAD
-            if(((memory[0xff00]>>5)&1)==0)//if button keys
-            {
-                return joypad.readActionButtons();
-            }
-            if(((memory[0xff00]>>4)&1)==0)//if direction keys
-            {
-                //System.out.println(Integer.toBinaryString(joypad.readDirButtons()));
-                return joypad.readDirButtons();
-            }
-            else return 0xff;
+        if (address == 0xff00) {// any value written set DIV to zero
+            return 0xff;
         }
-        if (address == 0xff04) {//DIV register
-            return timer.getDiv();
+        if (address == 0xff04) {// any value written set DIV to zero
+            return memory[address];
         }
         if (address == 0xff0f) {
             return (memory[address]|0xE0);
@@ -145,14 +178,8 @@ public class Memory {
         if (address == 0xff45) {
             return lyc.getByte();
         }
-        if (address == 0xff47) {//bgp
+        if (address == 0xff47) {
             return bgp.getByte();
-        }
-        if (address == 0xff48) {//obp0
-            return obp0.getByte();
-        }
-        if (address == 0xff49) {//obp1
-            return obp1.getByte();
         }
         if (address == 0xff4a) {
             return wy.getByte();
@@ -162,19 +189,69 @@ public class Memory {
         }
         //if (address >= 0xFE00 & address < 0xFEA0)
         //    return oam.readByte(address);
-        if(address>=65536) return 0xff;
-        else
-            return  Byte.toUnsignedInt(memory[address]) & 0xff;
-    }
+        if(mbc1Enabled == true)
+        {
+            if(address < 0x4000)
+                return romBanks[0][address];
+            else if(address < 0x8000)
+            {
+                int bank = romBankNumber & 0x7F;
+                if (bank == 0x00 || bank == 0x20 || bank == 0x40 || bank == 0x60)
+                    bank++;
+                if (romBankingMode)
+                    return romBanks[bank][address - 0x4000];
+                else
+                {
+                    return romBanks[romBankNumber << 5 | (romBankNumber & 0x1F)][address - 0x4000];
+                }
 
+            }
+            else if(address >= 0xA000 && address < 0xC000 && ramEnabled)
+            {
+                int bank = ramBankNumber & 0x3;
+                return ramBanks[bank][address - 0xA000];
+            }
+            else
+                return Byte.toUnsignedInt(memory[address]) & 0xff;
+        }
+        else if(mbc2Enabled == true)
+        {
+            if (address < 0x4000)
+                return romBanks[0][address];
+            else if (address < 0x8000)
+                return romBanks[romBankNumber & 0x0F][address - 0x4000];
+            else if(address >= 0xA000 && address < 0xC000 && ramEnabled)
+            {
+                return mbc2Ram[address & 0x1FFF];
+            }
+        }
+        else if(mbc3Enabled == true)
+        {
+            if(address < 0x4000)
+                return romBanks[0][address];
+            else if(address < 0x8000)
+            {
+                int bank;
+                if(romBankingMode)
+                    bank = romBankNumber;
+                else
+                    bank = ramBankNumber & 0x3;
+                return romBanks[bank][address-0x4000];
+            }
+            else if (address >= 0xA000 && address < 0xC000 && ramEnabled)
+            {
+                return ramBanks[ramBankNumber & 0x03][address - 0xA000];
+        }
+        else
+            return Byte.toUnsignedInt(memory[address]) & 0xff;
+    }
+}
     public void writeByte(int address, int value) {
-        if (address ==0x2000) return;
         if (address == 0xff50) {
             bootRomEnabled = false;
             System.out.println("boot rom disabled");
         }
-        if (address == 0xffff) {//IE register
-            //System.out.println((value));
+        if (address == 0xffff) {
             intMan.intEnableHandler(value);
         }
         if (address == 0xff0f) {//IF Flag
@@ -190,7 +267,6 @@ public class Memory {
             performDMA((byte)value);
         }
         if (address == 0xff00) {// joypad
-           memory[0xff00]=(byte)value;
             return;//Prevent cpu from writing to joypad
         }
         if(address>=0x8000&&address<=0x97ff) {
@@ -216,12 +292,6 @@ public class Memory {
         if (address == 0xff47) {
             bgp.setByte((byte)value);
         }
-        if (address == 0xff48) {
-            obp0.setByte((byte)value);
-        }
-        if (address == 0xff49) {
-            obp1.setByte((byte)value);
-        }
         if (address == 0xff4a) {
             wy.setByte((byte) value);
         }
@@ -230,6 +300,81 @@ public class Memory {
         }
         if (address >= 0xFE00 && address < 0xFEA0)
             oam.writeByte(address, (byte) value);
+        if(mbc1Enabled == true)
+        {
+            if(address < 0x2000)
+                ramEnabled = (value & 0x0A) == 0x0A;
+            else if(address < 0x4000)
+            {
+                romBankNumber = value &0x1F;
+                if(romBankNumber == 0x00)
+                    romBankNumber = 0x01;
+            }
+            else if(address < 0x6000)
+            {
+                if(romBankingMode)
+                    ramBankNumber = value & 0x03;
+                else
+                    romBankNumber = (romBankNumber & 0x1F) | ((value & 0x03) << 5);
+            }
+            else if(address < 0x8000)
+                romBankingMode = (value & 0x01) == 0x01;
+            else if(address >= 0xA000 & address <= 0xC000 && ramEnabled)
+            {
+                int bank = ramBankNumber & 0x3;
+                ramBanks[bank][address - 0xA000] = (byte)value;
+            }
+            else
+                memory[address & 0xffff] = (byte) value;
+        }
+        else if(mbc2Enabled == true)
+        {
+            if(address < 0x2000)
+            {
+                if((address & 0x0100) == 0)
+                {
+                    ramEnabled = ((value & 0x0F) == 0x0A);
+                }
+            }
+            else if(address >= 0xA000 && address < 0xC000 && ramEnabled)
+            {
+                mbc2Ram[address & 0x01FF] =(byte)(value & 0x0F);                
+            }
+            else
+                memory[address & 0xffff] = (byte) value;
+        }
+        else if(mbc3Enabled == true)
+        {
+            if(address < 0x2000)
+                ramEnabled = ((value & 0x0A) == 0x0A);
+            else if(address < 0x4000)
+            {
+                int romBankNumberLower7Bits = value & 0x7F;
+                if(romBankNumberLower7Bits == 0x00)
+                    romBankNumberLower7Bits = 0x01;
+                romBankNumber = (romBankNumber & 0x180) | romBankNumberLower7Bits;
+            }
+            else if(address < 0x6000)
+            {
+                if(value >= 0x00 && value <= 0x03)
+                    ramBankNumber = value;
+                else if(value >= 0x08 && value <= 0x0C)
+                {
+                    //This is where RTC lives
+                    
+                }
+            }
+            else if(address < 0x8000)
+            {
+                //latch clock data
+            }
+            else if(address >= 0xA000 && address < 0xC000 && ramEnabled)
+            {
+                ramBanks[ramBankNumber & 0x03][address - 0xA000] = (byte)value;
+            }
+            else
+                memory[address & 0xffff] = (byte)value;
+        }
         else
             memory[address & 0xffff] = (byte) value;
     }
