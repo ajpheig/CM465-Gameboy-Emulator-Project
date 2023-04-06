@@ -28,6 +28,8 @@ public class Memory {
     private byte[] memory;
     private boolean bootRomEnabled = true;
     private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
+    private File relFile = new File("file:" + System.getProperty("user.dir")).getParent() + "GBVStest/dmg_boot.bin");
+    private File jarredFile = new File("jar:file:WashburnGB.jar!/GBVStest/dmg_boot.bin");
     private byte[] bootRom = new byte[(int) bootFile.length()];
     CPU cpu;
     Timer timer;
