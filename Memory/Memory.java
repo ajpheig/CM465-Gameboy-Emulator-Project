@@ -9,7 +9,7 @@ import GPU.Tile;
 import GPU.Sprite;
 
 public class Memory {
-    
+
     private static final int ROM_BANK_SIZE = 0x4000;
     private static final int RAM_BANK_SIZE = 0x2000;
     private byte[][] romBanks;
@@ -18,8 +18,8 @@ public class Memory {
     private boolean mbc1Enabled;
     private boolean mbc2Enabled;
     private boolean mbc3Enabled;
-    
-    
+
+
     private int romBankNumber;
     private int ramBankNumber;
     private boolean ramEnabled;
@@ -27,10 +27,10 @@ public class Memory {
 
     private byte[] memory;
     private boolean bootRomEnabled = true;
-    private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBVStest/dmg_boot.bin");
-    private File relFile = new File("file:" + System.getProperty("user.dir")).getParent() + "dmg_boot.bin");
+    //private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBTESTPROJ/dmg_boot.bin");
+    private File relBootFile = new File(System.getProperty("user.dir") + "/dmg_boot.bin");
     private File jarredFile = new File("jar:file:WashburnGB.jar!/dmg_boot.bin");
-    private byte[] bootRom = new byte[(int) bootFile.length()];
+    private byte[] bootRom = new byte[(int) relBootFile.length()];
     CPU cpu;
     Timer timer;
     InterruptManager intMan;
@@ -57,37 +57,38 @@ public class Memory {
     VRAM vram = new VRAM(0x8000);
 
     public Memory(byte[] romData) {
-        memory = new byte[0x10000];// This should initialize memory size to 64 kb
+        System.out.println("||"+relBootFile.toString()+"||");
+        memory = new byte[0x10000+1];// This should initialize memory size to 64 kb
         int numRomBanks = romData.length / ROM_BANK_SIZE;
-    romBanks = new byte[numRomBanks][ROM_BANK_SIZE];
-    ramBanks = new byte[4][RAM_BANK_SIZE];
-    mbc2Ram = new byte[0x200];
-    for(int i = 0; i < numRomBanks; i++)
-    {
-        for(int j = 0; j < ROM_BANK_SIZE; j++)
+        romBanks = new byte[numRomBanks][ROM_BANK_SIZE];
+        ramBanks = new byte[4][RAM_BANK_SIZE];
+        mbc2Ram = new byte[0x200];
+        for(int i = 0; i < numRomBanks; i++)
         {
-            romBanks[i][j] = romData[i * ROM_BANK_SIZE + j];
+            for(int j = 0; j < ROM_BANK_SIZE; j++)
+            {
+                romBanks[i][j] = romData[i * ROM_BANK_SIZE + j];
+            }
         }
-    }
-    //init MBC1
-    mbc1Enabled = false;
-    mbc2Enabled = false;
-    mbc3Enabled = false;
-    romBankNumber = 1;
-    ramBankNumber = 0;
-    ramEnabled = false;
-    romBankingMode = true;
-    
-    mbc1Enabled = (memory[0x147] == 0x01 || memory[0x147] == 0x02 || memory[0x147] == 0x03);
-    mbc2Enabled = (memory[0x147] == 0x05 || memory[0x147] == 0x06);
-    mbc3Enabled = (memory[0x147] == 0x0F || memory[0x147] == 0x10 || memory[0x147] == 0x11 || memory[0x147] == 0x12 || memory[0x147] == 0x13);
-    
-    
-    writeBytes(0, romData, ROM_BANK_SIZE);
-    
+        //init MBC1
+        mbc1Enabled = false;
+        mbc2Enabled = false;
+        mbc3Enabled = false;
+        romBankNumber = 1;
+        ramBankNumber = 0;
+        ramEnabled = false;
+        romBankingMode = true;
+
+        mbc1Enabled = (memory[0x147] == 0x01 || memory[0x147] == 0x02 || memory[0x147] == 0x03);
+        mbc2Enabled = (memory[0x147] == 0x05 || memory[0x147] == 0x06);
+        mbc3Enabled = (memory[0x147] == 0x0F || memory[0x147] == 0x10 || memory[0x147] == 0x11 || memory[0x147] == 0x12 || memory[0x147] == 0x13);
+
+
+        writeBytes(0, romData);
+
         //writeBytes(0, romData);
         try {
-            FileInputStream is = new FileInputStream(bootFile);
+            FileInputStream is = new FileInputStream(relBootFile);
             is.read(bootRom);
             is.close();
         } catch (IOException ioe) {
@@ -151,7 +152,7 @@ public class Memory {
         this.timer=timer;
     }
 
-   public int readByte(int address) {
+    public int readByte(int address) {
         if (bootRomEnabled == true && address < bootRom.length) {
             // System.out.println("| read: " + Integer.toHexString(bootRom[address]) + "|");
             return ((int) bootRom[address] & 0xff);
@@ -159,11 +160,23 @@ public class Memory {
         if(address>=0x8000&&address<=0x97ff) {
             return vram.getByte(address);
         }
-        if (address == 0xff00) {// any value written set DIV to zero
-            return 0xff;
+        if (address == 0xff00) {// JOYPAD
+            if(((memory[0xff00]>>5)&1)==0)//if button keys
+            {
+                return joypad.readActionButtons();
+            }
+            if(((memory[0xff00]>>4)&1)==0)//if direction keys
+            {
+                //System.out.println(Integer.toBinaryString(joypad.readDirButtons()));
+                return joypad.readDirButtons();
+            }
+            else return 0xff;
         }
-        if (address == 0xff04) {// any value written set DIV to zero
-            return memory[address];
+        if (address == 0xff04) {//DIV register
+            return timer.getDiv();
+        }
+        if (address == 0xff05) {//TIMA register
+            return timer.getTIMA();
         }
         if (address == 0xff0f) {
             return (memory[address]|0xE0);
@@ -182,6 +195,12 @@ public class Memory {
         }
         if (address == 0xff47) {
             return bgp.getByte();
+        }
+        if (address == 0xff48) {//obp0
+            return obp0.getByte();
+        }
+        if (address == 0xff49) {//obp1
+            return obp1.getByte();
         }
         if (address == 0xff4a) {
             return wy.getByte();
@@ -216,7 +235,7 @@ public class Memory {
             else
                 return Byte.toUnsignedInt(memory[address]) & 0xff;
         }
-        else if(mbc2Enabled == true)
+        else if(mbc2Enabled)
         {
             if (address < 0x4000)
                 return romBanks[0][address];
@@ -227,7 +246,7 @@ public class Memory {
                 return mbc2Ram[address & 0x1FFF];
             }
         }
-        else if(mbc3Enabled == true)
+        else if(mbc3Enabled)
         {
             if(address < 0x4000)
                 return romBanks[0][address];
@@ -243,12 +262,17 @@ public class Memory {
             else if (address >= 0xA000 && address < 0xC000 && ramEnabled)
             {
                 return ramBanks[ramBankNumber & 0x03][address - 0xA000];
+            }
+            else
+                return Byte.toUnsignedInt(memory[address]) & 0xff;
         }
+        if(address>=65536) return 0xff;
+            //return memory[address];
         else
-            return Byte.toUnsignedInt(memory[address]) & 0xff;
+            return  Byte.toUnsignedInt(memory[address]) & 0xff;
     }
-}
     public void writeByte(int address, int value) {
+        if (memory[0x0147]==0&&address ==0x2000) return;//0x147 is the cartridge type, if =ZERO then MBC0(no mem)
         if (address == 0xff50) {
             bootRomEnabled = false;
             System.out.println("boot rom disabled");
@@ -269,6 +293,7 @@ public class Memory {
             performDMA((byte)value);
         }
         if (address == 0xff00) {// joypad
+            memory[0xff00]=(byte)value;//cpu POLLS for DIRECTION and ACTION with this
             return;//Prevent cpu from writing to joypad
         }
         if(address>=0x8000&&address<=0x97ff) {
@@ -276,6 +301,7 @@ public class Memory {
             //System.out.print(Integer.toHexString(address)+" ");
         }
         if (address == 0xff04) {// any value written set DIV to zero
+            timer.resetDiv();
             memory[0xff04] = 0;
             return;
         }
@@ -293,6 +319,12 @@ public class Memory {
         }
         if (address == 0xff47) {
             bgp.setByte((byte)value);
+        }
+        if (address == 0xff48) {
+            obp0.setByte((byte)value);
+        }
+        if (address == 0xff49) {
+            obp1.setByte((byte)value);
         }
         if (address == 0xff4a) {
             wy.setByte((byte) value);
@@ -340,7 +372,7 @@ public class Memory {
             }
             else if(address >= 0xA000 && address < 0xC000 && ramEnabled)
             {
-                mbc2Ram[address & 0x01FF] =(byte)(value & 0x0F);                
+                mbc2Ram[address & 0x01FF] =(byte)(value & 0x0F);
             }
             else
                 memory[address & 0xffff] = (byte) value;
@@ -363,7 +395,7 @@ public class Memory {
                 else if(value >= 0x08 && value <= 0x0C)
                 {
                     //This is where RTC lives
-                    
+
                 }
             }
             else if(address < 0x8000)
@@ -529,7 +561,7 @@ public class Memory {
                 if((msb==0)&&(lsb!=0)) val=1;
                 if((msb==0)&&(lsb==0)) val=0;
                 //System.out.println(Integer.toHexString(tileIndex)+" b1:"+Integer.toHexString(byte1)+" b2:"+Integer.toHexString(byte2)
-                  //  +" val:"+val+" @row:"+rowIndex+", col:"+i+" MSB:"+msb+" LSB:"+lsb);
+                //  +" val:"+val+" @row:"+rowIndex+", col:"+i+" MSB:"+msb+" LSB:"+lsb);
                 if(tileSet[tileIndex]!=null)tileSet[tileIndex].setVal(rowIndex,i,val);
                 //NOTE: i= pixelindex, x, col#
             }
@@ -642,7 +674,7 @@ public class Memory {
         public void setCoincidenceFlag(boolean value) {
             this.setBit(2, value);
             memory[location] = (byte)this.getByte();
-       }
+        }
 
         public void setM0HBlank(boolean value) {
             this.setBit(3, value);
@@ -861,7 +893,7 @@ public class Memory {
                     byte x = this.data[i + 1];
                     byte tileNum = this.data[i + 2];
                     byte flags = this.data[i + 3];
-                   // if (((y == (byte)0) && (x == (byte)0) && (tileNum == (byte)0) && (flags == (byte)0) && (this.data[i + 3] != (byte)0 || curY != 16)) )
+                    // if (((y == (byte)0) && (x == (byte)0) && (tileNum == (byte)0) && (flags == (byte)0) && (this.data[i + 3] != (byte)0 || curY != 16)) )
                     {
                         //do nothing
                         //System.out.println("all 0 vals");
