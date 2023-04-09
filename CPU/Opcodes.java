@@ -16,7 +16,7 @@ public class Opcodes {
     // pass in Regs class and romData to operate on. Will need to give RAM(memory)
     // object when created
     public Opcodes(Registers regs, byte[] romData,
-            InterruptManager interruptmanager, Memory mem, CPU cpu) {
+                   InterruptManager interruptmanager, Memory mem, CPU cpu) {
         this.regs = regs;
         this.romData = romData;
         this.mem = mem;
@@ -232,13 +232,13 @@ public class Opcodes {
         opcodeHandlers.put(0xc0, () -> RETNZ());
         opcodeHandlers.put(0xc1, () -> POP("bc"));
         opcodeHandlers.put(0xc2, () -> JPNZ(mem.readWord(regs.getPC() + 1)));// ,a16);
-        opcodeHandlers.put(0xc3, () -> JP(mem.readWord(regs.getPC() + 1), 16));
+        opcodeHandlers.put(0xc3, () -> JP(mem.readWord(regs.getPC() + 1), 0));
         opcodeHandlers.put(0xc4, () -> CALLNZ(mem.readWord(regs.getPC() + 1), !regs.fByte.checkZ()));// ,a16);
         opcodeHandlers.put(0xc5, () -> PUSH("bc"));// _BC);
         opcodeHandlers.put(0xc6, () -> ADD("a", "d8"));// ADD_A,d8);
         opcodeHandlers.put(0xc7, () -> RST(00));
         opcodeHandlers.put(0xc8, () -> RETZ());
-        opcodeHandlers.put(0xc9, () -> RET(16));
+        opcodeHandlers.put(0xc9, () -> RET(0));
         opcodeHandlers.put(0xca, () -> JPZ(mem.readWord(regs.getPC() + 1)));// ,a16);
         // read the next byte in memory and use that as the opcode
         opcodeHandlers.put(0xcb, () -> NEW_CB());// Send to new table or catch before
@@ -630,7 +630,7 @@ public class Opcodes {
         int tick = 8;
         if (register.equals("(hl)")) {
             regValue = mem.readByte(regs.getHL());
-            tick = 16;
+            tick = 12;
         } else
             regValue = regs.getRegisterValue(register);
 
@@ -996,7 +996,7 @@ public class Opcodes {
     }
 
     public void LDu(String register, int value, int length, int tick) {// For use with Loading bytes after op into
-                                                                       // register
+        // register
         // System.out.println(value);
         switch (register) {
             case "a":
@@ -1661,15 +1661,16 @@ public class Opcodes {
 
     // stop cpu
     public void STOP() {
-        // System.out.println("STOP");
+        //System.out.println("STOP");
         cpu.setHalt(true);
         regs.setPC(regs.getPC() + 1);
         cpu.setCycle(4);
+        mem.writeByte(0xff04,0);
     }
 
     // halt cpu temporarily?
     public void HALT() {
-        //System.out.println("HALT");
+        //System.out.println("HALT "+i);
         cpu.setHalt(true);
         regs.setPC(regs.getPC() + 1);
         cpu.setCycle(4);
