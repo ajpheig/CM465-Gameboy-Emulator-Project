@@ -926,7 +926,8 @@ public class Opcodes {
         int extendedOpcode = mem.readByte(regs.getPC() + 1);
         Runnable exOperation = extendedOpcodeHandlers.get(extendedOpcode);
         exOperation.run();
-        regs.setPC(regs.getPC() + 1);// nice
+        regs.setPC(regs.getPC() + 1);
+
     }
 
     public void LDHL_SPi() {
@@ -1472,6 +1473,7 @@ public class Opcodes {
         regs.fByte.setN(false);
         regs.fByte.setH(false);
         regs.setPC(regs.getPC() + 1);
+        cpu.setCycle(4);
     }
 
     public void LDINCDECHL(String opcode) {

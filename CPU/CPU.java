@@ -59,6 +59,9 @@ public class CPU {
         mem.writeByte(0xff44, 0x90);
         mem.writeByte(0xff00,0xff);
     }
+    public Registers getRegs(){
+        return regs;
+    }
 
     public CPU getCPU() {
         return this;
@@ -90,7 +93,8 @@ public class CPU {
                 regs.getPC(),
                 mem.readByte(currentPC), mem.readByte(currentPC + 1), mem.readByte(currentPC + 2),
                 mem.readByte(currentPC + 3),mem.readByte(0xff44));
-        //out.println(s);
+        String n = Integer.toHexString(regs.getPC())+": "+Integer.toHexString(mem.readByte(currentPC));
+        out.println(n);
         // System.out.println(Integer.toHexString(mem.readByte(0x80a0)));
         //System.out.println(s);
         if(operation!=null)operation.run();
@@ -106,7 +110,7 @@ public class CPU {
     }
 
     public void runUntil(int pc) {
-        regs.setPC(0);
+        //regs.setPC(0);
         while (regs.getPC() != pc&&running) {
             long timeStart= System.currentTimeMillis();
             step();
