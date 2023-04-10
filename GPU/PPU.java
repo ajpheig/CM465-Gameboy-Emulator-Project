@@ -113,7 +113,7 @@ public class PPU {
                     boolean useTileSet0 = lcdc.getBit(4);
                     boolean useBackgroundMap0 =(lcdc.getBit(3));
                     boolean useWindowMap0=((lcdc.getBit(6)));
-                    if(windowY<=curY) displayWindow = lcdc.getBit(5);
+                    if(windowY<=curY&&windowX<=curX) displayWindow = lcdc.getBit(5);
                     //load tile map
                     if(displayWindow) this.loadMap(useTileSet0, useWindowMap0);
                     else this.loadMap(useTileSet0, useBackgroundMap0);
@@ -181,7 +181,7 @@ public class PPU {
                 curX++;
 
                 int windowPixel=0;
-                if(displayWindow) {
+                if(displayWindow&&windowY<=curY&&windowX<=curX) {
                     Tile windowTile = tileSet[map.getTile((curY - windowY) / 8, (curX - windowX) / 8)];
                     windowPixel = windowTile.getVal((curY - windowY) % 8, (curX - windowX) % 8);
                     display.setPixel(curX,curY,bgp.getColor(windowPixel,2));
@@ -458,6 +458,9 @@ public class PPU {
         int address = useMap1 ? 0x9c00 : 0x9800;
         this.map = new TileMap(memory, address, ts);
     }
+    public void showDebug() {
+        bugPanel.showPane();
+    }
     public void printRAM() {//Proof of RAM working
         /*for(int i=0;i<0x180;i++) {//print ram hex values
             if(i%16==0)System.out.println();
@@ -485,6 +488,9 @@ public class PPU {
                 if(j==31)System.out.println();
             }
         }*/
+    }
+    public void updateBugPane() {
+        bugPanel.updatePane(map,tileSet);
     }
 
 
