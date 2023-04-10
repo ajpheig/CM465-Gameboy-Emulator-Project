@@ -57,7 +57,6 @@ public class Memory {
     VRAM vram = new VRAM(0x8000);
 
     public Memory(byte[] romData) {
-        System.out.println("||"+relBootFile.toString()+"||");
         memory = new byte[0x10000+1];// This should initialize memory size to 64 kb
         int numRomBanks = romData.length / ROM_BANK_SIZE;
         romBanks = new byte[numRomBanks][ROM_BANK_SIZE];
@@ -275,7 +274,7 @@ public class Memory {
         if (memory[0x0147]==0&&address ==0x2000) return;//0x147 is the cartridge type, if =ZERO then MBC0(no mem)
         if (address == 0xff50) {
             bootRomEnabled = false;
-            System.out.println("boot rom disabled");
+            //System.out.println("boot rom disabled");
         }
         if (address == 0xffff) {
             intMan.intEnableHandler(value);
