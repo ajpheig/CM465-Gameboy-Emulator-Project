@@ -17,8 +17,11 @@ import java.awt.event.*;
 public class ReadGBFC {
     JFrame frame;
     JMenu m;
+    JMenu debug;
     JMenuBar mb;
     JMenuItem m1;
+    JMenuItem debugItem;
+    JMenuItem stepThruMode;
     JPanel debugP;
     JLabel reg;
     JLabel flagsLabel;
@@ -26,9 +29,6 @@ public class ReadGBFC {
     File romFile;
     JFileChooser fc;
     byte[] romData;
-    JLabel gameInfoHead = new JLabel("Game info that is read from the ROM will appear below after selecting file.");
-    JLabel gameInfo = new JLabel("Select ROM file");
-    // Opcodes runOpcodes = new Opcodes();
     Registers regs = new Registers();
     CPU cpu;
     Memory mem;
@@ -36,6 +36,7 @@ public class ReadGBFC {
     InterruptManager interruptManager = new InterruptManager();
     PPU ppu;
     boolean running=false;
+    boolean stepMode=false;
     Display display;
     Worker w;
     public ReadGBFC() {
@@ -43,14 +44,22 @@ public class ReadGBFC {
         FCListener fcl = new FCListener();
         mb = new JMenuBar();
         m = new JMenu("File");
+        debug = new JMenu("Debug");
         fc = new JFileChooser("C:/Users/ajphe/Documents/Homework/CM465 CIS Capston/GBVStest/blargg/cpu_instrs");
-        //KeyHandler kh = new KeyHandler();// to step thru cpu instructions
-        //frame.addKeyListener(kh);
+        KeyHandler kh = new KeyHandler();// to step thru cpu instructions
+        frame.addKeyListener(kh);
         //debugPanel();
         m1 = new JMenuItem("Load ROM");
+        debugItem = new JMenuItem("Show Debugger");
+        stepThruMode = new JMenuItem("Step Through Mode");
         m.add(m1);
+        debug.add(debugItem);
+        debug.add(stepThruMode);
         m1.addActionListener(fcl);
+        debugItem.addActionListener(fcl);
+        stepThruMode.addActionListener(fcl);
         mb.add(m);
+        mb.add(debug);
         frame.setJMenuBar(mb);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(500, 500);
@@ -59,14 +68,15 @@ public class ReadGBFC {
         display.setPreferredSize(new Dimension(500,500));
         frame.add(display);
         frame.setVisible(true);
-        while(!running){
+        //while(!running){
             ;//do nothing until listener sets running
-            System.out.print("");
-            if(this.running==true) {
-                cpu.setRun();
-                cpu.runUntil(-1);
-            }
-        }
+            //System.out.print("");
+
+         //   if(this.running==true) {
+         //       cpu.setRun();
+          //      cpu.runUntil(-1);
+        //    }
+        //}
     }
 
     public class FCListener implements ActionListener {
@@ -95,6 +105,9 @@ public class ReadGBFC {
                         cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
                         ppu = new PPU(romData, cpu, ram, interruptManager, display, mem);
                         ReadGBFC.this.running = true;
+                        if(w!=null)w.interrupt();
+                        w = new Worker();
+                        w.start();
                     }
                     // call the executeOpcodes method in the instance of the Opcode class that calls
                     // the funcitons for
@@ -103,6 +116,18 @@ public class ReadGBFC {
                     // one opcode at a time
                     // runOpcodes.executeOpcodes(romData);
                 }
+            }
+            if(e.getSource()==debugItem){
+                if(ppu!=null)ppu.showDebug();
+            }
+            if (e.getSource() == stepThruMode) {
+                if(cpu.running==true)
+                {
+                    stepMode=true;
+                 //stop CPU
+                 cpu.running=false;
+                }
+
             }
         }
     }
@@ -131,7 +156,6 @@ public class ReadGBFC {
                 checksum -= (romData[b] + 1);
             }
             title += "  Computed Checksum: " + String.format("%02X", checksum & 0xFF);
-            gameInfo.setText(title);
         } catch (UnsupportedEncodingException uee) {
         }
     }
@@ -154,7 +178,7 @@ public class ReadGBFC {
         debugP.add(reg);
         debugP.add(flagsLabel);
         debugP.add(memRegsLabel);
-       // frame.add(BorderLayout.NORTH, debugP);
+        // frame.add(BorderLayout.NORTH, debugP);
     }
 
     public void refreshPanel() {
@@ -177,15 +201,17 @@ public class ReadGBFC {
 
     private class KeyHandler extends KeyAdapter {
         public void keyPressed(KeyEvent ke) {
-            if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
+            if (ke.getKeyCode() == KeyEvent.VK_ENTER&&
+                    stepMode) {
                 cpu.step();
+                ppu.updateBugPane();
             }
-            if (ke.getKeyCode() == KeyEvent.VK_RIGHT) {
-                System.out.println("right");
-            }
-            if (ke.getKeyCode() == KeyEvent.VK_SPACE) {
-                cpu.setRun();
-                cpu.runUntil(0-1);// insert PC you want to stop at
+            if (ke.getKeyCode() == KeyEvent.VK_SPACE&&
+                    stepMode) {
+                w = new Worker();
+                w.start();
+                //cpu.setRun();
+                //cpu.runUntil(0-1);// insert PC you want to stop at
             } //
         }
     }
@@ -204,12 +230,22 @@ public class ReadGBFC {
             cpu.setRun();
             cpu.runUntil(0xffff);
         }
-
+    }
+    public void resumeGameboy() {
+        cpu.running=true;
+        cpu.setRun();
+        cpu.runUntil(0xffff);
     }
     private class Worker extends Thread {
 
         public void run() {
-            resetGameboy(romData);
+
+            if(!stepMode) resetGameboy(romData);
+            else if(stepMode)
+            {
+                stepMode=false;
+                resumeGameboy();
+            }
         }
     }
 
