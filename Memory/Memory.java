@@ -71,6 +71,26 @@ public class Memory {
         }
         
         int numRomBanks = romData.length / ROM_BANK_SIZE;
+        
+        if(memory[0x148] == 0x00)
+            numRomBanks = 2;
+        else if(memory[0x148] == 0x01)
+            numRomBanks = 4;
+        else if(memory[0x148] == 0x02)
+            numRomBanks = 8;
+        else if(memory[0x148] == 0x03)
+            numRomBanks = 16;
+        else if(memory[0x148] == 0x04)
+            numRomBanks = 32;
+        else if(memory[0x148] == 0x05)
+            numRomBanks = 64;
+        else if(memory[0x148] == 0x6)
+            numRomBanks = 128;
+        else if(memory[0x148] == 0x07)
+            numRomBanks = 256;
+        else if(memory[0x148] == 0x08)
+            numRomBanks = 512;
+        
         romBanks = new byte[numRomBanks][ROM_BANK_SIZE];
         ramBanks = new byte[4][RAM_BANK_SIZE];
         mbc2Ram = new byte[0x200];
