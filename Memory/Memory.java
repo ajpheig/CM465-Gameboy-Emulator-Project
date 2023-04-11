@@ -58,6 +58,18 @@ public class Memory {
 
     public Memory(byte[] romData) {
         memory = new byte[0x10000+1];// This should initialize memory size to 64 kb
+        
+        writeBytes(0, romData);
+
+        //writeBytes(0, romData);
+        try {
+            FileInputStream is = new FileInputStream(relBootFile);
+            is.read(bootRom);
+            is.close();
+        } catch (IOException ioe) {
+            ;
+        }
+        
         int numRomBanks = romData.length / ROM_BANK_SIZE;
         romBanks = new byte[numRomBanks][ROM_BANK_SIZE];
         ramBanks = new byte[4][RAM_BANK_SIZE];
@@ -83,16 +95,7 @@ public class Memory {
         mbc3Enabled = (memory[0x147] == 0x0F || memory[0x147] == 0x10 || memory[0x147] == 0x11 || memory[0x147] == 0x12 || memory[0x147] == 0x13);
 
 
-        writeBytes(0, romData);
-
-        //writeBytes(0, romData);
-        try {
-            FileInputStream is = new FileInputStream(relBootFile);
-            is.read(bootRom);
-            is.close();
-        } catch (IOException ioe) {
-            ;
-        }
+        
         /*
          * For reference, 0x0000 - 0x00FF should load the boot rom initially to play the
          * splash screen
