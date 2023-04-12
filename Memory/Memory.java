@@ -59,7 +59,14 @@ public class Memory {
     public Memory(byte[] romData) {
         memory = new byte[0x10000+1];// This should initialize memory size to 64 kb
         
-        writeBytes(0, romData);
+        mbc1Enabled = (romData[0x147] == 0x01 || romData[0x147] == 0x02 || romData[0x147] == 0x03);
+        mbc2Enabled = (romData[0x147] == 0x05 || romData[0x147] == 0x06);
+        mbc3Enabled = (romData[0x147] == 0x0F || romData[0x147] == 0x10 || romData[0x147] == 0x11 || romData[0x147] == 0x12 || romData[0x147] == 0x13);
+        
+        if(mbc1Enabled || mbc2Enabled || mbc3Enabled)
+            System.arraycopy(romData, 0, memory, 0, 0x4000);
+        else
+            writeBytes(0, romData);
 
         //writeBytes(0, romData);
         try {
@@ -123,9 +130,7 @@ public class Memory {
         ramEnabled = false;
         romBankingMode = true;
 
-        mbc1Enabled = (memory[0x147] == 0x01 || memory[0x147] == 0x02 || memory[0x147] == 0x03);
-        mbc2Enabled = (memory[0x147] == 0x05 || memory[0x147] == 0x06);
-        mbc3Enabled = (memory[0x147] == 0x0F || memory[0x147] == 0x10 || memory[0x147] == 0x11 || memory[0x147] == 0x12 || memory[0x147] == 0x13);
+        
 
 
         
