@@ -205,6 +205,7 @@ public class PPU {
                         sNum = sprite.getTileNumber() & 0xFF;
                         sFlag = sprite.getFlags() & 0xFF;
                         Tile spriteTile = tileSet[sNum];
+                        if(sY-curY>=16)continue;
                         // flip x and y are both set
                         if ((sFlag & 0x20) != 0 && (sFlag & 0x40) != 0) {
                             // Sprite should be flipped vertically and horizontally
@@ -376,7 +377,6 @@ public class PPU {
                     //ly.setLY((byte)curY);
                     if (line >= 153&&curY>=153) {
                         // update the display with the pixel buffer
-                        bugPanel.updatePane(map,tileSet);
                         display.render();
                         mode = OAM_READ;
                         stat.setMF1(false);
@@ -490,7 +490,7 @@ public class PPU {
         }*/
     }
     public void updateBugPane() {
-        bugPanel.updatePane(map,tileSet);
+        if(bugPanel.isVisible()) bugPanel.updatePane(map,tileSet);
     }
 
 
