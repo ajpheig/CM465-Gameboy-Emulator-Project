@@ -77,7 +77,8 @@ public class CPU {
         if (halted) {
             this.ticks=4;
             timer.handleTimer(ticks);
-            {  ppu.updateModeAndCycles();}
+            {  ppu.updateModeAndCycles();
+            }
             serviceInterrupts();
             // System.out.println("halted...");
             return;// end step, service interrupts should turn halt to false
@@ -86,22 +87,25 @@ public class CPU {
         int opcode = mem.readByte(currentPC);//
         Runnable operation = operations.opcodeHandlers.get(opcode & 0xff);
         // print
-        String s = String.format(
+        /*String s = String.format(
                 "A:%1$02X F:%2$02X B:%3$02X C:%4$02X D:%5$02X E:%6$02X H:%7$02X L:%8$02X SP:%9$04X PC:%10$04X PCMEM:%11$02X,%12$02X,%13$02X,%14$02X LY:%15$02X",
                 regs.getA(), regs.fByte.getFByte(),
                 regs.getB(), regs.getC(), regs.getD(), regs.getE(), regs.getH(), regs.getL(), regs.getSP(),
                 regs.getPC(),
                 mem.readByte(currentPC), mem.readByte(currentPC + 1), mem.readByte(currentPC + 2),
                 mem.readByte(currentPC + 3),mem.readByte(0xff44));
-        String n = Integer.toHexString(regs.getPC())+": "+Integer.toHexString(mem.readByte(currentPC));
-        out.println(n);
-        // System.out.println(Integer.toHexString(mem.readByte(0x80a0)));
+        */// String n = Integer.toHexString(regs.getPC())+": "+Integer.toHexString(mem.readByte(currentPC));
+        //out.println(n);
+        //System.out.println(Integer.toHexString(mem.readByte(0x80a0)));
         //System.out.println(s);
         if(operation!=null)operation.run();
+        //System.out.println(Integer.toHexString(regs.getPC())+" "+Integer.toHexString(opcode)+": "+ticks);
+        if(ticks==0)regs.setPC(regs.getPC()+1);
         timer.handleTimer(this.ticks);
         for(int o=0;o<ticks;o++){
                ppu.updateModeAndCycles();}
         serviceInterrupts();
+        ppu.updateBugPane();
         //parent.refreshPanel();
     }
 
@@ -115,9 +119,10 @@ public class CPU {
             long timeStart= System.currentTimeMillis();
             step();
             totalT+=this.ticks;
-            if (totalT>=17476*4){
+            if (totalT>=17476*4)
+            {
                 totalT=0;
-                while(System.currentTimeMillis()-timeStart<.0010) {
+                while(System.currentTimeMillis()-timeStart<9.000) {
                     //wait loop
                 }
             }
