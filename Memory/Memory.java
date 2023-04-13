@@ -77,7 +77,7 @@ public class Memory {
             ;
         }
         
-        int numRomBanks;
+        int numRomBanks = 0;
         
         if(memory[0x148] == 0x00)
             numRomBanks = 2;
@@ -98,7 +98,7 @@ public class Memory {
         else if(memory[0x148] == 0x08)
             numRomBanks = 512;
         
-        int numRamBanks;
+        int numRamBanks = 0;
         
         if(memory[0x149] == 0x00)
             numRamBanks = 0;
