@@ -395,7 +395,7 @@ public class Memory {
             }
             else if(address < 0x8000)
                 romBankingMode = (value & 0x01) == 0x01;
-            else if(address >= 0xA000 & address <= 0xC000 && ramEnabled)
+            else if(address >= 0xA000 & address < 0xC000 && ramEnabled)
             {
                 int bank = ramBankNumber & 0x3;
                 ramBanks[bank][address - 0xA000] = (byte)value;
