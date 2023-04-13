@@ -255,24 +255,24 @@ public class Memory {
         if(mbc1Enabled == true)
         {
             if(address < 0x4000)
-                return romBanks[0][address];
+                return romBanks[0][address] & 0xff;
             else if(address < 0x8000)
             {
                 int bank = romBankNumber & 0x7F;
                 if (bank == 0x00 || bank == 0x20 || bank == 0x40 || bank == 0x60)
                     bank++;
                 if (romBankingMode)
-                    return romBanks[bank][address - 0x4000];
+                    return romBanks[bank][address - 0x4000] & 0xff;
                 else
                 {
-                    return romBanks[romBankNumber << 5 | (romBankNumber & 0x1F)][address - 0x4000];
+                    return romBanks[romBankNumber << 5 | (romBankNumber & 0x1F)][address - 0x4000] & 0xff;
                 }
 
             }
             else if(address >= 0xA000 && address < 0xC000 && ramEnabled)
             {
                 int bank = ramBankNumber & 0x3;
-                return ramBanks[bank][address - 0xA000];
+                return ramBanks[bank][address - 0xA000] & 0xff;
             }
             else
                 return Byte.toUnsignedInt(memory[address]) & 0xff;
@@ -282,16 +282,16 @@ public class Memory {
             if (address < 0x4000)
                 return romBanks[0][address];
             else if (address < 0x8000)
-                return romBanks[romBankNumber & 0x0F][address - 0x4000];
+                return romBanks[romBankNumber & 0x0F][address - 0x4000] & 0xff;
             else if(address >= 0xA000 && address < 0xC000 && ramEnabled)
             {
-                return mbc2Ram[address & 0x1FFF];
+                return mbc2Ram[address & 0x1FFF] & 0xff;
             }
         }
         else if(mbc3Enabled)
         {
             if(address < 0x4000)
-                return romBanks[0][address];
+                return romBanks[0][address] & 0xff;
             else if(address < 0x8000)
             {
                 int bank;
@@ -299,11 +299,11 @@ public class Memory {
                     bank = romBankNumber;
                 else
                     bank = ramBankNumber & 0x3;
-                return romBanks[bank][address-0x4000];
+                return romBanks[bank][address-0x4000] & 0xff;
             }
             else if (address >= 0xA000 && address < 0xC000 && ramEnabled)
             {
-                return ramBanks[ramBankNumber & 0x03][address - 0xA000];
+                return ramBanks[ramBankNumber & 0x03][address - 0xA000] & 0xff;
             }
             else
                 return Byte.toUnsignedInt(memory[address]) & 0xff;
