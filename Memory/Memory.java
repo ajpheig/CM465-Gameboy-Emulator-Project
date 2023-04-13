@@ -59,6 +59,15 @@ public class Memory {
     public Memory(byte[] romData) {
         memory = new byte[0x10000+1];// This should initialize memory size to 64 kb
         
+        //init MBC
+        mbc1Enabled = false;
+        mbc2Enabled = false;
+        mbc3Enabled = false;
+        romBankNumber = 1;
+        ramBankNumber = 0;
+        ramEnabled = false;
+        romBankingMode = true;
+        
         mbc1Enabled = (romData[0x147] == 0x01 || romData[0x147] == 0x02 || romData[0x147] == 0x03);
         mbc2Enabled = (romData[0x147] == 0x05 || romData[0x147] == 0x06);
         mbc3Enabled = (romData[0x147] == 0x0F || romData[0x147] == 0x10 || romData[0x147] == 0x11 || romData[0x147] == 0x12 || romData[0x147] == 0x13);
@@ -121,14 +130,7 @@ public class Memory {
                 romBanks[i][j] = romData[i * ROM_BANK_SIZE + j];
             }
         }
-        //init MBC1
-        mbc1Enabled = false;
-        mbc2Enabled = false;
-        mbc3Enabled = false;
-        romBankNumber = 1;
-        ramBankNumber = 0;
-        ramEnabled = false;
-        romBankingMode = true;
+        
 
         
 
