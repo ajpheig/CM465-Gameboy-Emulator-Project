@@ -40,7 +40,7 @@ public class ReadGBFC {
     Display display;
     Worker w;
     public ReadGBFC() {
-        frame = new JFrame("GameBoy");
+        frame = new JFrame("WUBoy");
         FCListener fcl = new FCListener();
         mb = new JMenuBar();
         m = new JMenu("File");
