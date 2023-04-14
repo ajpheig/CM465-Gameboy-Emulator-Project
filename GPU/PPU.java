@@ -37,6 +37,7 @@ public class PPU {
     Tile[] tileSet;
     int curX;
     int curY;
+    int lyComp;
     // modes
     // 0 H-Blank - default mode. PPU is active during horizontal blanking period of each scanline and is used to render
     //      the background and window tiles
@@ -102,8 +103,9 @@ public class PPU {
     // called every cycle from the CPU before an opcode is ran to cycle through modes. Every cycle counts as one tick.
     public void updateModeAndCycles() {
         List<Integer> spriteIndexesOnLine = new ArrayList<>();
-        if(modeTicks<=5)
+        if(modeTicks<=1) {
             ly.setLY((byte)curY);
+        }
         switch (mode) {
             case 2: // OAM read
                 //tileSet=vram.getTileSet();//readies tile set for PPU
@@ -120,7 +122,10 @@ public class PPU {
                     //System.out.println(memory.readByte(0x8027));
                     tileSet = vram.getTileSet();//readies tile set for PPU
                     // OAM search begins at cycle 80 and lasts for 20 cycles
-
+                    if (curY < 144) {
+                        int status = memory.readByte(0xFF41) & 0x3F;
+                        memory.writeByte(0xFF41, status | 0x80);
+                    }
                     // clear sprite array of previously rendered sprites
                     //Sprite.clearSprites();
                     // get data of sprites on screen from mem/ perform dma transfer unofficially
@@ -137,24 +142,20 @@ public class PPU {
                     // update STAT register
                     //ly.setLY((byte)curY); //trying out setting LY at start if modeTick==1
                     stat.setMF2(true);
-                    if (((stat.getByte() >> 5) & 0x1) == 1) {
-                        memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
-                        //System.out.println("Request LCDSTAT interrupt");
-                    }
                     curX = 0;
                     scrollX = memory.readByte(0xFF43);
                     scrollY = memory.readByte(0xFF42);
                     windowX = memory.readByte(0xFF4B)-7;
                     windowY = memory.readByte(0xFF4A);
                     printRAM();//for debugging RAM/Tile/Map values
-                } else if (modeTicks >= 20) {
+                } else if (modeTicks >= 80) {
                     // end of OAM search
                     // enter VRAM read mode
-                    modeTicks = 0;
+                    modeTicks = 0-1;
                     mode = VRAM_READ;
                     stat.setMF1(true);
                     stat.setMF2(true);
-                    memory.writeByte(0xff0f, 0b10);//set IF LCD flag
+                   // memory.writeByte(0xff0f, 0b10);//set IF LCD flag
                 }
                 break;
             case 3: // VRAM read also known as pixel transfer mode
@@ -226,6 +227,7 @@ public class PPU {
                         }
                         else
                             // only flipped vertically not horizontally
+                        {
                             if ((sFlag & 0x20) != 0 &&  (sFlag & 0x40) == 0) {
                                 // Sprite should be flipped vertically
                                 for (int y = 0; y < 8; y++) {
@@ -244,49 +246,51 @@ public class PPU {
                                     }
                                 }
                             }
-                            else
-                            if ((sFlag & 0x40) != 0 && (sFlag & 0x20) == 0) {
-                                // Sprite should be flipped horizontally
-                                //System.out.println("horizontal");
-                                for (int y = 0; y < 8; y++) {
-                                    for (int x = 0; x < 8; x++) {
-                                        int sPixel = spriteTile.getVal(y, x);
-                                        int color;
-                                        if((sFlag&16)==0) color = obp0.getColor(sPixel, 2);
-                                        else color = obp1.getColor(sPixel, 2);
+                            else {
+                                if ((sFlag & 0x40) != 0 && (sFlag & 0x20) == 0) {
+                                    // Sprite should be flipped horizontally
+                                    //System.out.println("horizontal");
+                                    for (int y = 0; y < 8; y++) {
+                                        for (int x = 0; x < 8; x++) {
+                                            int sPixel = spriteTile.getVal(y, x);
+                                            int color;
+                                            if((sFlag&16)==0) color = obp0.getColor(sPixel, 2);
+                                            else color = obp1.getColor(sPixel, 2);
 
-                                        // calculate the pixel coordinates based on sprite position and current tile pixel position, flipping horizontally
-                                        int xPosS = sX + x;
-                                        int yPosS = sY + (7 - y); // flip the y-coordinate
+                                            // calculate the pixel coordinates based on sprite position and current tile pixel position, flipping horizontally
+                                            int xPosS = sX + x;
+                                            int yPosS = sY + (7 - y); // flip the y-coordinate
 
-                                        // write the pixel to the screen buffer
-                                        if(sPixel!=0&&((sFlag&0x80)==0||pixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                            // write the pixel to the screen buffer
+                                            if(sPixel!=0&&((sFlag&0x80)==0||pixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        }
                                     }
                                 }
-                            }
 
-//                        // no flipping on the sprites
-                            else {
+    //                        // no flipping on the sprites
+                                else {
 
-                                for (int y = 0; y < 8; y++) {
-                                    for (int x = 0; x < 8; x++) {
-                                        int sPixel = spriteTile.getVal(y, x);
-                                        int color;
-                                        if((sFlag&16)==0) color = obp0.getColor(sPixel, 2);
-                                        else {
-                                            color = obp1.getColor(sPixel, 2);
-                                           // System.out.println("ob1:"+sPixel);
+                                    for (int y = 0; y < 8; y++) {
+                                        for (int x = 0; x < 8; x++) {
+                                            int sPixel = spriteTile.getVal(y, x);
+                                            int color;
+                                            if((sFlag&16)==0) color = obp0.getColor(sPixel, 2);
+                                            else {
+                                                color = obp1.getColor(sPixel, 2);
+                                                // System.out.println("ob1:"+sPixel);
+                                            }
+                                            // calculate the pixel coordinates based on sprite position and current tile pixel position
+                                            int xPosS = sX + x;
+                                            int yPosS = sY + y;
+                                            // write the pixel to the screen buffer
+                                            //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
+                                            if(sPixel!=0&&((sFlag&0x80)==0||pixel==0||windowPixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                            //display.setPixel(xPosS, yPosS, color);
                                         }
-                                        // calculate the pixel coordinates based on sprite position and current tile pixel position
-                                        int xPosS = sX + x;
-                                        int yPosS = sY + y;
-                                        // write the pixel to the screen buffer
-                                        //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                        if(sPixel!=0&&((sFlag&0x80)==0||pixel==0||windowPixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
-                                        //display.setPixel(xPosS, yPosS, color);
-                                    }
-                                } // render sprite for
+                                    } // render sprite for
+                                }
                             }
+                        }
                         // no checking flipping
 //                                                    for (int y = 0; y < 8; y++) {
 //                                for (int x = 0; x < 8; x++) {
@@ -306,9 +310,9 @@ public class PPU {
                     Sprite.clearSprites();
                 }
 
-                if (modeTicks >= 160&&curX>=160) {
+                if (modeTicks >= 172&&curX>=160) {
                     // end of scanline
-                    modeTicks = 0;
+                    modeTicks = 0-1;
                     line++;
                     curY++;
                     if (line > 143&&curY > 143) {
@@ -318,20 +322,28 @@ public class PPU {
                         stat.setM1VBlank(true);
                         stat.setMF1(true);
                         stat.setMF2(false);
+                        if (((stat.getByte() >> 4) & 0x1) == 1) {
+                            memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
+                            //System.out.println("Request LCDSTAT interrupt");
+                        }//System.out.println("request VBLANK INTERRUPT");
                         memory.writeByte(0xff0f, 0b1);// writs 1st bit to ff0f, mem sends interrupt
-                        //System.out.println("request VBLANK INTERRUPT");
                     } else {
                         // start next scanline
                         mode = HBLANK;
+                        int status = memory.readByte(0xFF41) & 0x3F;
+                        memory.writeByte(0xFF41, status | 0xC0);
                         stat.setMF1(false);
                         stat.setMF2(false);
-                        memory.writeByte(0xff0f,0b10);//set IF LCD flag
+                        if (((stat.getByte() >> 3) & 0x1) == 1) {
+                            memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
+                            //System.out.println("Request LCDSTAT interrupt");
+                        }
                     }
                 }
                 break;
             case 0: // HBLANK
                 if (modeTicks >= 204) {
-                    modeTicks = 0;
+                    modeTicks = 0-1;
                     curX=0;
                     // Check if LYC=LY
                     if (curY == memory.readByte(0xFF45)&!stat.getBit(2)) {
@@ -339,13 +351,10 @@ public class PPU {
                         // Set the LYC=LY flag in STAT register
                         stat.setCoincidenceFlag(true);
                         //System.out.println("STAT interupt");
-
                         // Check if LYC=LY interrupt is enabled
-                        if ((memory.readByte(0xFF41) & 0x40) == 0x40) {
-                        } else {
-                            // Request STAT/mode2 interrupt
+                        if (true||(memory.readByte(0xFF41) & 0x40) == 0x40) {
                             stat.setBit(2,true);
-                            //System.out.println("STAT interupt");
+                            memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
                         }
                     } else {
                         // Clear the LYC=LY flag in STAT register
@@ -356,7 +365,9 @@ public class PPU {
                         mode = OAM_READ;
                         stat.setMF1(false);
                         stat.setMF2(true);
-                        memory.writeByte(0xff0f,0b10);//set IF LCD flag
+                        if (((stat.getByte() >> 5) & 0x1) == 1) {
+                            memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
+                         }
                     }
                     if(Sprite.getSpriteCount() > 10)
                     {
@@ -371,33 +382,43 @@ public class PPU {
                 break;
             case 1: // VBLANK
                 if (modeTicks >= 456) {
-                    modeTicks = 0;
+                    modeTicks = 0-1;
                     line++;
                     curY++;
                     //ly.setLY((byte)curY);
                     if (line >= 153&&curY>=153) {
                         // update the display with the pixel buffer
-                        display.render();
                         mode = OAM_READ;
                         stat.setMF1(false);
                         stat.setMF2(true);
-                        memory.writeByte(0xff0f,0b10);//set IF LCD flag
+                        if(lcdc.getBit(7)) {
+                            int status = memory.readByte(0xFF41) & 0x3F;
+                            memory.writeByte(0xFF41, status | 0x40);
+                            display.render();
+                        }
                         line = 0;
                         curY=0;
                         // Set the coincidence flag if LYC=LY
-                        if (line == (int)lyc.getByte()&!stat.getBit(2)) {
+                        if (line == (int)lyc.getByte()) {
                             stat.setCoincidenceFlag(true);
                         } else {
                             stat.setCoincidenceFlag(false);
                         }
 
-                        // Check if LYC=LY interrupt is enabled
-                        if ((memory.readByte(0xFF41) & 0x40) == 0x40 && curY == memory.readByte(0xFF45)) {
-                            // Request the LYC=LY interrupt
+                        // Check if LYC=LY
+                        if (curY == memory.readByte(0xFF45)&!stat.getBit(2)) {
+                            // Set the LYC=LY flag in STAT register
+                            stat.setCoincidenceFlag(true);
                             //System.out.println("STAT interupt");
-                            int ifreg= memory.readByte(0xff0f);
-                            stat.setBit(2,true);
-                            memory.writeByte(0xff0f,ifreg|02);
+                            // Check if LYC=LY interrupt is enabled
+                            if (true||(memory.readByte(0xFF41) & 0x40) == 0x40) {
+                                stat.setBit(2,true);
+                                memory.writeByte(0xff0f, 0b10);// mmu sends interrupt
+                            } else {
+                              }
+                        } else {
+                            // Clear the LYC=LY flag in STAT register
+                            stat.setCoincidenceFlag(false);
                         }
 
                         // Request VBLANK interrupt
@@ -491,6 +512,9 @@ public class PPU {
     }
     public void updateBugPane() {
         if(bugPanel.isVisible()) bugPanel.updatePane(map,tileSet);
+    }
+    public void setLYComp(int i){
+        this.lyComp=i;
     }
 
 

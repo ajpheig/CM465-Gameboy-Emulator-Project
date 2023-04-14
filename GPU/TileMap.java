@@ -16,24 +16,24 @@ public class TileMap {
                     tileNumber = mem.readByte(tileNumberAddress);
                 }
                 else {
-                   tileNumber = (byte) mem.readByte(tileNumberAddress);
+                   tileNumber = (byte)mem.readByte(tileNumberAddress);
                 }
                 // if(i==9&&j==0xc) System.out.println(Integer.toHexString(tileNumber));
-                this.map[i][j] = tileNumber&0xff;
+                this.map[i][j] = tileNumber;
             }
         }
     }
     public int getTile(int x, int y) {
-         Tile[] ts= mem.getVram().getTileSet();
+        Tile[] ts= mem.getVram().getTileSet();
         int tileNum =-1;
-        boolean b=mem.getLcdc().getBit(4);
-        if(b||map[y % 32][x % 32]>127) tileNum= map[y % 32][x % 32];
+        if((tileSetNum==0)) tileNum= map[y % 32][x % 32];
         else {
+            //System.out.println("X:"+x+" Y:"+y+" ts:"+tileSetNum+" tile#:"+map[y % 32][x % 32]);
             tileNum=map[y % 32][x % 32]+256;
         }
         //System.out.println(map[x % 32][y % 32]);
         if (tileNum == -1) {
-            System.out.println("failed to find tile num: " + tileNum);
+            //System.out.println("failed to find tile num: " + tileNum);
         }
         //if(y==9&&x==0xd) System.out.println("tile "+Integer.toHexString(map[y][x])
           //      +" x:"+x+" y:"+y+" tile:"+tileNum);
