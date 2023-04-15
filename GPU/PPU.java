@@ -115,7 +115,8 @@ public class PPU {
                     boolean useTileSet0 = lcdc.getBit(4);
                     boolean useBackgroundMap0 =(lcdc.getBit(3));
                     boolean useWindowMap0=((lcdc.getBit(6)));
-                    if(windowY<=curY&&windowX<=curX) displayWindow = lcdc.getBit(5);
+                    displayWindow=false;
+                    if(curY>=windowY)displayWindow = lcdc.getBit(5);
                     //load tile map
                     if(displayWindow) this.loadMap(useTileSet0, useWindowMap0);
                     else this.loadMap(useTileSet0, useBackgroundMap0);
@@ -155,7 +156,6 @@ public class PPU {
                     mode = VRAM_READ;
                     stat.setMF1(true);
                     stat.setMF2(true);
-                   // memory.writeByte(0xff0f, 0b10);//set IF LCD flag
                 }
                 break;
             case 3: // VRAM read also known as pixel transfer mode
@@ -206,7 +206,7 @@ public class PPU {
                         sNum = sprite.getTileNumber() & 0xFF;
                         sFlag = sprite.getFlags() & 0xFF;
                         Tile spriteTile = tileSet[sNum];
-                        if(sY-curY>=16)continue;
+                        if(Math.abs(sY-curY)>=16)continue;
                         // flip x and y are both set
                         if ((sFlag & 0x20) != 0 && (sFlag & 0x40) != 0) {
                             // Sprite should be flipped vertically and horizontally
@@ -219,9 +219,14 @@ public class PPU {
                                     // calculate the pixel coordinates based on sprite position and current tile pixel position, flipping horizontally and vertically
                                     int xPosS = sX + (7 - x);
                                     int yPosS = sY + (7 - y);
-
+                                    int backpix=0;
+                                    if(xPosS>8&&yPosS>16) {
+                                        int backTileIndex = map.getTile((xPosS-8+scrollX) / 8, (yPosS-16+scrollY) / 8);
+                                        currtile = tileSet[backTileIndex];
+                                        if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
+                                    }
                                     // write the pixel to the screen buffer
-                                    if(sPixel!=0&&((sFlag&0x80)==0||pixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                    if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                 }
                             }
                         }
@@ -240,9 +245,14 @@ public class PPU {
                                         // calculate the pixel coordinates based on sprite position and current tile pixel position
                                         int xPosS = sX + (7 - x);
                                         int yPosS = sY + y;
-
+                                        int backpix=0;
+                                        if(xPosS>8&&yPosS>16) {
+                                            int backTileIndex = map.getTile((xPosS-8+scrollX) / 8, (yPosS-16+scrollY) / 8);
+                                            currtile = tileSet[backTileIndex];
+                                            if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
+                                        }
                                         // write the pixel to the screen buffer
-                                        if(sPixel!=0&&((sFlag&0x80)==0||pixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                             }
@@ -260,9 +270,14 @@ public class PPU {
                                             // calculate the pixel coordinates based on sprite position and current tile pixel position, flipping horizontally
                                             int xPosS = sX + x;
                                             int yPosS = sY + (7 - y); // flip the y-coordinate
-
+                                            int backpix=0;
+                                            if(xPosS>8&&yPosS>16) {
+                                                int backTileIndex = map.getTile((xPosS-8+scrollX) / 8, (yPosS-16+scrollY) / 8);
+                                                currtile = tileSet[backTileIndex];
+                                                if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
+                                            }
                                             // write the pixel to the screen buffer
-                                            if(sPixel!=0&&((sFlag&0x80)==0||pixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                            if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                         }
                                     }
                                 }
@@ -284,7 +299,13 @@ public class PPU {
                                             int yPosS = sY + y;
                                             // write the pixel to the screen buffer
                                             //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                            if(sPixel!=0&&((sFlag&0x80)==0||pixel==0||windowPixel==0))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                            int backpix=0;
+                                            if(xPosS>8&&yPosS>16) {
+                                               int backTileIndex = map.getTile((xPosS-8+scrollX) / 8, (yPosS-16+scrollY) / 8);
+                                                currtile = tileSet[backTileIndex];
+                                                if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
+                                            }
+                                            if(sPixel!=0&&((sFlag&0x80)==0||(backpix==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                             //display.setPixel(xPosS, yPosS, color);
                                         }
                                     } // render sprite for
@@ -327,6 +348,11 @@ public class PPU {
                             //System.out.println("Request LCDSTAT interrupt");
                         }//System.out.println("request VBLANK INTERRUPT");
                         memory.writeByte(0xff0f, 0b1);// writs 1st bit to ff0f, mem sends interrupt
+                        if(lcdc.getBit(7)) {
+                            int status = memory.readByte(0xFF41) & 0x3F;
+                            memory.writeByte(0xFF41, status | 0x40);
+                            display.render();
+                        }
                     } else {
                         // start next scanline
                         mode = HBLANK;
@@ -391,11 +417,11 @@ public class PPU {
                         mode = OAM_READ;
                         stat.setMF1(false);
                         stat.setMF2(true);
-                        if(lcdc.getBit(7)) {
+                        /*if(lcdc.getBit(7)) {
                             int status = memory.readByte(0xFF41) & 0x3F;
                             memory.writeByte(0xFF41, status | 0x40);
                             display.render();
-                        }
+                        }*/
                         line = 0;
                         curY=0;
                         // Set the coincidence flag if LYC=LY
