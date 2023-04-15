@@ -77,6 +77,7 @@ public class CPU {
         if (halted) {
             this.ticks=4;
             timer.handleTimer(ticks);
+            for(int l=0;l<4;l++)
             {  ppu.updateModeAndCycles();
             }
             serviceInterrupts();
@@ -122,7 +123,8 @@ public class CPU {
             if (totalT>=17476*4)
             {
                 totalT=0;
-                while(System.currentTimeMillis()-timeStart<9.000) {
+                while(System.currentTimeMillis()-timeStart<8.000)
+                {
                     //wait loop
                 }
             }
