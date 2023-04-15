@@ -206,6 +206,36 @@ public class PPU {
                         sNum = sprite.getTileNumber() & 0xFF;
                         sFlag = sprite.getFlags() & 0xFF;
                         Tile spriteTile = tileSet[sNum];
+                        
+                                                byte lsNum = (((byte) (sNum | (0x01))));
+                        lsNum = (byte) Math.abs(lsNum);
+                        // System.out.println(lsNum);
+//                            if(lsNum < 0)
+//                                lsNum = 93 & 0xFE;
+                        Tile largSpriteTile = tileSet[lsNum];
+                        // check if sprites are large and render the second sprite tile
+                        if((memory.readByte(0xFF40) & 0b100) > 0){
+                        //if(true){
+                        for (int y = 0; y < 8; y++) {
+                            for (int x = 0; x < 8; x++) {
+                                int sPixel = largSpriteTile.getVal(y, x);
+                                int color;
+                                if ((sFlag & 16) == 0) color = obp0.getColor(sPixel, 2);
+                                else {
+                                    color = obp1.getColor(sPixel, 2);
+                                    // System.out.println("ob1:"+sPixel);
+                                }
+                                // calculate the pixel coordinates based on sprite position and current tile pixel position
+                                int xPosS = sX + x;
+                                int yPosS = sY + y;
+                                // write the pixel to the screen buffer
+                                //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
+                                display.setPixel(xPosS - 8, yPosS - 8, color);
+                                //display.setPixel(xPosS, yPosS, color);
+                            }
+                        } // render sprite for
+                    } // end 8x16 sprite if
+                        
                         if(Math.abs(sY-curY)>=16)continue;
                         // flip x and y are both set
                         if ((sFlag & 0x20) != 0 && (sFlag & 0x40) != 0) {
