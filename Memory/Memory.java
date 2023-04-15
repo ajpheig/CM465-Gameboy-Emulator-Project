@@ -58,7 +58,7 @@ public class Memory {
 
     public Memory(byte[] romData) {
         memory = new byte[0x10000+1];// This should initialize memory size to 64 kb
-        
+
         //init MBC
         mbc1Enabled = false;
         mbc2Enabled = false;
@@ -67,11 +67,11 @@ public class Memory {
         ramBankNumber = 0;
         ramEnabled = false;
         romBankingMode = true;
-        
+
         mbc1Enabled = (romData[0x147] == 0x01 || romData[0x147] == 0x02 || romData[0x147] == 0x03);
         mbc2Enabled = (romData[0x147] == 0x05 || romData[0x147] == 0x06);
         mbc3Enabled = (romData[0x147] == 0x0F || romData[0x147] == 0x10 || romData[0x147] == 0x11 || romData[0x147] == 0x12 || romData[0x147] == 0x13);
-        
+
         if(mbc1Enabled || mbc2Enabled || mbc3Enabled)
             System.arraycopy(romData, 0, memory, 0, 0x4000);
         else
@@ -85,9 +85,9 @@ public class Memory {
         } catch (IOException ioe) {
             ;
         }
-        
+
         int numRomBanks = 0;
-        
+
         if(memory[0x148] == 0x00)
             numRomBanks = 2;
         else if(memory[0x148] == 0x01)
@@ -106,9 +106,9 @@ public class Memory {
             numRomBanks = 256;
         else if(memory[0x148] == 0x08)
             numRomBanks = 512;
-        
+
         int numRamBanks = 0;
-        
+
         if(memory[0x149] == 0x00)
             numRamBanks = 0;
         else if(memory[0x149] == 0x02)
@@ -119,7 +119,7 @@ public class Memory {
             numRamBanks = 16;
         else if(memory[0x149] == 0x05)
             numRamBanks = 8;
-        
+
         romBanks = new byte[numRomBanks][ROM_BANK_SIZE];
         ramBanks = new byte[numRamBanks][RAM_BANK_SIZE];
         mbc2Ram = new byte[0x200];
@@ -130,12 +130,12 @@ public class Memory {
                 romBanks[i][j] = romData[i * ROM_BANK_SIZE + j];
             }
         }
-        
-
-        
 
 
-        
+
+
+
+
         /*
          * For reference, 0x0000 - 0x00FF should load the boot rom initially to play the
          * splash screen
@@ -941,7 +941,7 @@ public class Memory {
                         //System.out.println("all 0 vals");
                     }
                     // check if sprite's x cord is on the screen
-                    if((x&0xff) >= 8 && (x&0xff) <= 168)
+                    if((x&0xff) >= 0 && (x&0xff) <= 168)
                     {
                         //System.out.println("MAKING SPRITE OBJ");
                         Sprite sprite = new Sprite(this.data[i], this.data[i + 1], this.data[i + 2], this.data[i + 3]);

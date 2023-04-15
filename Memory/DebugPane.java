@@ -4,6 +4,7 @@ import GPU.Sprite;
 import GPU.TileMap;
 import GPU.Tile;
 import CPU.Registers;
+import Memory.Memory.LY;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +13,7 @@ import java.util.List;
 
 public class DebugPane extends JFrame {
     CPU cpu;
+    LY ly;
     Memory mem;
     JLabel regString= new JLabel("");
     int xMap=0;
@@ -25,6 +27,7 @@ public class DebugPane extends JFrame {
     public DebugPane(CPU cpu, Memory mem) {
         this.mem=mem;
         this.cpu=cpu;
+        this.ly=mem.getLY();
         JPanel jp = new JPanel();
         jp.setLayout(null);
         setLayout(null);
@@ -101,7 +104,8 @@ public class DebugPane extends JFrame {
                 regs.getB(), regs.getC(), regs.getD(), regs.getE(), regs.getH(), regs.getL(), regs.getSP(),
                 regs.getPC(),
                 mem.readByte(currentPC), mem.readByte(currentPC + 1), mem.readByte(currentPC + 2),
-                mem.readByte(currentPC + 3),mem.readByte(0xff44));
+                mem.readByte(currentPC + 3),ly.getByte());
+
         //removeAll();
         //revalidate();
         regString.setText(s);
