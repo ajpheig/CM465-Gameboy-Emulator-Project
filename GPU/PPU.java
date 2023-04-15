@@ -207,8 +207,8 @@ public class PPU {
                         sFlag = sprite.getFlags() & 0xFF;
                         Tile spriteTile = tileSet[sNum];
                         
-                                                byte lsNum = (((byte) (sNum | (0x01))));
-                        lsNum = (byte) Math.abs(lsNum);
+                        short lsNum = (short) (sNum | 0x0001); // set the least significant bit to 1
+                        lsNum = (short) (lsNum & 0xFFFF);
                         // System.out.println(lsNum);
 //                            if(lsNum < 0)
 //                                lsNum = 93 & 0xFE;
