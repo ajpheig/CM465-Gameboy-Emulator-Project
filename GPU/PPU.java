@@ -230,7 +230,7 @@ public class PPU {
                                 int yPosS = sY + y;
                                 // write the pixel to the screen buffer
                                 //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                display.setPixel(xPosS - 8, yPosS - 8, color);
+                                if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 8, color);
                                 //display.setPixel(xPosS, yPosS, color);
                             }
                         } // render sprite for
