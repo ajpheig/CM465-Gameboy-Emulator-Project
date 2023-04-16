@@ -59,7 +59,8 @@ public class PPU {
     int windowY;
     boolean displayWindow;
     private TileMap map;
-
+    private TileMap winmap;
+    boolean bgEnable=false;
 
     // LCDC, background, and dma are public classes inside Memory class
     // We can do everything in VRAM with get/setByte in the Memory from PPU, or we can make a VRAM class
@@ -115,10 +116,11 @@ public class PPU {
                     boolean useTileSet0 = lcdc.getBit(4);
                     boolean useBackgroundMap0 =(lcdc.getBit(3));
                     boolean useWindowMap0=((lcdc.getBit(6)));
+                    bgEnable=lcdc.getBit(0);
                     displayWindow=false;
-                    if(curY>=windowY)displayWindow = lcdc.getBit(5);
+                    if(curY>=windowY&&lcdc.getBit(0))displayWindow = lcdc.getBit(5);
                     //load tile map
-                    if(displayWindow) this.loadMap(useTileSet0, useWindowMap0);
+                    if(displayWindow)this.loadMap(useTileSet0, useWindowMap0);
                     else this.loadMap(useTileSet0, useBackgroundMap0);
                     //System.out.println(memory.readByte(0x8027));
                     tileSet = vram.getTileSet();//readies tile set for PPU
@@ -177,16 +179,17 @@ public class PPU {
                 //System.out.println("curx:"+curX+" cury:"+curY+" xPos:"+xPos+" yPos:"+yPos+"tileIndex:"+Integer.toHexString(bgTileIndex));
                 //System.out.println("curx:"+curX+" cury:"+curY+" xPos:"+xPos+" yPos:"+yPos+"tileIndex:"+Integer.toHexString(bgTileIndex)+" clr:"+backgroundColor);
 
-
-                display.setPixel(curX, curY, backgroundColor);
-                curX++;
-
+                // if bg not enabled display 0 palette
+                if(!displayWindow)display.setPixel(curX, curY, backgroundColor);
+                else display.setPixel(curX,curY, bgp.getColor(0,2));
+                //display window
                 int windowPixel=0;
-                if(displayWindow&&windowY<=curY&&windowX<=curX) {
-                    Tile windowTile = tileSet[map.getTile((curY - windowY) / 8, (curX - windowX) / 8)];
+                if(bgEnable&&displayWindow&&windowY<=curY&&windowX<=curX) {
+                    Tile windowTile = tileSet[map.getTile((curX - windowX) / 8, (curY - windowY) / 8)];
                     windowPixel = windowTile.getVal((curY - windowY) % 8, (curX - windowX) % 8);
-                    display.setPixel(curX,curY,bgp.getColor(windowPixel,2));
+                   display.setPixel(curX,curY,bgp.getColor(windowPixel,2));
                 }
+                curX++;
 
                 int sY;
                 int sX;
@@ -196,7 +199,7 @@ public class PPU {
                 //System.out.println("spriteList size " +  spriteList.size());
                 // loop though visible sprites and create the spriteTiles to render them
                 if(!spriteList.isEmpty()) {
-                   // System.out.println((memory.readByte(0xFF40) & 0b100) >> 2);
+                    // System.out.println((memory.readByte(0xFF40) & 0b100) >> 2);
 
                     //oam.printSpriteData();
                     //System.out.println("Render sprite loop");
@@ -291,7 +294,7 @@ public class PPU {
                             } // end 8x16 sprite if
                         }
                         else
-                            // only flipped vertically not horizontally
+                        // only flipped vertically not horizontally
                         {
                             if ((sFlag & 0x20) != 0 &&  (sFlag & 0x40) == 0) {
                                 // Sprite should be flipped vertically
@@ -312,7 +315,7 @@ public class PPU {
                                             if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
                                         }
                                         // write the pixel to the screen buffer
-                                        if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        if(sPixel!=0&&((sFlag&0x80)==0||(backpix==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                                 if((memory.readByte(0xFF40) & 0b100) > 0){
@@ -359,7 +362,7 @@ public class PPU {
                                                 if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
                                             }
                                             // write the pixel to the screen buffer
-                                            if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                            if(sPixel!=0&&((sFlag&0x80)==0||(backpix==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                         }
                                     }
                                     if((memory.readByte(0xFF40) & 0b100) > 0){
@@ -386,7 +389,7 @@ public class PPU {
                                     } // end 8x16 sprite if
                                 }
 
-    //                        // no flipping on the sprites
+                                //                        // no flipping on the sprites
                                 else {
 
                                     for (int y = 0; y < 8; y++) {
@@ -405,7 +408,7 @@ public class PPU {
                                             //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
                                             int backpix=0;
                                             if(xPosS>8&&yPosS>16) {
-                                               int backTileIndex = map.getTile((xPosS-8+scrollX) / 8, (yPosS-16+scrollY) / 8);
+                                                int backTileIndex = map.getTile((xPosS-8+scrollX) / 8, (yPosS-16+scrollY) / 8);
                                                 currtile = tileSet[backTileIndex];
                                                 if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
                                             }
@@ -453,6 +456,7 @@ public class PPU {
 //                                    //display.setPixel(xPosS, yPosS, color);
 //                                }
 //                            } // render sprite for
+
                     }
                     Sprite.clearSprites();
                 }
@@ -462,6 +466,7 @@ public class PPU {
                     modeTicks = 0-1;
                     line++;
                     curY++;
+
                     if (line > 143&&curY > 143) {
                         // end of visible screen area, enter VBLANK
                         mode = VBLANK;
