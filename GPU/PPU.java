@@ -139,7 +139,7 @@ public class PPU {
                     if(lcdc.getBit(2)) spriteHeight=16;
                     else spriteHeight=8;
                     //System.out.println("sprite size " + spriteHeight);
-                    oam.checkSpriteY(curY, spriteHeight);
+                    oam.checkSpriteY(curY);
                     // update STAT register
                     //ly.setLY((byte)curY); //trying out setting LY at start if modeTick==1
                     stat.setMF2(true);
