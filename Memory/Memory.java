@@ -916,7 +916,7 @@ public class Memory {
 
         // makes sprite address objects and adds them to  array in sprite class if they are on
         // the current scanline to be used during VRAM read. curY is the current scanline.
-        public void checkSpriteY(int curY, int spriteSize){
+        public void checkSpriteY(int curY){
             for (int i = 0; i < 160; i+=4)
             {
                 //System.out.println(curY);IS GOOD! ALL 144 cury
