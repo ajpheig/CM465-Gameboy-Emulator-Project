@@ -199,7 +199,7 @@ public class PPU {
                 //System.out.println("spriteList size " +  spriteList.size());
                 // loop though visible sprites and create the spriteTiles to render them
                 if(!spriteList.isEmpty()) {
-                    // System.out.println((memory.readByte(0xFF40) & 0b100) >> 2);
+                   // System.out.println((memory.readByte(0xFF40) & 0b100) >> 2);
 
                     //oam.printSpriteData();
                     //System.out.println("Render sprite loop");
@@ -294,7 +294,7 @@ public class PPU {
                             } // end 8x16 sprite if
                         }
                         else
-                        // only flipped vertically not horizontally
+                            // only flipped vertically not horizontally
                         {
                             if ((sFlag & 0x20) != 0 &&  (sFlag & 0x40) == 0) {
                                 // Sprite should be flipped vertically
@@ -361,8 +361,8 @@ public class PPU {
                                                 currtile = tileSet[backTileIndex];
                                                 if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
                                             }
-                                            // write the pixel to the screen buffer
-                                            if(sPixel!=0&&((sFlag&0x80)==0||(backpix==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                            // write the pixel to the screen buffer                     ZZZZZZZ
+                                            if(sPixel!=0&&((sFlag&0x80)==0||(backpix==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 8, color);
                                         }
                                     }
                                     if((memory.readByte(0xFF40) & 0b100) > 0){
@@ -381,8 +381,8 @@ public class PPU {
                                                 int yPosS = sY + (7 - y);
                                                 // write the pixel to the screen buffer
                                                 //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                                //display.setPixel(xPosS - 8, yPosS - 8, color);
-                                                if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 8, color);
+                                                //display.setPixel(xPosS - 8, yPosS - 8, color);                    ZZZZZZ
+                                                if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                                 //display.setPixel(xPosS, yPosS, color);
                                             }
                                         } // render sprite for
@@ -456,7 +456,6 @@ public class PPU {
 //                                    //display.setPixel(xPosS, yPosS, color);
 //                                }
 //                            } // render sprite for
-
                     }
                     Sprite.clearSprites();
                 }
@@ -466,7 +465,6 @@ public class PPU {
                     modeTicks = 0-1;
                     line++;
                     curY++;
-
                     if (line > 143&&curY > 143) {
                         // end of visible screen area, enter VBLANK
                         mode = VBLANK;
