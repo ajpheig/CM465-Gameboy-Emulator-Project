@@ -62,17 +62,14 @@ public class DebugPane extends JFrame {
             }
             int scrollX = mem.readByte(0xFF43);
             int scrollY = mem.readByte(0xFF42);
-            for (int b = 0; b < 160; b++) {//DRAWS RED BORDER vvvv
-                if (scrollX + b < 32 * 8) image.setRGB(scrollX + b, scrollY, 0xff0000);
-                if (scrollX + b < 32 * 8 && scrollY + 144 < 32 * 8) {
-                    image.setRGB(scrollX + b, scrollY + 144, 0xff0000);
-                }
-            }
+            for (int b = 0; b < 160; b++) {//DRAWS RED BORDER vvvv horizontal lines
+                image.setRGB((scrollX + b)%(32*8), (scrollY), 0xff0000);
+                image.setRGB((scrollX + b)%(32*8), (scrollY + 144)%(32*8), 0xff0000);
+
+            }//vertical lines
             for (int b = 0; b < 144; b++) {
-                if (scrollY + b < 32 * 8) {
-                    image.setRGB(scrollX, scrollY + b, 0xff0000);
-                    if (scrollX + 160 < 32 * 8) image.setRGB(scrollX + 160, scrollY + b, 0xff0000);
-                }
+                    image.setRGB((scrollX), (scrollY + b)%(32*8), 0xff0000);
+                    image.setRGB((scrollX + 159)%(32*8), (scrollY + b)%(32*8), 0xff0000);
             }
             int oamStart=0xfe00;
             if(true) {
