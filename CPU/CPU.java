@@ -81,7 +81,7 @@ public class CPU {
             {  ppu.updateModeAndCycles();
             }
             serviceInterrupts();
-            // System.out.println("halted...");
+             //System.out.println("halted...");
             return;// end step, service interrupts should turn halt to false
         }
         int currentPC = regs.getPC();
@@ -107,6 +107,7 @@ public class CPU {
                ppu.updateModeAndCycles();}
         serviceInterrupts();
         ppu.updateBugPane();
+        //System.out.println(Integer.toHexString(mem.readByte(0x9889))+" scX"+Integer.toHexString(mem.readByte(0xff43)));
         //parent.refreshPanel();
     }
 
