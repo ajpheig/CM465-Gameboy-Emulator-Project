@@ -118,10 +118,10 @@ public class PPU {
                     boolean useWindowMap0=((lcdc.getBit(6)));
                     bgEnable=lcdc.getBit(0);
                     displayWindow=false;
-                    if(curY>=windowY&&lcdc.getBit(0))displayWindow = lcdc.getBit(5);
+                    if(lcdc.getBit(0))displayWindow = curY>=windowY&&lcdc.getBit(5);
                     //load tile map
-                    if(displayWindow)this.loadMap(useTileSet0, useWindowMap0);
-                    else this.loadMap(useTileSet0, useBackgroundMap0);
+                    if(displayWindow)this.loadWin(useTileSet0, useWindowMap0);
+                    this.loadMap(useTileSet0, useBackgroundMap0);
                     //System.out.println(memory.readByte(0x8027));
                     tileSet = vram.getTileSet();//readies tile set for PPU
                     // OAM search begins at cycle 80 and lasts for 20 cycles
@@ -180,12 +180,12 @@ public class PPU {
                 //System.out.println("curx:"+curX+" cury:"+curY+" xPos:"+xPos+" yPos:"+yPos+"tileIndex:"+Integer.toHexString(bgTileIndex)+" clr:"+backgroundColor);
 
                 // if bg not enabled display 0 palette
-                if(!displayWindow)display.setPixel(curX, curY, backgroundColor);
+                if(!displayWindow||curX<windowX)display.setPixel(curX, curY, backgroundColor);
                 else display.setPixel(curX,curY, bgp.getColor(0,2));
                 //display window
                 int windowPixel=0;
                 if(bgEnable&&displayWindow&&windowY<=curY&&windowX<=curX) {
-                    Tile windowTile = tileSet[map.getTile((curX - windowX) / 8, (curY - windowY) / 8)];
+                    Tile windowTile = tileSet[winmap.getTile((curX - windowX) / 8, (curY - windowY) / 8)];
                     windowPixel = windowTile.getVal((curY - windowY) % 8, (curX - windowX) % 8);
                    display.setPixel(curX,curY,bgp.getColor(windowPixel,2));
                 }
@@ -199,7 +199,7 @@ public class PPU {
                 //System.out.println("spriteList size " +  spriteList.size());
                 // loop though visible sprites and create the spriteTiles to render them
                 if(!spriteList.isEmpty()) {
-                   // System.out.println((memory.readByte(0xFF40) & 0b100) >> 2);
+                    // System.out.println((memory.readByte(0xFF40) & 0b100) >> 2);
 
                     //oam.printSpriteData();
                     //System.out.println("Render sprite loop");
@@ -294,7 +294,7 @@ public class PPU {
                             } // end 8x16 sprite if
                         }
                         else
-                            // only flipped vertically not horizontally
+                        // only flipped vertically not horizontally
                         {
                             if ((sFlag & 0x20) != 0 &&  (sFlag & 0x40) == 0) {
                                 // Sprite should be flipped vertically
@@ -361,7 +361,7 @@ public class PPU {
                                                 currtile = tileSet[backTileIndex];
                                                 if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
                                             }
-                                            // write the pixel to the screen buffer                     ZZZZZZZ
+                                            // write the pixel to the screen buffer
                                             if(sPixel!=0&&((sFlag&0x80)==0||(backpix==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 8, color);
                                         }
                                     }
@@ -381,7 +381,7 @@ public class PPU {
                                                 int yPosS = sY + (7 - y);
                                                 // write the pixel to the screen buffer
                                                 //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                                //display.setPixel(xPosS - 8, yPosS - 8, color);                    ZZZZZZ
+                                                //display.setPixel(xPosS - 8, yPosS - 8, color);
                                                 if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                                 //display.setPixel(xPosS, yPosS, color);
                                             }
@@ -456,6 +456,7 @@ public class PPU {
 //                                    //display.setPixel(xPosS, yPosS, color);
 //                                }
 //                            } // render sprite for
+
                     }
                     Sprite.clearSprites();
                 }
@@ -465,6 +466,7 @@ public class PPU {
                     modeTicks = 0-1;
                     line++;
                     curY++;
+
                     if (line > 143&&curY > 143) {
                         // end of visible screen area, enter VBLANK
                         mode = VBLANK;
@@ -633,6 +635,11 @@ public class PPU {
         int ts = useTileSet0 ? 0 : 1;
         int address = useMap1 ? 0x9c00 : 0x9800;
         this.map = new TileMap(memory, address, ts);
+    }
+    public void loadWin(boolean useTileSet0, boolean useMap1) {
+        int ts = useTileSet0 ? 0 : 1;
+        int address = useMap1 ? 0x9c00 : 0x9800;
+        this.winmap = new TileMap(memory, address, ts);
     }
     public void showDebug() {
         bugPanel.showPane();
