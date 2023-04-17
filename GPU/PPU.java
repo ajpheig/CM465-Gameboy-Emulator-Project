@@ -223,28 +223,6 @@ public class PPU {
 //                                lsNum = 93 & 0xFE;
                         Tile largSpriteTile = tileSet[lsNum];
                         // check if sprites are large and render the second sprite tile
-//                        if((memory.readByte(0xFF40) & 0b100) > 0){
-//                        //if(true){
-//                        for (int y = 0; y < 8; y++) {
-//                            for (int x = 0; x < 8; x++) {
-//                                int sPixel = largSpriteTile.getVal(y, x);
-//                                int color;
-//                                if ((sFlag & 16) == 0) color = obp0.getColor(sPixel, 2);
-//                                else {
-//                                    color = obp1.getColor(sPixel, 2);
-//                                    // System.out.println("ob1:"+sPixel);
-//                                }
-//                                // calculate the pixel coordinates based on sprite position and current tile pixel position
-//                                int xPosS = sX + x;
-//                                int yPosS = sY + y;
-//                                // write the pixel to the screen buffer
-//                                //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-//                                //display.setPixel(xPosS - 8, yPosS - 8, color);
-//                                if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 8, color);
-//                                //display.setPixel(xPosS, yPosS, color);
-//                            }
-//                        } // render sprite for
-//                    } // end 8x16 sprite if
 
                         //System.out.println(largeSpriteTile);
                         if(Math.abs(sY-curY)>=16)continue;
@@ -266,8 +244,8 @@ public class PPU {
                                         currtile = tileSet[backTileIndex];
                                         if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
                                     }
-                                    // write the pixel to the screen buffer
-                                    if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                    // write the pixel to the screen buffer                                                 
+                                    if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 8, color);
                                 }
                             }
                             if((memory.readByte(0xFF40) & 0b100) > 0){
@@ -287,7 +265,8 @@ public class PPU {
                                         // write the pixel to the screen buffer
                                         //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
                                         //display.setPixel(xPosS - 8, yPosS - 8, color);
-                                        if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 8, color);
+                                        if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
+                                        //if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel( yPosS - 8,xPosS - 8, color);
                                         //display.setPixel(xPosS, yPosS, color);
                                     }
                                 } // render sprite for
