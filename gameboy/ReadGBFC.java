@@ -12,6 +12,7 @@ import Memory.Memory;
 import GPU.PPU;
 
 import java.awt.*;
+
 import java.awt.event.*;
 
 public class ReadGBFC {
@@ -41,6 +42,8 @@ public class ReadGBFC {
     Worker w;
     public ReadGBFC() {
         frame = new JFrame("WUBoy");
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
         FCListener fcl = new FCListener();
         mb = new JMenuBar();
         m = new JMenu("File");
@@ -77,8 +80,32 @@ public class ReadGBFC {
           //      cpu.runUntil(-1);
         //    }
         //}
-    }
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                // define the behavior when the window is closed
+                if(mem!=null) {
+                    if(mem.getRamBanks()!=null) {
+                        try {
 
+                            byte[][] ramBanks = mem.getRamBanks();
+                            FileOutputStream w = new FileOutputStream(new File(romFile.toString().substring(0, romFile.toString().length() - 3) + ".sav"));
+                            for (int i = 0; i < ramBanks.length; i++) {
+                                w.write(ramBanks[i]);
+                            }
+
+
+                            w.close();
+
+                        } catch (IOException se) {
+                            System.out.println("An error occurred while writing to the save file: " + se.getMessage());
+                        }
+                    }
+                }
+                System.exit(0);
+            }
+        });
+
+}
     public class FCListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == m1) {
@@ -90,6 +117,7 @@ public class ReadGBFC {
                         FileInputStream romStream = new FileInputStream(romFile);
                         romData = new byte[(int) romFile.length()];
                         romStream.read(romData);
+                        //System.out.print(romFile.toString().substring(0,romFile.toString().length()-3));
                         romStream.close();
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
@@ -101,7 +129,7 @@ public class ReadGBFC {
                         w.start();
                     }//resetGameboy(romData);
                     else {
-                        mem = new Memory(romData);
+                        mem = new Memory(romData, romFile.toString().substring(0,romFile.toString().length()-3));
                         cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
                         ppu = new PPU(romData, cpu, ram, interruptManager, display, mem);
                         ReadGBFC.this.running = true;
@@ -222,7 +250,7 @@ public class ReadGBFC {
         display.setPreferredSize(new Dimension(500,500));
         frame.add(display);
         ppu.bugPanel.dispose();//will duplicate if not here
-        mem = new Memory(romData);
+        mem = new Memory(romData, romFile.toString().substring(0,romFile.toString().length()-3));
         cpu = new CPU(romData, regs, interruptManager, mem, ReadGBFC.this);
         ppu = new PPU(romData, cpu, ram, interruptManager, display, mem);
         ReadGBFC.this.running = true;
@@ -247,6 +275,19 @@ public class ReadGBFC {
                 resumeGameboy();
             }
         }
+    }
+    public static String getFileNameFromPath(String path) {
+        File file = new File(path);
+        String fileName = file.getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex > 0 && dotIndex <= fileName.length() - 2) {
+            fileName = fileName.substring(0, dotIndex);
+        }
+        return fileName;
+    }
+    public static String getRomName(File rom) {
+        String romName = getFileNameFromPath(rom.toString());
+        return romName;
     }
 
     // old
