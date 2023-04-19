@@ -72,12 +72,12 @@ public class ReadGBFC {
         frame.add(display);
         frame.setVisible(true);
         //while(!running){
-            ;//do nothing until listener sets running
-            //System.out.print("");
+        ;//do nothing until listener sets running
+        //System.out.print("");
 
-         //   if(this.running==true) {
-         //       cpu.setRun();
-          //      cpu.runUntil(-1);
+        //   if(this.running==true) {
+        //       cpu.setRun();
+        //      cpu.runUntil(-1);
         //    }
         //}
         frame.addWindowListener(new WindowAdapter() {
@@ -91,7 +91,7 @@ public class ReadGBFC {
                             String bs;
                             for (int i = 0; i < ramBanks.length; i++) {
                                 //for (int j = 0; j < ramBanks[i].length; j++) {
-                                    w.write(ramBanks[i]);
+                                w.write(ramBanks[i]);
                                 //}
                             }
                             /*for(int i = 0; i < ramBanks.length; i++) {
@@ -109,13 +109,14 @@ public class ReadGBFC {
             }
         });
 
-}
+    }
     public class FCListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == m1) {
 
                 int ret = fc.showOpenDialog(frame);
                 if (ret == JFileChooser.APPROVE_OPTION) {
+                    saveWhenSwitchingGames();
                     romFile = fc.getSelectedFile();
                     try {
                         FileInputStream romStream = new FileInputStream(romFile);
@@ -156,8 +157,8 @@ public class ReadGBFC {
                 if(cpu.running==true)
                 {
                     stepMode=true;
-                 //stop CPU
-                 cpu.running=false;
+                    //stop CPU
+                    cpu.running=false;
                 }
 
             }
@@ -292,6 +293,30 @@ public class ReadGBFC {
     public static String getRomName(File rom) {
         String romName = getFileNameFromPath(rom.toString());
         return romName;
+    }
+    public void saveWhenSwitchingGames() {
+        if(mem!=null) {
+            if(mem.getRamBanks()!=null) {
+                try {
+                    byte[][] ramBanks = mem.getRamBanks();
+                    FileOutputStream w = new FileOutputStream(new File(romFile.toString().substring(0, romFile.toString().length() - 3) + ".sav"));
+                    String bs;
+                    for (int i = 0; i < ramBanks.length; i++) {
+                        //for (int j = 0; j < ramBanks[i].length; j++) {
+                        w.write(ramBanks[i]);
+                        //}
+                    }
+                            /*for(int i = 0; i < ramBanks.length; i++) {
+                                for(int j = 0; j < ramBanks[i].length; j++){
+                                    System.out.print(ramBanks[i][j]);
+                                }
+                            }*/
+                    w.close();
+                } catch (IOException se) {
+                    System.out.println("An error occurred while writing to the save file: " + se.getMessage());
+                }
+            }
+        }
     }
 
     // old
