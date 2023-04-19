@@ -140,8 +140,8 @@ public class Memory {
                 /*for (int i = 0; i < ramBanks.length; i++) {
                         in.read(ramBanks[i]);
                     }*/
-                byte[] rb = new byte[ramBanks.length*ramBanks[1].length];
-                for(int i = 0; i < ramBanks.length*ramBanks[1].length; i++) {
+                byte[] rb = new byte[ramBanks.length*ramBanks[0].length];
+                for(int i = 0; i < ramBanks.length*ramBanks[0].length; i++) {
                     in.read(rb);
                     //System.out.print(rb[i] + " ");
                 }
@@ -151,7 +151,7 @@ public class Memory {
                         ramBanks[i][j] = rb[i*ramBanks[i].length + j];
                     }
                 }
-                    in.close();
+                in.close();
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
