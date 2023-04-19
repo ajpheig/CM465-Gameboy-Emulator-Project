@@ -86,16 +86,20 @@ public class ReadGBFC {
                 if(mem!=null) {
                     if(mem.getRamBanks()!=null) {
                         try {
-
                             byte[][] ramBanks = mem.getRamBanks();
                             FileOutputStream w = new FileOutputStream(new File(romFile.toString().substring(0, romFile.toString().length() - 3) + ".sav"));
+                            String bs;
                             for (int i = 0; i < ramBanks.length; i++) {
-                                w.write(ramBanks[i]);
+                                //for (int j = 0; j < ramBanks[i].length; j++) {
+                                    w.write(ramBanks[i]);
+                                //}
                             }
-
-
+                            /*for(int i = 0; i < ramBanks.length; i++) {
+                                for(int j = 0; j < ramBanks[i].length; j++){
+                                    System.out.print(ramBanks[i][j]);
+                                }
+                            }*/
                             w.close();
-
                         } catch (IOException se) {
                             System.out.println("An error occurred while writing to the save file: " + se.getMessage());
                         }
