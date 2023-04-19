@@ -12,6 +12,7 @@ public class Memory {
 
     private static final int ROM_BANK_SIZE = 0x4000;
     private static final int RAM_BANK_SIZE = 0x2000;
+
     private byte[][] romBanks;
     private byte[][] ramBanks;
     private byte[] mbc2Ram;
@@ -19,6 +20,9 @@ public class Memory {
     private boolean mbc2Enabled;
     private boolean mbc3Enabled;
 
+    private boolean batteryEn;
+
+    private File saveFile;
 
     private int romBankNumber;
     private int ramBankNumber;
@@ -56,8 +60,11 @@ public class Memory {
     OAM oam = new OAM();
     VRAM vram = new VRAM(0x8000);
 
-    public Memory(byte[] romData) {
-        memory = new byte[0x10000+1];// This should initialize memory size to 64 kb
+    public Memory(byte[] romData, String romName) {
+        memory = new byte[0x10000 + 1];// This should initialize memory size to 64 kb
+        saveFile = new File(romName + ".sav");
+
+
 
         //init MBC
         mbc1Enabled = false;
@@ -71,6 +78,7 @@ public class Memory {
         mbc1Enabled = (romData[0x147] == 0x01 || romData[0x147] == 0x02 || romData[0x147] == 0x03);
         mbc2Enabled = (romData[0x147] == 0x05 || romData[0x147] == 0x06);
         mbc3Enabled = (romData[0x147] == 0x0F || romData[0x147] == 0x10 || romData[0x147] == 0x11 || romData[0x147] == 0x12 || romData[0x147] == 0x13);
+        batteryEn = (romData[0x147] == 0x03 || romData[0x147] == 0x06 || romData[0x147] == 0x09 || romData[0x147] == 0x0F || romData[0x147] == 0x10 || romData[0x147] == 0x13);
 
         if(mbc1Enabled || mbc2Enabled || mbc3Enabled)
             System.arraycopy(romData, 0, memory, 0, 0x4000);
@@ -122,6 +130,45 @@ public class Memory {
 
         romBanks = new byte[numRomBanks][ROM_BANK_SIZE];
         ramBanks = new byte[numRamBanks][RAM_BANK_SIZE];
+
+        if(saveFile.exists()&&saveFile.length()!=0&&batteryEn)
+        {
+            try {
+                FileInputStream in = new FileInputStream(saveFile);
+                byte[] rb = new byte[ramBanks.length*ramBanks[1].length];
+                /*for(int i = 0; i < ramBanks.length*ramBanks[1].length; i++) {
+                    System.out.print(rb[i] + " ");
+                }*/
+
+                for(int i = 0; i < ramBanks.length; i++) {
+                    for(int j = 0; j < ramBanks[i].length; j++) {
+                        ramBanks[i][j] = rb[i*ramBanks[i].length + j];
+                    }
+                }
+                    in.close();
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            catch(IOException ioe){}
+        }
+        /*for(int q = 0; q < romBanks.length; q++)
+        {
+            for(int j = 0; j<romBanks[q].length;j++)
+            {
+                System.out.print(romBanks[q][j]);
+            }
+        }*/
+
+        if (!saveFile.exists() && batteryEn) {
+            try {
+                saveFile.createNewFile();
+
+            } catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
         mbc2Ram = new byte[0x200];
         for(int i = 0; i < numRomBanks; i++)
         {
@@ -165,9 +212,16 @@ public class Memory {
     }
 
     // getters for the PPU
+
+
+    public byte[][] getRamBanks() {
+        return ramBanks;
+    }
+
     public Stat getStat() {
         return stat;
     }
+
 
     public LCDC getLcdc() {
         return lcdc;
@@ -399,6 +453,23 @@ public class Memory {
             {
                 int bank = ramBankNumber & 0x3;
                 ramBanks[bank][address - 0xA000] = (byte)value;
+                /*if(batteryEn)
+                {
+                    try {
+                        FileWriter w = new FileWriter(saveFile);
+                        for (int i = 0; i < ramBanks.length; i++) {
+                            for (int j = 0; j < ramBanks[i].length; j++) {
+                                w.write(ramBanks[i][j] + " ");
+                            }
+                            w.write("\n");
+                        }
+                        w.close();
+                    }
+                    catch(IOException e) {
+                        System.out.println("An error occurred while writing to the save file: " + e.getMessage());
+                    }
+
+                }*/
             }
             else
                 memory[address & 0xffff] = (byte) value;
@@ -447,6 +518,23 @@ public class Memory {
             else if(address >= 0xA000 && address < 0xC000 && ramEnabled)
             {
                 ramBanks[ramBankNumber & 0x03][address - 0xA000] = (byte)value;
+                /*if(batteryEn)
+                {
+                    try {
+                        FileWriter w = new FileWriter(saveFile);
+                        for (int i = 0; i < ramBanks.length; i++) {
+                            for (int j = 0; j < ramBanks[i].length; j++) {
+                                w.write(ramBanks[i][j] + " ");
+                            }
+                            w.write("\n");
+                        }
+                        w.close();
+                    }
+                    catch(IOException e) {
+                        System.out.println("An error occurred while writing to the save file: " + e.getMessage());
+                    }
+
+                }*/
             }
             else
                 memory[address & 0xffff] = (byte)value;
