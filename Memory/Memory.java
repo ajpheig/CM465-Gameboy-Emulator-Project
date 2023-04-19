@@ -1,6 +1,7 @@
 package Memory;
 
 import java.awt.*;
+import java.util.Scanner;
 import java.io.*;
 import java.io.File.*;
 import java.util.Arrays;
@@ -133,12 +134,17 @@ public class Memory {
 
         if(saveFile.exists()&&saveFile.length()!=0&&batteryEn)
         {
+            //System.out.print("test");
             try {
                 FileInputStream in = new FileInputStream(saveFile);
+                /*for (int i = 0; i < ramBanks.length; i++) {
+                        in.read(ramBanks[i]);
+                    }*/
                 byte[] rb = new byte[ramBanks.length*ramBanks[1].length];
-                /*for(int i = 0; i < ramBanks.length*ramBanks[1].length; i++) {
-                    System.out.print(rb[i] + " ");
-                }*/
+                for(int i = 0; i < ramBanks.length*ramBanks[1].length; i++) {
+                    in.read(rb);
+                    //System.out.print(rb[i] + " ");
+                }
 
                 for(int i = 0; i < ramBanks.length; i++) {
                     for(int j = 0; j < ramBanks[i].length; j++) {
