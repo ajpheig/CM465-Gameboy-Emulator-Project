@@ -196,33 +196,19 @@ public class PPU {
                 int sNum;
                 int sFlag;
                 List<Sprite> spriteList = Sprite.getAllSprites();
-                //System.out.println("spriteList size " +  spriteList.size());
-                // loop though visible sprites and create the spriteTiles to render them
-                if(!spriteList.isEmpty()) {
-                    // System.out.println((memory.readByte(0xFF40) & 0b100) >> 2);
 
-                    //oam.printSpriteData();
-                    //System.out.println("Render sprite loop");
+                if(!spriteList.isEmpty()) {
                     for (int i = 0; i < spriteList.size(); i++) {
-                        // get sprite obj out of list
                         Sprite sprite = spriteList.get(i);
                         sY = sprite.getY() & 0xFF;
                         sX = sprite.getX() & 0xFF;
                         sNum = sprite.getTileNumber() & 0xFF;
-                        byte bottomTileIndex = (byte) ((byte) ((sNum & 0xFE) | 0x01) & 0xFF);
-                        //System.out.println(bottomTileIndex);
-
                         sFlag = sprite.getFlags() & 0xFF;
                         Tile spriteTile = tileSet[sNum];
-                        //Tile largeSpriteTile = tileSet[12];
-                        //                        if(4 > 0) {
-                        short lsNum = (short) (sNum | 0x0001); // set the least significant bit to 1
+                        short lsNum = (short) (sNum | 0x0001);
                         lsNum = (short) (lsNum & 0xFFFF);
-                        // System.out.println(lsNum);
-//                            if(lsNum < 0)
-//                                lsNum = 93 & 0xFE;
                         Tile largSpriteTile = tileSet[lsNum];
-                        // check if sprites are large and render the second sprite tile
+
 
                         //System.out.println(largeSpriteTile);
                         if(Math.abs(sY-curY)>=16)continue;
@@ -249,7 +235,6 @@ public class PPU {
                                 }
                             }
                             if((memory.readByte(0xFF40) & 0b100) > 0){
-                                //if(true){
                                 for (int y = 0; y < 8; y++) {
                                     for (int x = 0; x < 8; x++) {
                                         int sPixel = largSpriteTile.getVal(y, x);
@@ -257,26 +242,19 @@ public class PPU {
                                         if ((sFlag & 16) == 0) color = obp0.getColor(sPixel, 2);
                                         else {
                                             color = obp1.getColor(sPixel, 2);
-                                            // System.out.println("ob1:"+sPixel);
                                         }
                                         // calculate the pixel coordinates based on sprite position and current tile pixel position
                                         int xPosS = sX + (7 - x);
                                         int yPosS = sY + (7 - y);
-                                        // write the pixel to the screen buffer
-                                        //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                        //display.setPixel(xPosS - 8, yPosS - 8, color);
                                         if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
-                                        //if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel( yPosS - 8,xPosS - 8, color);
-                                        //display.setPixel(xPosS, yPosS, color);
                                     }
                                 } // render sprite for
-                            } // end 8x16 sprite if
+                            }
                         }
                         else
                         // only flipped vertically not horizontally
                         {
                             if ((sFlag & 0x20) != 0 &&  (sFlag & 0x40) == 0) {
-                                // Sprite should be flipped vertically
                                 for (int y = 0; y < 8; y++) {
                                     for (int x = 7; x >= 0; x--) {
                                         int sPixel = spriteTile.getVal(y, x);
@@ -284,7 +262,6 @@ public class PPU {
                                         if((sFlag&16)==0) {
                                             color = obp0.getColor(sPixel, 2);
                                         }else color = obp1.getColor(sPixel, 2);
-                                        // calculate the pixel coordinates based on sprite position and current tile pixel position
                                         int xPosS = sX + (7 - x);
                                         int yPosS = sY + y;
                                         int backpix=0;
@@ -293,12 +270,10 @@ public class PPU {
                                             currtile = tileSet[backTileIndex];
                                             if (currtile != null) backpix = currtile.getVal((yPosS-16+scrollY) % 8, (xPosS-8+scrollX) % 8);
                                         }
-                                        // write the pixel to the screen buffer
                                         if(sPixel!=0&&((sFlag&0x80)==0||(backpix==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 16, color);
                                     }
                                 }
                                 if((memory.readByte(0xFF40) & 0b100) > 0){
-                                    //if(true){
                                     for (int y = 0; y < 8; y++) {
                                         for (int x = 0; x < 8; x++) {
                                             int sPixel = largSpriteTile.getVal(y, x);
@@ -306,19 +281,15 @@ public class PPU {
                                             if ((sFlag & 16) == 0) color = obp0.getColor(sPixel, 2);
                                             else {
                                                 color = obp1.getColor(sPixel, 2);
-                                                // System.out.println("ob1:"+sPixel);
                                             }
-                                            // calculate the pixel coordinates based on sprite position and current tile pixel position
                                             int xPosS = sX + (7 - x);
                                             int yPosS = sY + y;
-                                            // write the pixel to the screen buffer
-                                            //System.out.println(" setting pixel at " +xPosS+ ","+yPosS );
-                                            //display.setPixel(xPosS - 8, yPosS - 8, color);
+
+                                                                    //                                                                  - 8
                                             if(sPixel!=0&&((sFlag&0x80)==0||(pixel==0&&windowPixel==0)))display.setPixel(xPosS - 8, yPosS - 8, color);
-                                            //display.setPixel(xPosS, yPosS, color);
                                         }
-                                    } // render sprite for
-                                } // end 8x16 sprite if
+                                    }
+                                }
                             }
                             else {
                                 if ((sFlag & 0x40) != 0 && (sFlag & 0x20) == 0) {

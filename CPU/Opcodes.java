@@ -29,14 +29,7 @@ public class Opcodes {
         // and not a method
     }
 
-    public Map<Integer, Runnable> opcodeHandlers = new HashMap<>();
-
-    // this is a map where the opcodes are key and an opcode will call the
-    // corresponding runnable object
-    // like this Runnable handler = opcodeHandlers.get(0x1);
-    // which can be run with handler.run
-    // one of two ways to call the method
-    {
+    public Map<Integer, Runnable> opcodeHandlers = new HashMap<>(); {
         opcodeHandlers.put(0x0, this::nop);
         opcodeHandlers.put(0x1, () -> LDu("bc", mem.readWord(regs.getPC() + 1), 3, 12));
         opcodeHandlers.put(0x2, () -> LD(regs.getBC(), "a", 1, 8));
@@ -299,8 +292,7 @@ public class Opcodes {
     }
 
     // map for the extended opcodes
-    public Map<Integer, Runnable> extendedOpcodeHandlers = new HashMap<>();
-    {
+    public Map<Integer, Runnable> extendedOpcodeHandlers = new HashMap<>(); {
         extendedOpcodeHandlers.put(0x0, () -> RLC("b"));
         extendedOpcodeHandlers.put(0x1, () -> RLC("c"));
         extendedOpcodeHandlers.put(0x2, () -> RLC("d"));

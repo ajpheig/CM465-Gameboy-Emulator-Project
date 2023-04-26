@@ -11,8 +11,8 @@ public class GBScreen extends JPanel {
     int modeclock = 0;
     int mode = 2;
 
-    public GBScreen() {
-        setPreferredSize(new Dimension(width, height));
+    public GBScreen(int width, int height) {
+        setPreferredSize(new Dimension(this.width, this.height));
         setBackground(Color.BLACK);
         for (int i = 0; i < 160 * 144 * 4; i++) {// initialize to white value
             frameData[i] = 255;
