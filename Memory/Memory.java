@@ -31,7 +31,7 @@ public class Memory {
     private boolean romBankingMode;
 
     private byte[] memory;
-    private boolean bootRomEnabled = true;
+    private boolean bootRomEnabled = false;
     //private File bootFile = new File("C:/Users/ajphe/Documents/Homework/CM465CISCapstone/GBTESTPROJ/dmg_boot.bin");
     private File relBootFile = new File(System.getProperty("user.dir") + "/dmg_boot.bin");
     private File jarredFile = new File("jar:file:WashburnGB.jar!/dmg_boot.bin");

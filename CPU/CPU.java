@@ -36,10 +36,10 @@ public class CPU {
         running=true;
         mem.setCPU(this, interruptManager,timer);
         operations = new Opcodes(regs, romData, interruptManager, mem, this);
-        regs.setPC(0x00);// sets it to 0x100 in ROM to start testing opcode
+        regs.setPC(0x100);// sets it to 0x100 in ROM to start testing opcode
         interruptManager.setCPU(this);
         this.parent = parent;
-        // hardSetRegs();
+        hardSetRegs();
         try {
             out = new PrintWriter(new File("output.txt"));
         } catch (FileNotFoundException fne) {
@@ -56,8 +56,8 @@ public class CPU {
         regs.fByte.setN(false);
         regs.fByte.setH(true);
         regs.fByte.setC(true);
-        mem.writeByte(0xff44, 0x90);
-        mem.writeByte(0xff00,0xff);
+        //mem.writeByte(0xff44, 0x90);
+        //mem.writeByte(0xff00,0xff);
     }
     public Registers getRegs(){
         return regs;
